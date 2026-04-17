@@ -1,0 +1,31 @@
+package com.app.dto.request;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.Data;
+
+@Data
+public class SpecialistRequest {
+
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    private String lastName;
+
+    @Pattern(regexp = "^\\+?[0-9\\-\\s]{7,20}$", message = "Invalid phone number")
+    private String phone;
+
+    private String displayName;
+    private String profileTitle;
+    private String bio;
+    private String profilePhoto;
+    private String coverPhoto;
+
+    @Valid
+    private AddressRequest personalAddress;
+
+    @Valid
+    private AddressRequest serviceAddress;
+}
