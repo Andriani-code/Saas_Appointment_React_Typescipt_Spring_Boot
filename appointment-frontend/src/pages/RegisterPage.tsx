@@ -9,7 +9,7 @@ import { cn } from '@/utils'
 import type { Role, AuthUser } from '@/types'
 
 const roles: { value: Role; label: string; desc: string; icon: string }[] = [
-  { value: 'CLIENT',     label: 'Patient',      desc: 'Je cherche un spécialiste',  icon: '👤' },
+  { value: 'CLIENT',     label: 'Client',      desc: 'Je cherche un spécialiste',  icon: '👤' },
   { value: 'SPECIALIST', label: 'Spécialiste',  desc: 'Je propose des consultations', icon: '🩺' },
 ]
 
@@ -35,17 +35,17 @@ export function RegisterPage() {
       login(user)
       navigate('/dashboard')
     } catch {
-      setError("Cet email est déjà utilisé ou une erreur s'est produite.")
+      setError("Cet email est déjà utilisé.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-[80vh] bg-background flex m-20">
       {/* Left decorative */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-700 via-primary to-primary-400 relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
+      <div className="hidden lg:flex rounded-tl-xl rounded-bl-xl lg:w-1/2 bg-gradient-to-br from-primary-700 via-primary to-primary-400 relative overflow-hidden flex-col justify-between p-12">
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
 
         <div className="relative z-10 flex items-center gap-3">
@@ -72,11 +72,11 @@ export function RegisterPage() {
           </ul>
         </div>
 
-        <p className="relative z-10 text-white/40 text-sm">© 2024 BookDoc. Tous droits réservés.</p>
+        <p className="relative z-10 text-white/40 text-sm">© 2026 BookDoc. Tous droits réservés.</p>
       </div>
 
       {/* Right form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 animate-fade-in">
+      <div className="flex-1 flex items-center bg-surface rounded-tr-xl rounded-br-xl justify-center px-6 py-12 animate-fade-in">
         <div className="w-full max-w-md space-y-7">
           <div className="lg:hidden flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white text-sm">📅</div>
@@ -85,7 +85,7 @@ export function RegisterPage() {
 
           <div>
             <h2 className="font-display text-3xl font-bold text-text">Créer un compte</h2>
-            <p className="mt-2 text-muted">Rejoignez BookDoc en quelques secondes.</p>
+            <p className="mt-2 text-muted">Rejoignez le plateforme en quelques secondes.</p>
           </div>
 
           {/* Role selector */}

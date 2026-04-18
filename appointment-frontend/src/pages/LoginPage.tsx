@@ -41,7 +41,7 @@ export function LoginPage() {
   return (
     <div className="min-h-[80vh] bg-background flex m-20">
       {/* Left panel — decorative */} 
-      <div className="hidden lg:flex lg:w-1/2 bg-primary/90 rounded-tl-xl rounded-bl-xl relative overflow-hidden flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary rounded-tl-xl rounded-bl-xl relative overflow-hidden flex-col justify-between p-12">
         {/* Decorative circles */}
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
