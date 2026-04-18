@@ -1,0 +1,65 @@
+############################
+# FRONTEND (React + Vite)
+############################
+
+node_modules
+dist
+.vite
+.env
+.env.local
+.env..local
+
+# logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# build
+out
+build
+
+############################
+# BACKEND (Spring Boot)
+############################
+
+target
+.jar
+.war
+.class
+
+# Maven  Gradle
+.mvn
+.gradle
+build
+
+############################
+# IDE - VS CODE
+############################
+
+.vscode
+.history
+
+############################
+# IDE - INTELLIJ
+############################
+
+.idea
+.iml
+.iws
+.ipr
+out
+
+############################
+# SYSTEM
+############################
+
+.DS_Store
+Thumbs.db
+
+############################
+# LOGS
+############################
+
+logs
+.log
