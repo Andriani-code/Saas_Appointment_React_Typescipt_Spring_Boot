@@ -4,7 +4,8 @@ import {
   MapPin, Star, Clock, ChevronLeft, CheckCircle,
   Calendar, MessageSquare, Shield
 } from 'lucide-react'
-import { specialistApi, serviceApi, slotApi, reviewApi, reservationApi } from '@/services/api'
+import toast from 'react-hot-toast'
+import { specialistApi, serviceApi, slotApi, reviewApi, reservationApi, paymentApi } from '@/services/api'
 import { Avatar, StarRating, StatusBadge, Spinner, EmptyState } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, formatTime, formatDuration } from '@/utils'
@@ -30,6 +31,9 @@ export function SpecialistDetail() {
   const [message,         setMessage]         = useState('')
   const [booking,         setBooking]         = useState(false)
   const [booked,          setBooked]          = useState(false)
+  const [showPayment,     setShowPayment]     = useState(false)
+  const [reservationId,   setReservationId]   = useState<string | null>(null)
+  const [paying,          setPaying]          = useState(false)
 
   // Generate next 7 days
   const dates = Array.from({ length: 7 }, (_, i) => {
@@ -58,12 +62,38 @@ export function SpecialistDetail() {
 
   async function handleBook() {
     if (!selectedSlot || !selectedService) return
+    const service = services.find(s => s.id === selectedService)
+    
     setBooking(true)
     try {
-      await reservationApi.book({ slotId: selectedSlot, serviceId: selectedService, clientMessage: message })
-      setBooked(true)
-    } catch { /* error handling */ }
+      const res = await reservationApi.book({ slotId: selectedSlot, serviceId: selectedService, clientMessage: message })
+      setReservationId(res.id)
+      
+      if (service?.depositEnabled) {
+        setShowPayment(true)
+      } else {
+        setBooked(true)
+      }
+    } catch { 
+      toast.error("Erreur lors de la réservation")
+    }
     finally { setBooking(false) }
+  }
+
+  async function handlePayment() {
+    if (!reservationId) return
+    setPaying(true)
+    const toastId = toast.loading("Initialisation du paiement...")
+    try {
+      await paymentApi.createIntent(reservationId)
+      toast.success("Paiement réussi ! (Simulation Stripe)", { id: toastId })
+      setBooked(true)
+      setShowPayment(false)
+    } catch (err) {
+      toast.error("Erreur lors du paiement", { id: toastId })
+    } finally {
+      setPaying(false)
+    }
   }
 
   if (loading) return (
@@ -227,12 +257,44 @@ export function SpecialistDetail() {
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
                   <CheckCircle size={32} className="text-green-600" />
                 </div>
-                <h3 className="font-semibold text-text">Réservation envoyée !</h3>
-                <p className="text-sm text-muted">Vous recevrez une confirmation dès l'approbation du spécialiste.</p>
+                <h3 className="font-semibold text-text">Réservation confirmée !</h3>
+                <p className="text-sm text-muted">Merci pour votre confiance. Vous recevrez une notification d'approbation.</p>
                 <Button variant="outline" fullWidth onClick={() => navigate('/appointments')}>
                   Voir mes rendez-vous
                 </Button>
               </div>
+            ) : showPayment ? (
+               <div className="space-y-4 animate-fade-in">
+                  <h3 className="section-title text-center text-primary">Paiement du dépôt</h3>
+                  <div className="bg-soft p-4 rounded-xl border border-primary/20 space-y-3">
+                     <div className="flex justify-between text-sm">
+                        <span className="text-muted">Service</span>
+                        <span className="font-bold text-text">{services.find(s => s.id === selectedService)?.name}</span>
+                     </div>
+                     <div className="flex justify-between text-sm">
+                        <span className="text-muted">Montant total</span>
+                        <span className="text-text font-medium">{formatCurrency(services.find(s => s.id === selectedService)?.price || 0)}</span>
+                     </div>
+                     <div className="flex justify-between pt-2 border-t border-border">
+                        <span className="text-text font-bold">Dépôt à payer</span>
+                        <span className="text-primary font-extrabold">{formatCurrency(services.find(s => s.id === selectedService)?.depositAmount || 0)}</span>
+                     </div>
+                  </div>
+                  
+                  <div className="p-4 border-2 border-dashed border-border rounded-xl flex flex-col items-center gap-3 text-center">
+                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <Shield size={20} />
+                     </div>
+                     <p className="text-xs text-muted">Paiement sécurisé via Stripe</p>
+                  </div>
+
+                  <Button fullWidth loading={paying} onClick={handlePayment}>
+                    Payer maintenant
+                  </Button>
+                  <button onClick={() => setBooked(true)} className="w-full text-xs text-muted hover:underline">
+                    Payer plus tard (la réservation restera en attente)
+                  </button>
+               </div>
             ) : (
               <>
                 <h3 className="section-title flex items-center gap-2">

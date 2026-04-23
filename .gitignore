@@ -30,6 +30,9 @@ target
 
 # Maven  Gradle
 .mvn
+!appointment-backend/.mvn/
+!appointment-backend/.mvn/wrapper/
+!appointment-backend/.mvn/wrapper/maven-wrapper.properties
 .gradle
 build
 

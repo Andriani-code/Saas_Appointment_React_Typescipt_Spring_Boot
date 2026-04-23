@@ -37,7 +37,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponse create(ReviewRequest request) {
         String email = SecurityUtils.getCurrentUserEmail();
         Client client = clientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Client profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client profile not found"));
 
         Reservation reservation = reservationRepository
                 .findByIdWithDetails(UUID.fromString(request.getReservationId()))
@@ -59,7 +59,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .client(client)
                 .specialist(reservation.getSpecialist())
                 .reservation(reservation)
-                .rating(request.getRating())
+                .rating(request.getRating().shortValue())
                 .comment(request.getComment())
                 .isVisible(true)
                 .build();
@@ -79,8 +79,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public PageResponse<ReviewResponse> getMyReviews(Pageable pageable) {
         String email = SecurityUtils.getCurrentUserEmail();
-        Client client = clientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Client profile not found"));
+        var clientOpt = clientRepository.findByUserEmail(email);
+        if (clientOpt.isEmpty()) {
+            return PageResponse.empty(pageable);
+        }
+        Client client = clientOpt.get();
         return PageResponse.from(
                 reviewRepository.findByClientId(client.getId(), pageable),
                 reviewMapper::toResponse);

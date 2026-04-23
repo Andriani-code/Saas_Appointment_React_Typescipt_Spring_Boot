@@ -1,6 +1,7 @@
 package com.app.dto.request;
 
 import com.app.entity.enums.Role;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,4 +21,10 @@ public class RegisterRequest {
 
     @NotNull(message = "Role is required")
     private Role role;
+
+    @Valid
+    private ClientRequest clientProfile;
+
+    @Valid
+    private SpecialistRequest specialistProfile;
 }

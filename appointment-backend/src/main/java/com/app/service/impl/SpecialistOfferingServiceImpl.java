@@ -7,7 +7,6 @@ import com.app.entity.Specialist;
 import com.app.entity.SpecialistService;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
-import com.app.exception.UnauthorizedException;
 import com.app.mapper.SpecialistServiceMapper;
 import com.app.repository.SpecialistRepository;
 import com.app.repository.SpecialistServiceRepository;
@@ -114,6 +113,6 @@ public class SpecialistOfferingServiceImpl implements SpecialistOfferingService 
     private Specialist getAuthenticatedSpecialist() {
         String email = SecurityUtils.getCurrentUserEmail();
         return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Specialist profile not found for current user"));
+                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
     }
 }

@@ -2,6 +2,7 @@ package com.app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "reviews",
@@ -10,7 +11,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Review extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,7 +27,7 @@ public class Review extends BaseEntity {
     private Reservation reservation;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Short rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;

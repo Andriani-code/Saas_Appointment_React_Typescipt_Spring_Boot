@@ -3,6 +3,7 @@ package com.app.entity;
 import com.app.entity.enums.SenderType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "messages")
@@ -10,7 +11,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Message extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

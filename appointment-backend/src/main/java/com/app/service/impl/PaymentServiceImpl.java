@@ -42,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse createPaymentIntent(String reservationId) {
         String email = SecurityUtils.getCurrentUserEmail();
         var client = clientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Client profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client profile not found"));
 
         Reservation reservation = reservationRepository.findByIdWithDetails(UUID.fromString(reservationId))
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", reservationId));

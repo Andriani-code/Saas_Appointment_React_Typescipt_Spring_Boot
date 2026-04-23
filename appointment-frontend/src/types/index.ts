@@ -4,17 +4,19 @@ export type Role = 'ADMIN' | 'CLIENT' | 'SPECIALIST'
 export type Provider = 'LOCAL' | 'GOOGLE'
 
 export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  tokenType: string
   email: string
   role: Role
+  accessToken?: string
+  refreshToken?: string
+  tokenType?: string
 }
 
 export interface RegisterRequest {
   email: string
   password: string
   role: Role
+  clientProfile?: ClientRequest
+  specialistProfile?: SpecialistRequest
 }
 
 export interface LoginRequest {
@@ -203,6 +205,7 @@ export interface ReviewResponse {
   clientId: string
   clientFullName: string
   specialistId: string
+  specialistDisplayName?: string
   reservationId: string
   rating: number
   comment?: string
@@ -226,6 +229,7 @@ export interface ConversationResponse {
   clientFullName: string
   specialistId: string
   specialistDisplayName?: string
+  lastMessageContent?: string
   reservationId?: string
   isActive: boolean
   unreadCount: number
@@ -268,6 +272,4 @@ export interface ApiError {
 export interface AuthUser {
   email: string
   role: Role
-  accessToken: string
-  refreshToken: string
 }

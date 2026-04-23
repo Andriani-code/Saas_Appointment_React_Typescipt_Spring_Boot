@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+WRAPPER_DIR="$SCRIPT_DIR/.mvn/wrapper"
+MAVEN_VERSION="3.9.9"
+MAVEN_DIR="$WRAPPER_DIR/apache-maven-$MAVEN_VERSION"
+MAVEN_CMD="$MAVEN_DIR/bin/mvn"
+MAVEN_TGZ="$WRAPPER_DIR/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+DOWNLOAD_URL="https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+
+if [ ! -x "$MAVEN_CMD" ]; then
+  mkdir -p "$WRAPPER_DIR"
+  echo "Downloading Maven $MAVEN_VERSION..."
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$DOWNLOAD_URL" -o "$MAVEN_TGZ"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO "$MAVEN_TGZ" "$DOWNLOAD_URL"
+  else
+    echo "Neither curl nor wget is available to download Maven." >&2
+    exit 1
+  fi
+
+  echo "Extracting Maven $MAVEN_VERSION..."
+  tar -xzf "$MAVEN_TGZ" -C "$WRAPPER_DIR"
+fi
+
+exec "$MAVEN_CMD" "$@"

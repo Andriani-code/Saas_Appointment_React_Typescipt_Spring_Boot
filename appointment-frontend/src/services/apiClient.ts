@@ -1,4 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import {
+  clearAuthSession,
+  getStoredAuthSession,
+  storeAuthSession,
+} from './authStorage'
 
 const BASE_URL = '/api/v1'
 
@@ -7,38 +12,40 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ─── Request interceptor — attach access token ────────────────────────────
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('accessToken')
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`
+  const session = getStoredAuthSession()
+
+  if (session?.accessToken) {
+    config.headers.set('Authorization', `Bearer ${session.accessToken}`)
   }
+
   return config
 })
 
-// ─── Response interceptor — handle 401 / token refresh ───────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const session = getStoredAuthSession()
 
-    if (error.response?.status === 401 && !original._retry) {
+    if (error.response?.status === 401 && !original?._retry && session?.refreshToken) {
       original._retry = true
-      const refreshToken = localStorage.getItem('refreshToken')
 
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken })
-          localStorage.setItem('accessToken', data.accessToken)
-          localStorage.setItem('refreshToken', data.refreshToken)
-          original.headers!.Authorization = `Bearer ${data.accessToken}`
-          return apiClient(original)
-        } catch {
-          localStorage.clear()
-          window.location.href = '/login'
-        }
-      } else {
-        localStorage.clear()
+      try {
+        const refreshResponse = await axios.post(`${BASE_URL}/auth/refresh`, {
+          refreshToken: session.refreshToken,
+        })
+
+        storeAuthSession({
+          email: refreshResponse.data.email,
+          role: refreshResponse.data.role,
+          accessToken: refreshResponse.data.accessToken,
+          refreshToken: refreshResponse.data.refreshToken,
+        })
+
+        return apiClient(original)
+      } catch {
+        clearAuthSession()
         window.location.href = '/login'
       }
     }

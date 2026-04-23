@@ -5,7 +5,6 @@ import { authApi } from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { AuthUser } from "@/types";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -23,13 +22,12 @@ export function LoginPage() {
     setLoading(true);
     try {
       const data = await authApi.login({ email, password });
-      const user: AuthUser = {
+      login({
         email: data.email,
         role: data.role,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
-      };
-      login(user);
+      });
       navigate("/dashboard");
     } catch {
       setError("Email ou mot de passe incorrect.");
@@ -39,9 +37,9 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-[80vh] bg-background flex m-20">
-      {/* Left panel — decorative */} 
-      <div className="hidden lg:flex lg:w-1/2 bg-primary rounded-tl-xl rounded-bl-xl relative overflow-hidden flex-col justify-between p-12">
+    <div className="min-h-[90vh] bg-background flex ml-20 mr-20 mt-6">
+      {/* Left panel — decorative */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary rounded-tl-xl rounded-bl-xl relative overflow-hidden flex-col justify-between p-8 xl:p-12">
         {/* Decorative circles */}
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
@@ -64,18 +62,18 @@ export function LoginPage() {
         </div>
 
         <div className="relative z-10 space-y-6">
-          <h1 className="font-display text-4xl font-bold text-white leading-tight">
+          <h1 className="font-display text-3xl xl:text-4xl font-bold text-white leading-tight">
             Gérez vos rendez-vous
             <br />
             en toute simplicité
           </h1>
-          <p className="text-white/75 text-lg leading-relaxed">
+          <p className="text-white/75 text-base xl:text-lg leading-relaxed">
             Connectez-vous pour accéder à votre espace et gérer vos
             consultations avec vos spécialistes.
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4">
+          <div className="grid grid-cols-3 gap-3 xl:gap-4 pt-4">
             {[
               { n: "2 400+", label: "Spécialistes" },
               { n: "18 000+", label: "Patients" },
@@ -83,9 +81,9 @@ export function LoginPage() {
             ].map((s) => (
               <div
                 key={s.label}
-                className="bg-white/10 rounded-2xl p-4 text-center"
+                className="bg-white/10 rounded-xl xl:rounded-2xl p-3 xl:p-4 text-center"
               >
-                <p className="font-display text-2xl font-bold text-white">
+                <p className="font-display text-xl xl:text-2xl font-bold text-white">
                   {s.n}
                 </p>
                 <p className="text-white/65 text-xs mt-0.5">{s.label}</p>
@@ -100,7 +98,7 @@ export function LoginPage() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center bg-surface rounded-tr-xl rounded-br-xl justify-center px-6 py-12 animate-fade-in">
+      <div className="flex-1 flex items-center justify-center bg-surface px-4 py-8 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-4">
@@ -112,7 +110,7 @@ export function LoginPage() {
                 />
               </svg>
             </div>
-            <span className="font-display text-2xl tex font-bold text-text">
+            <span className="font-display text-2xl font-bold text-text">
               BookDoc
             </span>
           </div>

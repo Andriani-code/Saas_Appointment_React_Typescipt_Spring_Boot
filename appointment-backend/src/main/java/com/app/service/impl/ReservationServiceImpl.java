@@ -37,7 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
     public ReservationResponse book(ReservationRequest request) {
         String email = SecurityUtils.getCurrentUserEmail();
         Client client = clientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Client profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client profile not found"));
 
         AvailableSlot slot = slotRepository.findById(UUID.fromString(request.getSlotId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Slot", "id", request.getSlotId()));
@@ -94,8 +94,11 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional(readOnly = true)
     public PageResponse<ReservationResponse> getMyReservationsAsClient(Pageable pageable) {
         String email = SecurityUtils.getCurrentUserEmail();
-        Client client = clientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Client profile not found"));
+        var clientOpt = clientRepository.findByUserEmail(email);
+        if (clientOpt.isEmpty()) {
+            return PageResponse.empty(pageable);
+        }
+        Client client = clientOpt.get();
         return PageResponse.from(
                 reservationRepository.findByClientId(client.getId(), pageable),
                 reservationMapper::toResponse);
@@ -105,8 +108,11 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional(readOnly = true)
     public PageResponse<ReservationResponse> getMyReservationsAsSpecialist(Pageable pageable) {
         String email = SecurityUtils.getCurrentUserEmail();
-        Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Specialist profile not found"));
+        var specialistOpt = specialistRepository.findByUserEmail(email);
+        if (specialistOpt.isEmpty()) {
+            return PageResponse.empty(pageable);
+        }
+        Specialist specialist = specialistOpt.get();
         return PageResponse.from(
                 reservationRepository.findBySpecialistId(specialist.getId(), pageable),
                 reservationMapper::toResponse);
@@ -172,7 +178,7 @@ public class ReservationServiceImpl implements ReservationService {
     private Reservation getReservationAsSpecialist(String id) {
         String email = SecurityUtils.getCurrentUserEmail();
         Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Specialist profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
 
         Reservation reservation = reservationRepository.findByIdWithDetails(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", id));

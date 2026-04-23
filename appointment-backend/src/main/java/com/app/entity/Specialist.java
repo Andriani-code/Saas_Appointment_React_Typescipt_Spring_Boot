@@ -3,6 +3,7 @@ package com.app.entity;
 import com.app.entity.enums.VerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "specialists")
@@ -10,7 +11,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Specialist extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)

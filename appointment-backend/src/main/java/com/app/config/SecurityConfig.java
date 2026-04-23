@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/actuator/health"
+            "/actuator/health",
+            "/ws/**"
     };
 
     @Bean
@@ -43,8 +44,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/specialists/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/specialists/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/slots/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/specialists").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/specialists/**").authenticated()
+                        
+                        .requestMatchers("/api/v1/services/**").authenticated()
+                        .requestMatchers("/api/v1/availability/**").authenticated()
+                        .requestMatchers("/api/v1/slots/**").permitAll()
+                        
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

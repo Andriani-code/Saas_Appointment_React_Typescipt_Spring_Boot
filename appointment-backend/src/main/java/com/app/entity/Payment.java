@@ -4,6 +4,7 @@ import com.app.entity.enums.PaymentMethod;
 import com.app.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Payment extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)

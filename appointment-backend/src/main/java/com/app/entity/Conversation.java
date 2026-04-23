@@ -2,6 +2,7 @@ package com.app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "conversations")
@@ -9,7 +10,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Conversation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

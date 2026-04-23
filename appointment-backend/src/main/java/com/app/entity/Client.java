@@ -2,6 +2,7 @@ package com.app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "clients")
@@ -9,7 +10,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Client extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)

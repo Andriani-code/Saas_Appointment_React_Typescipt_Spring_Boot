@@ -7,9 +7,11 @@ import org.springframework.data.domain.Pageable;
 
 public interface SpecialistService {
     SpecialistResponse createProfile(SpecialistRequest request);
+    boolean hasMyProfile();
     SpecialistResponse getMyProfile();
     SpecialistResponse getById(String id);
     SpecialistResponse updateProfile(SpecialistRequest request);
+    SpecialistResponse requestVerification();
     PageResponse<SpecialistResponse> getAll(Pageable pageable);
     PageResponse<SpecialistResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable);
     SpecialistResponse approveVerification(String specialistId);

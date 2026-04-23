@@ -4,6 +4,7 @@ import com.app.entity.enums.Provider;
 import com.app.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
@@ -11,7 +12,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class User extends BaseEntity {
 
     @Column(unique = true, nullable = false)

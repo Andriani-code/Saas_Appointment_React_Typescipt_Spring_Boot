@@ -107,6 +107,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private Specialist getAuthenticatedSpecialist() {
         String email = SecurityUtils.getCurrentUserEmail();
         return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Specialist profile not found for current user"));
+                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
     }
 }

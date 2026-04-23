@@ -60,6 +60,13 @@ public class SpecialistServiceImpl implements SpecialistService {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean hasMyProfile() {
+        String email = SecurityUtils.getCurrentUserEmail();
+        return specialistRepository.findByUserEmail(email).isPresent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public SpecialistResponse getMyProfile() {
         String email = SecurityUtils.getCurrentUserEmail();
         Specialist specialist = specialistRepository.findByUserEmail(email)
@@ -107,6 +114,17 @@ public class SpecialistServiceImpl implements SpecialistService {
     public PageResponse<SpecialistResponse> getAll(Pageable pageable) {
         Page<Specialist> page = specialistRepository.findByIsActiveAndIsVerified(true, true, pageable);
         return PageResponse.from(page, s -> enrichWithRating(specialistMapper.toResponse(s)));
+    }
+
+    @Override
+    @Transactional
+    public SpecialistResponse requestVerification() {
+        String email = SecurityUtils.getCurrentUserEmail();
+        Specialist specialist = specialistRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        
+        specialist.setVerificationStatus(VerificationStatus.PENDING);
+        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
     }
 
     @Override

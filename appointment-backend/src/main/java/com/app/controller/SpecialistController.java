@@ -31,12 +31,28 @@ public class SpecialistController {
         return ResponseEntity.status(HttpStatus.CREATED).body(specialistService.createProfile(request));
     }
 
+    @GetMapping("/me/exists")
+    @PreAuthorize("hasRole('SPECIALIST')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Check whether my specialist profile exists")
+    public ResponseEntity<Boolean> exists() {
+        return ResponseEntity.ok(specialistService.hasMyProfile());
+    }
+
     @GetMapping("/me")
     @PreAuthorize("hasRole('SPECIALIST')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get my specialist profile")
+    @Operation(summary = "Get current specialist profile")
     public ResponseEntity<SpecialistResponse> getMe() {
         return ResponseEntity.ok(specialistService.getMyProfile());
+    }
+
+    @PostMapping("/me/verify")
+    @PreAuthorize("hasRole('SPECIALIST')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Request profile verification")
+    public ResponseEntity<SpecialistResponse> requestVerification() {
+        return ResponseEntity.ok(specialistService.requestVerification());
     }
 
     @PutMapping("/me")

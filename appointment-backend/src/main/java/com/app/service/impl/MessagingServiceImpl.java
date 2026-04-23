@@ -107,7 +107,7 @@ public class MessagingServiceImpl implements MessagingService {
         } else if (specialistOpt.isPresent()) {
             page = conversationRepository.findActiveBySpecialistId(specialistOpt.get().getId(), pageable);
         } else {
-            throw new UnauthorizedException("No client or specialist profile found");
+            return PageResponse.empty(pageable);
         }
 
         return PageResponse.from(page, c -> {

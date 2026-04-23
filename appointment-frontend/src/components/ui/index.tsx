@@ -102,14 +102,15 @@ export function Spinner({ size = 20, className }: { size?: number; className?: s
 
 // ─── Empty State ─────────────────────────────────────────────────────────────
 
-export function EmptyState({ icon, title, description, action }: {
+export function EmptyState({ icon, title, description, action, className }: {
   icon: ReactNode
   title: string
   description?: string
   action?: ReactNode
+  className?: string
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+    <div className={cn("flex flex-col items-center justify-center py-16 gap-4 text-center", className)}>
       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
         {icon}
       </div>

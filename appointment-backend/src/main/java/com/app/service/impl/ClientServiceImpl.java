@@ -55,6 +55,13 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean hasMyProfile() {
+        String email = SecurityUtils.getCurrentUserEmail();
+        return clientRepository.findByUserEmail(email).isPresent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ClientResponse getMyProfile() {
         String email = SecurityUtils.getCurrentUserEmail();
         Client client = clientRepository.findByUserEmail(email)

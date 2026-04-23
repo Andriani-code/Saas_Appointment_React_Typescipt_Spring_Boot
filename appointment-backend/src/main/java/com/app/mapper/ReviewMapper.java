@@ -15,9 +15,14 @@ public interface ReviewMapper {
     @Mapping(target = "clientFullName", expression = "java(r.getClient().getFirstName() + ' ' + r.getClient().getLastName())")
     @Mapping(target = "specialistId", expression = "java(uuidToString(r.getSpecialist().getId()))")
     @Mapping(target = "reservationId", expression = "java(uuidToString(r.getReservation().getId()))")
+    @Mapping(target = "rating", expression = "java(shortToInteger(r.getRating()))")
     ReviewResponse toResponse(Review r);
 
     default String uuidToString(UUID uuid) {
         return uuid == null ? null : uuid.toString();
+    }
+
+    default Integer shortToInteger(Short value) {
+        return value == null ? null : value.intValue();
     }
 }

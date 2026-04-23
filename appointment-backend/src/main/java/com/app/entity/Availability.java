@@ -3,6 +3,7 @@ package com.app.entity;
 import com.app.entity.enums.DayOfWeek;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Availability extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

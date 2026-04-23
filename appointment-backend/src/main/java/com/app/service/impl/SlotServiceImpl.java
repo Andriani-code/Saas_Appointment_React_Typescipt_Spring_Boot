@@ -165,6 +165,6 @@ public class SlotServiceImpl implements SlotService {
     private Specialist getAuthenticatedSpecialist() {
         String email = SecurityUtils.getCurrentUserEmail();
         return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UnauthorizedException("Specialist profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
     }
 }

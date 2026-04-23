@@ -3,6 +3,7 @@ package com.app.entity;
 import com.app.entity.enums.ReservationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Reservation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

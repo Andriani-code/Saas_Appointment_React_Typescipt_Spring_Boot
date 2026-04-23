@@ -3,6 +3,7 @@ package com.app.entity;
 import com.app.entity.enums.SlotStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,7 +15,7 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class AvailableSlot extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -31,6 +31,13 @@ public class ClientController {
         return ResponseEntity.status(HttpStatus.CREATED).body(clientService.createProfile(request));
     }
 
+    @GetMapping("/me/exists")
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(summary = "Check whether my client profile exists")
+    public ResponseEntity<Boolean> exists() {
+        return ResponseEntity.ok(clientService.hasMyProfile());
+    }
+
     @GetMapping("/me")
     @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Get my client profile")

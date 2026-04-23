@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface ClientService {
     ClientResponse createProfile(ClientRequest request);
+    boolean hasMyProfile();
     ClientResponse getMyProfile();
     ClientResponse getById(String id);
     ClientResponse updateProfile(ClientRequest request);
