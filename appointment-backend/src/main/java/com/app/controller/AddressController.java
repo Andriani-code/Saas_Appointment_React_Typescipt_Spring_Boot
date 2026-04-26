@@ -12,11 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 
 import java.security.Principal;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/addresses")
 @RequiredArgsConstructor
 @Tag(name = "Addresses", description = "Gestion des adresses utilisateur")
