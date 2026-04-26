@@ -1,12 +1,12 @@
 package com.app.service.impl;
 
 import com.app.dto.request.SlotGenerationRequest;
+import com.app.dto.request.SlotRequest;
 import com.app.dto.response.PageResponse;
 import com.app.dto.response.SlotResponse;
 import com.app.entity.Availability;
 import com.app.entity.AvailableSlot;
 import com.app.entity.Specialist;
-import com.app.entity.enums.DayOfWeek;
 import com.app.entity.enums.SlotStatus;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,73 +41,61 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     @Transactional
-    public List<SlotResponse> generateSlots(SlotGenerationRequest request) {
-        if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new BadRequestException("End date must be after start date");
+    public SlotResponse createSlot(SlotRequest request) {
+        if (request.getDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Cannot create slot for a past date");
         }
-        if (request.getStartDate().plusDays(90).isBefore(request.getEndDate())) {
-            throw new BadRequestException("Cannot generate slots for more than 90 days");
+        if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().equals(request.getEndTime())) {
+            throw new BadRequestException("Start time must be before end time");
         }
 
         Specialist specialist = getAuthenticatedSpecialist();
-        List<Availability> availabilities = availabilityRepository.findActiveBySpecialistId(specialist.getId());
+        
+        // Ensure date is active for this specialist
+        availabilityRepository.findBySpecialistIdAndDate(specialist.getId(), request.getDate())
+                .orElseThrow(() -> new BadRequestException("Date " + request.getDate() + " must be activated first in availability"));
 
-        if (availabilities.isEmpty()) {
-            throw new BadRequestException("No active availabilities found. Please set your availability first.");
+        // Check for overlap or identical start time
+        if (slotRepository.existsBySpecialistIdAndDateAndStartTime(specialist.getId(), request.getDate(), request.getStartTime())) {
+            throw new BadRequestException("A slot starting at " + request.getStartTime() + " already exists for this date");
         }
 
-        List<AvailableSlot> slotsToSave = new ArrayList<>();
-        LocalDate current = request.getStartDate();
+        AvailableSlot slot = AvailableSlot.builder()
+                .specialist(specialist)
+                .date(request.getDate())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .status(SlotStatus.AVAILABLE)
+                .build();
 
-        while (!current.isAfter(request.getEndDate())) {
-            final LocalDate date = current;
-            DayOfWeek dayOfWeek = DayOfWeek.valueOf(date.getDayOfWeek().name());
-
-            availabilities.stream()
-                    .filter(a -> a.getDayOfWeek() == dayOfWeek)
-                    .forEach(availability -> {
-                        List<AvailableSlot> daySlots = generateSlotsForDay(specialist, availability, date);
-                        slotsToSave.addAll(daySlots);
-                    });
-
-            current = current.plusDays(1);
-        }
-
-        List<AvailableSlot> saved = slotRepository.saveAll(slotsToSave);
-        log.info("Generated {} slots for specialist {}", saved.size(), specialist.getId());
-
-        return saved.stream().map(slotMapper::toResponse).collect(Collectors.toList());
+        return slotMapper.toResponse(slotRepository.save(slot));
     }
 
-    private List<AvailableSlot> generateSlotsForDay(Specialist specialist, Availability availability, LocalDate date) {
-        List<AvailableSlot> slots = new ArrayList<>();
-        LocalTime cursor = availability.getStartTime();
+    @Override
+    @Transactional
+    public void deleteSlot(String slotId) {
+        Specialist specialist = getAuthenticatedSpecialist();
+        AvailableSlot slot = getSlotOwnedBy(slotId, specialist);
 
-        while (cursor.plusMinutes(availability.getIntervalMinutes()).compareTo(availability.getEndTime()) <= 0) {
-            LocalTime slotEnd = cursor.plusMinutes(availability.getIntervalMinutes());
-
-            // skip if slot already exists
-            if (!slotRepository.existsBySpecialistIdAndDateAndStartTime(specialist.getId(), date, cursor)) {
-                slots.add(AvailableSlot.builder()
-                        .specialist(specialist)
-                        .date(date)
-                        .startTime(cursor)
-                        .endTime(slotEnd)
-                        .status(SlotStatus.AVAILABLE)
-                        .build());
-            }
-
-            cursor = slotEnd;
+        if (slot.getStatus() == SlotStatus.BOOKED) {
+            throw new BadRequestException("Cannot delete a booked slot");
         }
 
-        return slots;
+        slotRepository.delete(slot);
+    }
+
+    @Override
+    @Transactional
+    public List<SlotResponse> generateSlots(SlotGenerationRequest request) {
+        // Deprecated/Not used based on new requirement of manual activation
+        return new ArrayList<>();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SlotResponse> getAvailableSlotsBySpecialistAndDate(String specialistId, LocalDate date) {
-        return slotRepository.findBySpecialistIdAndDateAndStatus(
-                        UUID.fromString(specialistId), date, SlotStatus.AVAILABLE)
+        // Return ALL slots for the date so frontend can grey out BOOKED ones
+        return slotRepository.findBySpecialistIdAndDate(UUID.fromString(specialistId), date)
                 .stream()
                 .map(slotMapper::toResponse)
                 .collect(Collectors.toList());
@@ -119,8 +106,8 @@ public class SlotServiceImpl implements SlotService {
     public PageResponse<SlotResponse> getSlotsBySpecialistAndDateRange(
             String specialistId, LocalDate start, LocalDate end, Pageable pageable) {
         return PageResponse.from(
-                slotRepository.findBySpecialistIdAndDateRangeAndStatus(
-                        UUID.fromString(specialistId), start, end, SlotStatus.AVAILABLE, pageable),
+                slotRepository.findBySpecialistIdAndDateRange(
+                        UUID.fromString(specialistId), start, end, pageable),
                 slotMapper::toResponse
         );
     }

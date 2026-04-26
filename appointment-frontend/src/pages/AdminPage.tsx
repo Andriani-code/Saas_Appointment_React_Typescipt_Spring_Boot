@@ -32,6 +32,7 @@ type Tab = "verification" | "specialists" | "reservations" | "reviews";
 export function AdminPage() {
   const { hasRole } = useAuth();
   const [specialists, setSpecialists] = useState<SpecialistResponse[]>([]);
+  const [pending, setPending] = useState<SpecialistResponse[]>([]);
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +41,18 @@ export function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    if (!hasRole("ADMIN")) return;
+    if (!hasRole("ADMIN")) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const specData = await specialistApi.getAll(0, 100);
-      setSpecialists(specData.content);
+      const [allSpecs, pendingSpecs] = await Promise.all([
+        specialistApi.getAllForAdmin(0, 100),
+        specialistApi.getPendingForAdmin(0, 100)
+      ]);
+      setSpecialists(allSpecs.content);
+      setPending(pendingSpecs.content);
       setReservations([]);
       setReviews([]);
     } catch {
@@ -84,8 +92,6 @@ export function AdminPage() {
       setActionLoading(null);
     }
   }
-
-  const pending = specialists.filter(s => s.verificationStatus === 'PENDING');
 
   if (!hasRole("ADMIN")) {
     return (
@@ -161,7 +167,14 @@ export function AdminPage() {
 
       {/* Content Area */}
       <div className="space-y-6">
-        {tab === 'verification' && (
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Spinner size={40} />
+            <p className="text-muted font-medium animate-pulse">Chargement des données sécurisées...</p>
+          </div>
+        )}
+
+        {!loading && tab === 'verification' && (
           <div className="grid grid-cols-1 gap-4">
             {pending.length === 0 ? (
               <EmptyState icon={<CheckCircle size={32} />} title="Tout est à jour" description="Aucune demande de vérification en attente." />
@@ -169,12 +182,13 @@ export function AdminPage() {
               pending.map(s => (
                 <div key={s.id} className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-amber-400">
                   <div className="flex items-center gap-4">
-                    <Avatar name={`${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="xl" className="rounded-2xl shadow-lg shadow-black/5" />
+                    <Avatar name={s.displayName || `${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="xl" className="rounded-2xl shadow-lg shadow-black/5" />
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg text-text leading-tight">{s.firstName} {s.lastName}</h3>
+                        <h3 className="font-bold text-lg text-text leading-tight">{s.displayName || `${s.firstName} ${s.lastName}`}</h3>
                         <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full uppercase tracking-tighter">Attente</span>
                       </div>
+                      <p className="text-xs text-muted font-medium mb-1">Nom légal: {s.firstName} {s.lastName}</p>
                       <p className="text-sm text-primary font-bold">{s.profileTitle || 'Titre non défini'}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted">
                         <span className="flex items-center gap-1"><MapPin size={12} /> {s.serviceAddress?.city || 'N/A'}</span>
@@ -206,7 +220,7 @@ export function AdminPage() {
           </div>
         )}
 
-        {tab === 'specialists' && (
+        {!loading && tab === 'specialists' && (
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
@@ -220,12 +234,12 @@ export function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {specialists.filter(s => `${s.firstName} ${s.lastName} ${s.email}`.toLowerCase().includes(search.toLowerCase())).map(s => (
+              {specialists.filter(s => `${s.firstName} ${s.lastName} ${s.displayName} ${s.email}`.toLowerCase().includes(search.toLowerCase())).map(s => (
                 <div key={s.id} className="card p-4 hover:shadow-md transition-all group">
                    <div className="flex items-center gap-3">
-                      <Avatar name={`${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="lg" className="rounded-xl" />
+                      <Avatar name={s.displayName || `${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="lg" className="rounded-xl" />
                       <div className="flex-1 min-w-0">
-                         <p className="font-bold text-text truncate leading-none mb-1">{s.firstName} {s.lastName}</p>
+                         <p className="font-bold text-text truncate leading-none mb-1">{s.displayName || `${s.firstName} ${s.lastName}`}</p>
                          <p className="text-[10px] text-muted truncate font-mono uppercase">{s.email}</p>
                       </div>
                       {s.isVerified && <CheckCircle size={16} className="text-green-500" />}
@@ -248,8 +262,7 @@ export function AdminPage() {
           </div>
         )}
 
-        {/* ... autres onglets avec un design similaire ... */}
-        {tab === 'reservations' && (
+        {!loading && tab === 'reservations' && (
            <div className="card p-0 overflow-hidden border-none shadow-sm bg-white rounded-3xl">
               <table className="w-full text-left">
                 <thead>

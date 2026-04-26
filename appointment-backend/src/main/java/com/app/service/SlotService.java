@@ -8,7 +8,10 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.app.dto.request.SlotRequest;
 public interface SlotService {
+    SlotResponse createSlot(SlotRequest request);
+    void deleteSlot(String slotId);
     List<SlotResponse> generateSlots(SlotGenerationRequest request);
     List<SlotResponse> getAvailableSlotsBySpecialistAndDate(String specialistId, LocalDate date);
     PageResponse<SlotResponse> getSlotsBySpecialistAndDateRange(String specialistId, LocalDate start, LocalDate end, Pageable pageable);

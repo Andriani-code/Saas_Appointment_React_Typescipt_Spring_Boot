@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,16 +32,15 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
     @Transactional
     public AvailabilityResponse create(AvailabilityRequest request) {
-        if (request.getStartTime().isAfter(request.getEndTime()) ||
-                request.getStartTime().equals(request.getEndTime())) {
-            throw new BadRequestException("Start time must be before end time");
+        if (request.getDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Cannot set availability for a past date");
         }
 
         Specialist specialist = getAuthenticatedSpecialist();
 
-        availabilityRepository.findBySpecialistIdAndDayOfWeek(specialist.getId(), request.getDayOfWeek())
+        availabilityRepository.findBySpecialistIdAndDate(specialist.getId(), request.getDate())
                 .ifPresent(a -> {
-                    throw new BadRequestException("Availability already set for " + request.getDayOfWeek());
+                    throw new BadRequestException("Availability already set for " + request.getDate());
                 });
 
         Availability availability = availabilityMapper.toEntity(request);
@@ -52,9 +52,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
     @Transactional
     public AvailabilityResponse update(String id, AvailabilityRequest request) {
-        if (request.getStartTime().isAfter(request.getEndTime()) ||
-                request.getStartTime().equals(request.getEndTime())) {
-            throw new BadRequestException("Start time must be before end time");
+        if (request.getDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Cannot set availability for a past date");
         }
 
         Specialist specialist = getAuthenticatedSpecialist();

@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Calendar, Clock, MessageSquare, Eye, RotateCcw, Check, X, MoreVertical } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { StatusBadge, Avatar } from '@/components/ui'
-import { formatDate, formatTime, formatCurrency, cn } from '@/utils'
-import { reservationApi } from '@/services/api'
-import type { ReservationResponse } from '@/types'
+import { Calendar, Check, Clock, Eye, MessageSquare, MoreVertical, RotateCcw, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { reservationApi } from '@/services/api'
+import { Avatar, StatusBadge } from '@/components/ui'
+import { Button } from '@/components/ui/Button'
+import type { ReservationResponse } from '@/types'
+import { formatCurrency, formatDate, formatTime } from '@/utils'
 
 interface AppointmentCardProps {
   reservation: ReservationResponse
@@ -13,19 +14,23 @@ interface AppointmentCardProps {
   delay?: number
 }
 
-export function AppointmentCard({ reservation: r, onUpdate, delay = 0 }: AppointmentCardProps) {
+export function AppointmentCard({ reservation, onUpdate, delay = 0 }: AppointmentCardProps) {
   const { hasRole } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const isSpecialist = hasRole('SPECIALIST')
-  const name = isSpecialist ? r.clientFullName : (r.specialistDisplayName ?? 'Spécialiste')
+  const name = isSpecialist ? reservation.clientFullName : (reservation.specialistDisplayName ?? 'Specialiste')
 
   async function doAction(action: () => Promise<ReservationResponse>) {
     setLoading(true)
-    try { onUpdate(await action()) }
-    catch { /* no-op */ }
-    finally { setLoading(false); setMenuOpen(false) }
+    try {
+      onUpdate(await action())
+    } finally {
+      setLoading(false)
+      setMenuOpen(false)
+    }
   }
 
   return (
@@ -33,36 +38,56 @@ export function AppointmentCard({ reservation: r, onUpdate, delay = 0 }: Appoint
       className="card-hover p-5 animate-slide-up"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
-      {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
           <Avatar name={name} size="md" />
           <div>
             <p className="font-semibold text-text text-sm">{name}</p>
-            <p className="text-xs text-primary font-medium mt-0.5">{r.serviceName}</p>
+            <p className="text-xs text-primary font-medium mt-0.5">{reservation.serviceName}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <StatusBadge status={r.status} />
+          <StatusBadge status={reservation.status} />
           <div className="relative">
             <button
-              onClick={() => setMenuOpen(m => !m)}
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-muted hover:bg-soft transition-colors"
+              aria-label={menuOpen ? 'Fermer le menu du rendez-vous' : 'Ouvrir le menu du rendez-vous'}
+              aria-expanded={menuOpen}
+              aria-haspopup="menu"
             >
               <MoreVertical size={15} />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-8 bg-surface border border-border rounded-xl shadow-card z-20 py-1 min-w-[160px]">
-                <button className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted hover:bg-soft hover:text-text transition-colors">
-                  <Eye size={14} />Voir le détail
+              <div
+                className="absolute right-0 top-8 bg-surface border border-border rounded-xl shadow-card z-20 py-1 min-w-[160px]"
+                role="menu"
+                aria-label="Actions du rendez-vous"
+              >
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted hover:bg-soft hover:text-text transition-colors"
+                  role="menuitem"
+                  aria-label="Voir le detail du rendez-vous"
+                >
+                  <Eye size={14} />Voir le detail
                 </button>
-                <button className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted hover:bg-soft hover:text-text transition-colors">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted hover:bg-soft hover:text-text transition-colors"
+                  role="menuitem"
+                  aria-label="Envoyer un message au sujet du rendez-vous"
+                >
                   <MessageSquare size={14} />Message
                 </button>
-                {r.status !== 'CANCELED' && r.status !== 'COMPLETED' && r.status !== 'REJECTED' && (
+                {reservation.status !== 'CANCELED' && reservation.status !== 'COMPLETED' && reservation.status !== 'REJECTED' && (
                   <button
-                    onClick={() => doAction(() => reservationApi.cancel(r.id))}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    type="button"
+                    onClick={() => doAction(() => reservationApi.cancel(reservation.id))}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-800 hover:bg-red-100 transition-colors"
+                    role="menuitem"
+                    aria-label="Annuler le rendez-vous"
                   >
                     <X size={14} />Annuler
                   </button>
@@ -73,69 +98,85 @@ export function AppointmentCard({ reservation: r, onUpdate, delay = 0 }: Appoint
         </div>
       </div>
 
-      {/* Date/Time */}
       <div className="flex flex-wrap gap-3 text-sm text-muted mb-4">
         <span className="flex items-center gap-1.5">
           <Calendar size={13} className="text-primary" />
-          {formatDate(r.slot.date)}
+          {formatDate(reservation.slot.date)}
         </span>
         <span className="flex items-center gap-1.5">
           <Clock size={13} className="text-primary" />
-          {formatTime(r.slot.startTime)} – {formatTime(r.slot.endTime)}
+          {formatTime(reservation.slot.startTime)} - {formatTime(reservation.slot.endTime)}
         </span>
       </div>
 
-      {r.clientMessage && (
+      {reservation.clientMessage && (
         <p className="text-xs text-muted bg-soft rounded-lg px-3 py-2 mb-4 italic line-clamp-2">
-          "{r.clientMessage}"
+          "{reservation.clientMessage}"
         </p>
       )}
 
-      {r.depositRequired && r.depositAmount && (
-        <div className="flex items-center justify-between text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-          <span className="text-amber-700 font-medium">Dépôt requis</span>
-          <span className="font-bold text-amber-800">{formatCurrency(r.depositAmount)}</span>
+      {reservation.depositRequired && reservation.depositAmount && (
+        <div className="flex items-center justify-between text-xs bg-amber-100 border border-amber-300 rounded-lg px-3 py-2 mb-4">
+          <span className="text-amber-900 font-medium">Depot requis</span>
+          <span className="font-bold text-amber-950">{formatCurrency(reservation.depositAmount)}</span>
         </div>
       )}
 
-      {/* Specialist actions */}
-      {isSpecialist && r.status === 'PENDING' && (
+      {isSpecialist && reservation.status === 'PENDING' && (
         <div className="flex gap-2">
           <Button
-            size="sm" fullWidth loading={loading}
+            size="sm"
+            fullWidth
+            loading={loading}
             icon={<Check size={14} />}
-            onClick={() => doAction(() => reservationApi.confirm(r.id))}
+            onClick={() => doAction(() => reservationApi.confirm(reservation.id))}
           >
             Confirmer
           </Button>
           <Button
-            size="sm" variant="outline" fullWidth
+            size="sm"
+            variant="outline"
+            fullWidth
             icon={<X size={14} />}
-            onClick={() => doAction(() => reservationApi.reject(r.id))}
-            className="border-red-200 text-red-600 hover:bg-red-50"
+            onClick={() => doAction(() => reservationApi.reject(reservation.id))}
+            className="border-red-300 text-red-800 hover:bg-red-100"
           >
             Rejeter
           </Button>
         </div>
       )}
 
-      {isSpecialist && r.status === 'CONFIRMED' && (
+      {isSpecialist && reservation.status === 'CONFIRMED' && (
         <div className="flex gap-2">
-          <Button size="sm" fullWidth loading={loading} icon={<Check size={14} />}
-            onClick={() => doAction(() => reservationApi.complete(r.id))}>
+          <Button
+            size="sm"
+            fullWidth
+            loading={loading}
+            icon={<Check size={14} />}
+            onClick={() => doAction(() => reservationApi.complete(reservation.id))}
+          >
             Terminer
           </Button>
-          <Button size="sm" variant="outline" fullWidth
-            onClick={() => doAction(() => reservationApi.noShow(r.id))}
-            className="border-gray-200 text-gray-500 hover:bg-gray-50">
+          <Button
+            size="sm"
+            variant="outline"
+            fullWidth
+            onClick={() => doAction(() => reservationApi.noShow(reservation.id))}
+            className="border-gray-300 text-gray-800 hover:bg-gray-100"
+          >
             Absent
           </Button>
         </div>
       )}
 
-      {/* Client: reschedule for canceled */}
-      {!isSpecialist && (r.status === 'CANCELED' || r.status === 'REJECTED') && (
-        <Button size="sm" variant="outline" fullWidth icon={<RotateCcw size={13} />}>
+      {!isSpecialist && (reservation.status === 'CANCELED' || reservation.status === 'REJECTED') && (
+        <Button
+          size="sm"
+          variant="outline"
+          fullWidth
+          icon={<RotateCcw size={13} />}
+          onClick={() => navigate(`/appointments/${reservation.id}`)}
+        >
           Reprendre rendez-vous
         </Button>
       )}

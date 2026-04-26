@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -20,17 +21,20 @@ public class Availability extends BaseEntity {
     @JoinColumn(name = "specialist_id", nullable = false)
     private Specialist specialist;
 
+    @Column(nullable = false)
+    private LocalDate date;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false)
+    @Column(name = "day_of_week")
     private DayOfWeek dayOfWeek;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "start_time")
     private LocalTime startTime;
 
-    @Column(name = "end_time", nullable = false)
+    @Column(name = "end_time")
     private LocalTime endTime;
 
-    @Column(name = "interval_minutes", nullable = false)
+    @Column(name = "interval_minutes")
     private Integer intervalMinutes;
 
     @Column(name = "is_active", nullable = false)

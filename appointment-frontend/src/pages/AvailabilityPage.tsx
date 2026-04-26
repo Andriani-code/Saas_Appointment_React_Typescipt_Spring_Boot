@@ -184,7 +184,7 @@ export function AvailabilityPage() {
           </div>
         </div>
 
-        <div className="card p-4 border-amber-200 bg-amber-50/30">
+        <div className="card p-4 border-amber-300 bg-amber-100/60">
           <div className="flex items-center justify-between gap-4 h-full">
             <div>
               <p className="font-medium text-amber-900 text-sm">Prêt à recevoir des clients ?</p>
@@ -196,7 +196,7 @@ export function AvailabilityPage() {
               loading={generating}
               onClick={handleGenerateSlots}
               disabled={!hasProfile}
-              className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0"
+              className="border-amber-400 text-amber-900 hover:bg-amber-200 shrink-0"
             >
               Générer les créneaux
             </Button>
@@ -241,6 +241,7 @@ export function AvailabilityPage() {
                       openModal();
                     }}
                     className="p-1.5 text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                    aria-label={`Ajouter une disponibilité pour ${day.label}`}
                   >
                     <Plus size={16} />
                   </button>
@@ -262,12 +263,14 @@ export function AvailabilityPage() {
                           <button
                             onClick={() => openModal(avail)}
                             className="p-1 text-muted hover:text-primary transition-colors"
+                            aria-label={`Modifier la disponibilité du ${day.label} de ${avail.startTime.slice(0, 5)} à ${avail.endTime.slice(0, 5)}`}
                           >
                             <Edit size={14} />
                           </button>
                           <button
                             onClick={() => handleDelete(avail.id)}
                             className="p-1 text-muted hover:text-danger transition-colors"
+                            aria-label={`Supprimer la disponibilité du ${day.label} de ${avail.startTime.slice(0, 5)} à ${avail.endTime.slice(0, 5)}`}
                           >
                             <Trash2 size={14} />
                           </button>

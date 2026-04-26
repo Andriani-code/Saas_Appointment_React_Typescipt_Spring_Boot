@@ -7,15 +7,19 @@ import com.app.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/reservations")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
@@ -41,8 +45,8 @@ public class ReservationController {
     @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Get my reservations as a client")
     public ResponseEntity<PageResponse<ReservationResponse>> getMyAsClient(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(reservationService.getMyReservationsAsClient(PageRequest.of(page, size)));
     }
 
@@ -50,8 +54,8 @@ public class ReservationController {
     @PreAuthorize("hasRole('SPECIALIST')")
     @Operation(summary = "Get my reservations as a specialist")
     public ResponseEntity<PageResponse<ReservationResponse>> getMyAsSpecialist(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(reservationService.getMyReservationsAsSpecialist(PageRequest.of(page, size)));
     }
 

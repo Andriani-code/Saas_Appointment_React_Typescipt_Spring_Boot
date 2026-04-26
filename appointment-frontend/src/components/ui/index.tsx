@@ -2,8 +2,6 @@ import { HTMLAttributes, ReactNode } from 'react'
 import { cn, getInitials } from '@/utils'
 import type { ReservationStatus } from '@/types'
 
-// ─── Card ────────────────────────────────────────────────────────────────────
-
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
@@ -21,8 +19,6 @@ export function Card({ hover = false, padding = 'md', className, children, ...pr
   )
 }
 
-// ─── Badge ───────────────────────────────────────────────────────────────────
-
 interface BadgeProps {
   status: ReservationStatus
   label?: string
@@ -30,12 +26,12 @@ interface BadgeProps {
 }
 
 const statusConfig: Record<ReservationStatus, { label: string; cls: string; dot: string }> = {
-  PENDING:   { label: 'En attente', cls: 'bg-amber-50 text-amber-700',  dot: 'bg-amber-500' },
-  CONFIRMED: { label: 'Confirmé',   cls: 'bg-blue-50 text-blue-700',    dot: 'bg-blue-500' },
-  COMPLETED: { label: 'Terminé',    cls: 'bg-primary/10 text-primary-600', dot: 'bg-primary' },
-  CANCELED:  { label: 'Annulé',     cls: 'bg-red-50 text-red-600',      dot: 'bg-red-500' },
-  REJECTED:  { label: 'Rejeté',     cls: 'bg-red-50 text-red-600',      dot: 'bg-red-500' },
-  NO_SHOW:   { label: 'Absent',     cls: 'bg-gray-100 text-gray-600',   dot: 'bg-gray-400' },
+  PENDING: { label: 'En attente', cls: 'bg-amber-100 text-amber-900', dot: 'bg-amber-700' },
+  CONFIRMED: { label: 'Confirme', cls: 'bg-blue-100 text-blue-900', dot: 'bg-blue-700' },
+  COMPLETED: { label: 'Termine', cls: 'bg-primary-100 text-primary-800', dot: 'bg-primary-700' },
+  CANCELED: { label: 'Annule', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
+  REJECTED: { label: 'Rejete', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
+  NO_SHOW: { label: 'Absent', cls: 'bg-gray-200 text-gray-800', dot: 'bg-gray-700' },
 }
 
 export function StatusBadge({ status, label, dot = true }: BadgeProps) {
@@ -47,8 +43,6 @@ export function StatusBadge({ status, label, dot = true }: BadgeProps) {
     </span>
   )
 }
-
-// ─── Avatar ──────────────────────────────────────────────────────────────────
 
 interface AvatarProps {
   name: string
@@ -82,8 +76,6 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   )
 }
 
-// ─── Spinner ─────────────────────────────────────────────────────────────────
-
 export function Spinner({ size = 20, className }: { size?: number; className?: string }) {
   return (
     <svg
@@ -99,8 +91,6 @@ export function Spinner({ size = 20, className }: { size?: number; className?: s
     </svg>
   )
 }
-
-// ─── Empty State ─────────────────────────────────────────────────────────────
 
 export function EmptyState({ icon, title, description, action, className }: {
   icon: ReactNode
@@ -123,9 +113,9 @@ export function EmptyState({ icon, title, description, action, className }: {
   )
 }
 
-// ─── Star Rating ─────────────────────────────────────────────────────────────
-
-export function StarRating({ rating, max = 5, size = 14 }: { rating: number; max?: number; size?: number }) {
+export function StarRating({ rating, max = 5, size = 14 }: { rating?: number | null; max?: number; size?: number }) {
+  if (rating === undefined || rating === null) return null;
+  
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
@@ -140,8 +130,6 @@ export function StarRating({ rating, max = 5, size = 14 }: { rating: number; max
     </div>
   )
 }
-
-// ─── Section Header ──────────────────────────────────────────────────────────
 
 export function SectionHeader({ title, subtitle, action }: {
   title: string

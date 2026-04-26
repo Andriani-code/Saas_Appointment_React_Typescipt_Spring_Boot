@@ -1,6 +1,7 @@
 package com.app.controller;
 
 import com.app.dto.request.SlotGenerationRequest;
+import com.app.dto.request.SlotRequest;
 import com.app.dto.response.PageResponse;
 import com.app.dto.response.SlotResponse;
 import com.app.service.SlotService;
@@ -26,6 +27,23 @@ import java.util.List;
 public class SlotController {
 
     private final SlotService slotService;
+
+    @PostMapping
+    @PreAuthorize("hasRole('SPECIALIST')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Create a manual slot for a specialist")
+    public ResponseEntity<SlotResponse> createSlot(@Valid @RequestBody SlotRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(slotService.createSlot(request));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SPECIALIST')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Delete a manual slot")
+    public ResponseEntity<Void> deleteSlot(@PathVariable String id) {
+        slotService.deleteSlot(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/generate")
     @PreAuthorize("hasRole('SPECIALIST')")

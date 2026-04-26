@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @SuperBuilder
 public class Address extends BaseEntity {
+    @Column(nullable = false, columnDefinition = "UUID")
+    private String userId;
 
     @Column(nullable = false)
     private String country;

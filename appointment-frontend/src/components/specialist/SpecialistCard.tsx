@@ -64,48 +64,45 @@ export function SpecialistCard({ specialist, services = [], distance, delay = 0 
         </p>
       )}
 
-      {/* Services chips */}
-      {services.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {services.slice(0, 3).map(s => (
-            <span key={s.id} className="inline-flex items-center gap-1 text-xs bg-soft text-muted px-2.5 py-1 rounded-full">
-              <Clock size={10} />
-              {s.name} · {s.durationMinutes}min
-            </span>
-          ))}
-          {services.length > 3 && (
-            <span className="text-xs text-primary font-medium px-2 py-1">+{services.length - 3}</span>
-          )}
+      {/* Services list with direct booking */}
+      {services.length > 0 ? (
+        <div className="space-y-2 border-t border-border/50 pt-3">
+          <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-2">Services disponibles</p>
+          <div className="flex flex-col gap-2">
+            {services.map(s => (
+              <Link 
+                key={s.id} 
+                to={`/specialists/${specialist.id}?serviceId=${s.id}`}
+                className="flex items-center justify-between p-2 rounded-xl bg-soft hover:bg-primary/5 group/service transition-all border border-transparent hover:border-primary/10"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-text truncate group-hover/service:text-primary transition-colors">{s.name}</p>
+                  <p className="text-[10px] text-muted">{s.durationMinutes} min</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-black text-primary">{formatCurrency(s.price)}</p>
+                  <div className="flex items-center gap-1 text-[9px] text-muted justify-end">
+                    <Calendar size={10} />
+                    <span>Réserver</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="border-t border-border/50 pt-3">
+           <p className="text-[10px] text-muted italic">Aucun service configuré pour le moment</p>
         </div>
       )}
 
       {/* Address */}
       {specialist.serviceAddress && (
-        <div className="flex items-center gap-1.5 text-xs text-muted">
+        <div className="flex items-center gap-1.5 text-xs text-muted mt-auto">
           <MapPin size={12} className="text-primary shrink-0" />
-          {specialist.serviceAddress.city}
-          {specialist.serviceAddress.district && `, ${specialist.serviceAddress.district}`}
+          <span className="truncate">{specialist.serviceAddress.city}{specialist.serviceAddress.district ? `, ${specialist.serviceAddress.district}` : ''}</span>
         </div>
       )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-        <div>
-          {minPrice !== null ? (
-            <>
-              <p className="text-[10px] text-muted uppercase font-semibold tracking-wide">À partir de</p>
-              <p className="font-display font-bold text-lg text-text">{formatCurrency(minPrice)}</p>
-            </>
-          ) : (
-            <p className="text-sm text-muted italic">Tarif sur demande</p>
-          )}
-        </div>
-        <Link to={`/specialists/${specialist.id}`}>
-          <Button size="sm" icon={<Calendar size={14} />}>
-            Réserver
-          </Button>
-        </Link>
-      </div>
     </div>
   )
 }

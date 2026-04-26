@@ -14,13 +14,16 @@ import com.app.repository.*;
 import com.app.service.ReservationService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
@@ -55,7 +58,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         if (!service.getSpecialist().getId().equals(slot.getSpecialist().getId())) {
-            throw new BadRequestException("Service does not belong to the slot's specialist");
+            throw new BadRequestException("Service and slot belong to different specialists");
         }
 
         // Mark slot as booked
@@ -75,10 +78,22 @@ public class ReservationServiceImpl implements ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
-        // Automatically create conversation
-        createConversationIfAbsent(client, slot.getSpecialist(), saved);
+        // Update conversation if exists or create new one, and link last reservation
+        updateConversation(client, slot.getSpecialist(), saved);
 
         return reservationMapper.toResponse(saved);
+    }
+
+    private void updateConversation(Client client, Specialist specialist, Reservation reservation) {
+        Conversation conversation = conversationRepository.findByClientIdAndSpecialistId(client.getId(), specialist.getId())
+                .orElseGet(() -> Conversation.builder()
+                        .client(client)
+                        .specialist(specialist)
+                        .isActive(true)
+                        .build());
+        
+        conversation.setReservation(reservation);
+        conversationRepository.save(conversation);
     }
 
     @Override
@@ -93,34 +108,37 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ReservationResponse> getMyReservationsAsClient(Pageable pageable) {
+        Pageable cappedPageable = capPageSize(pageable);
         String email = SecurityUtils.getCurrentUserEmail();
         var clientOpt = clientRepository.findByUserEmail(email);
         if (clientOpt.isEmpty()) {
-            return PageResponse.empty(pageable);
+            return PageResponse.empty(cappedPageable);
         }
         Client client = clientOpt.get();
         return PageResponse.from(
-                reservationRepository.findByClientId(client.getId(), pageable),
+                reservationRepository.findByClientId(client.getId(), cappedPageable),
                 reservationMapper::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ReservationResponse> getMyReservationsAsSpecialist(Pageable pageable) {
+        Pageable cappedPageable = capPageSize(pageable);
         String email = SecurityUtils.getCurrentUserEmail();
         var specialistOpt = specialistRepository.findByUserEmail(email);
         if (specialistOpt.isEmpty()) {
-            return PageResponse.empty(pageable);
+            return PageResponse.empty(cappedPageable);
         }
         Specialist specialist = specialistOpt.get();
         return PageResponse.from(
-                reservationRepository.findBySpecialistId(specialist.getId(), pageable),
+                reservationRepository.findBySpecialistId(specialist.getId(), cappedPageable),
                 reservationMapper::toResponse);
     }
 
     @Override
     @Transactional
     public ReservationResponse confirm(String id) {
+        log.info("Confirming reservation {}", id);
         Reservation reservation = getReservationAsSpecialist(id);
         assertStatus(reservation, ReservationStatus.PENDING, "confirm");
         reservation.setStatus(ReservationStatus.CONFIRMED);
@@ -130,6 +148,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse reject(String id) {
+        log.info("Rejecting reservation {}", id);
         Reservation reservation = getReservationAsSpecialist(id);
         assertStatus(reservation, ReservationStatus.PENDING, "reject");
         reservation.setStatus(ReservationStatus.REJECTED);
@@ -140,6 +159,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse cancel(String id) {
+        log.info("Canceling reservation {}", id);
         Reservation reservation = reservationRepository.findByIdWithDetails(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", id));
 
@@ -158,6 +178,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse markCompleted(String id) {
+        log.info("Completing reservation {}", id);
         Reservation reservation = getReservationAsSpecialist(id);
         assertStatus(reservation, ReservationStatus.CONFIRMED, "complete");
         reservation.setStatus(ReservationStatus.COMPLETED);
@@ -167,6 +188,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse markNoShow(String id) {
+        log.info("Marking reservation {} as no-show", id);
         Reservation reservation = getReservationAsSpecialist(id);
         assertStatus(reservation, ReservationStatus.CONFIRMED, "mark as no-show");
         reservation.setStatus(ReservationStatus.NO_SHOW);
@@ -211,16 +233,11 @@ public class ReservationServiceImpl implements ReservationService {
         slotRepository.save(slot);
     }
 
-    private void createConversationIfAbsent(Client client, Specialist specialist, Reservation reservation) {
-        conversationRepository.findByClientIdAndSpecialistId(client.getId(), specialist.getId())
-                .orElseGet(() -> {
-                    Conversation conversation = Conversation.builder()
-                            .client(client)
-                            .specialist(specialist)
-                            .reservation(reservation)
-                            .isActive(true)
-                            .build();
-                    return conversationRepository.save(conversation);
-                });
+    private Pageable capPageSize(Pageable pageable) {
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 100),
+                pageable.getSort()
+        );
     }
 }

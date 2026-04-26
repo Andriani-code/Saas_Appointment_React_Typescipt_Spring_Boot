@@ -13,6 +13,8 @@ public interface SpecialistService {
     SpecialistResponse updateProfile(SpecialistRequest request);
     SpecialistResponse requestVerification();
     PageResponse<SpecialistResponse> getAll(Pageable pageable);
+    PageResponse<SpecialistResponse> getByStatus(String status, Pageable pageable);
+    PageResponse<SpecialistResponse> getAllForAdmin(Pageable pageable);
     PageResponse<SpecialistResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable);
     SpecialistResponse approveVerification(String specialistId);
     SpecialistResponse rejectVerification(String specialistId);

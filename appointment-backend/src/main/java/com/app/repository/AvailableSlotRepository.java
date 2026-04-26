@@ -37,4 +37,11 @@ public interface AvailableSlotRepository extends JpaRepository<AvailableSlot, UU
     List<AvailableSlot> findBySpecialistIdAndDate(
             @Param("specialistId") UUID specialistId,
             @Param("date") LocalDate date);
+
+    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.specialist s WHERE s.id = :specialistId AND slot.date BETWEEN :startDate AND :endDate")
+    Page<AvailableSlot> findBySpecialistIdAndDateRange(
+            @Param("specialistId") UUID specialistId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable);
 }

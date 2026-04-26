@@ -9,15 +9,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
@@ -29,8 +33,8 @@ public class MessageController {
     @GetMapping("/conversations")
     @Operation(summary = "Get my conversations")
     public ResponseEntity<PageResponse<ConversationResponse>> getConversations(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(messagingService.getMyConversations(PageRequest.of(page, size)));
     }
 
@@ -53,8 +57,8 @@ public class MessageController {
     @Operation(summary = "Get messages in a conversation (paginated)")
     public ResponseEntity<PageResponse<MessageResponse>> getMessages(
             @PathVariable String conversationId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(messagingService.getMessages(conversationId, PageRequest.of(page, size)));
     }
 

@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
-import { Search } from "lucide-react";
-import { reservationApi } from "@/services/api";
-import { AppointmentCard } from "@/components/appointment/AppointmentCard";
-import { Input } from "@/components/ui/Input";
-import { Spinner, EmptyState } from "@/components/ui";
-import { useAuth } from "@/hooks/useAuth";
-import type { ReservationResponse, ReservationStatus } from "@/types";
-import { Calendar } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Calendar, Search } from "lucide-react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { AppointmentCard } from "@/components/appointment/AppointmentCard";
 import { Button } from "@/components/ui/Button";
+import { EmptyState, Spinner } from "@/components/ui";
+import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/hooks/useAuth";
+import { usePaginatedFetch } from "@/hooks/usePaginatedFetch";
+import { reservationApi } from "@/services/api";
+import type { ReservationResponse, ReservationStatus } from "@/types";
 
 type Tab = "all" | ReservationStatus;
 
@@ -22,61 +23,90 @@ const tabs: { value: Tab; label: string }[] = [
 
 export function AppointmentsPage() {
   const { hasRole } = useAuth();
-  const [reservations, setReservations] = useState<ReservationResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
+  
+  const isSpecialist = hasRole("SPECIALIST");
+  const isClient = hasRole("CLIENT");
+  const isEnabled = isSpecialist || isClient;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = hasRole("SPECIALIST")
-        ? await reservationApi.getMyAsSpecialist(0, 50)
-        : await reservationApi.getMyAsClient(0, 50);
-      setReservations(data.content);
-    } catch {
-      /* no-op */
-    } finally {
-      setLoading(false);
-    }
-  }, [hasRole]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {
+    items: reservations,
+    setItems: setReservations,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadMore,
+  } = usePaginatedFetch<ReservationResponse>(
+    (page, size) => {
+      if (isSpecialist) return reservationApi.getMyAsSpecialist(page, size);
+      if (isClient) return reservationApi.getMyAsClient(page, size);
+      // Fallback for ADMIN or other roles who shouldn't be here but might be
+      return Promise.resolve({
+        content: [],
+        page: 0,
+        size: size,
+        totalElements: 0,
+        totalPages: 0,
+        last: true
+      });
+    },
+    {
+      pageSize: 20,
+      deps: [isSpecialist, isClient],
+      getItemKey: (reservation) => reservation.id,
+      enabled: isEnabled
+    },
+  );
 
   function handleUpdate(updated: ReservationResponse) {
     setReservations((prev) =>
-      prev.map((r) => (r.id === updated.id ? updated : r)),
+      prev.map((reservation) =>
+        reservation.id === updated.id ? updated : reservation,
+      ),
     );
   }
 
-  const filtered = reservations
-    .filter((r) => tab === "all" || r.status === tab)
-    .filter((r) => {
-      if (!search) return true;
-      const q = search.toLowerCase();
-      return (
-        r.serviceName.toLowerCase().includes(q) ||
-        r.clientFullName.toLowerCase().includes(q) ||
-        (r.specialistDisplayName ?? "").toLowerCase().includes(q)
-      );
-    });
+  const filtered = useMemo(
+    () =>
+      reservations
+        .filter((reservation) => tab === "all" || reservation.status === tab)
+        .filter((reservation) => {
+          if (!search) return true;
 
-  const counts = tabs.reduce<Record<Tab, number>>(
-    (acc, t) => {
-      acc[t.value] =
-        t.value === "all"
-          ? reservations.length
-          : reservations.filter((r) => r.status === t.value).length;
-      return acc;
-    },
-    {} as Record<Tab, number>,
+          const query = search.toLowerCase();
+          return (
+            reservation.serviceName.toLowerCase().includes(query) ||
+            reservation.clientFullName.toLowerCase().includes(query) ||
+            (reservation.specialistDisplayName ?? "").toLowerCase().includes(query)
+          );
+        }),
+    [reservations, search, tab],
   );
+
+  const counts = useMemo(
+    () =>
+      tabs.reduce<Record<Tab, number>>((acc, currentTab) => {
+        acc[currentTab.value] =
+          currentTab.value === "all"
+            ? reservations.length
+            : reservations.filter((reservation) => reservation.status === currentTab.value).length;
+        return acc;
+      }, {} as Record<Tab, number>),
+    [reservations],
+  );
+
+  async function handleLoadMore() {
+    try {
+      await loadMore();
+    } catch {
+      toast.error("Impossible de charger plus de rendez-vous");
+    }
+  }
 
   return (
     <div className="space-y-4 lg:space-y-6 animate-fade-in">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="page-title">Mes rendez-vous</h1>
@@ -94,7 +124,6 @@ export function AppointmentsPage() {
         )}
       </div>
 
-      {/* Search */}
       <Input
         placeholder="Rechercher par spécialiste, service…"
         value={search}
@@ -102,42 +131,52 @@ export function AppointmentsPage() {
         icon={<Search size={15} />}
       />
 
-      {/* Tabs - scrollable on mobile */}
       <div className="flex gap-1 lg:gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 border-b border-border">
-        {tabs.map((t) => (
+        {tabs.map((currentTab) => (
           <button
-            key={t.value}
-            onClick={() => setTab(t.value)}
+            key={currentTab.value}
+            onClick={() => setTab(currentTab.value)}
             className={`
               flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-t-xl text-sm font-medium
               transition-all duration-200 border-b-2 -mb-px whitespace-nowrap
               ${
-                tab === t.value
+                tab === currentTab.value
                   ? "border-primary text-primary bg-primary/5"
                   : "border-transparent text-muted hover:text-text hover:border-border"
               }
             `}
           >
-            {t.label}
-            {counts[t.value] > 0 && (
+            {currentTab.label}
+            {counts[currentTab.value] > 0 && (
               <span
                 className={`
                 text-xs px-1.5 py-0.5 rounded-full font-semibold
-                ${tab === t.value ? "bg-primary text-white" : "bg-soft text-muted"}
+                ${tab === currentTab.value ? "bg-primary text-white" : "bg-soft text-muted"}
               `}
               >
-                {counts[t.value]}
+                {counts[currentTab.value]}
               </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      {loading ? (
+      {!isEnabled ? (
+        <EmptyState
+          icon={<Calendar size={28} />}
+          title="Accès non autorisé"
+          description="Les administrateurs n'ont pas de liste de rendez-vous personnelle."
+        />
+      ) : loading ? (
         <div className="flex items-center justify-center py-24">
           <Spinner size={32} />
         </div>
+      ) : error ? (
+        <EmptyState
+          icon={<Calendar size={28} />}
+          title="Chargement impossible"
+          description="Les rendez-vous n'ont pas pu être récupérés pour le moment."
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Calendar size={28} />}
@@ -145,7 +184,7 @@ export function AppointmentsPage() {
           description={
             tab === "all"
               ? "Vous n'avez pas encore de rendez-vous."
-              : `Aucun rendez-vous avec le statut "${tabs.find((t) => t.value === tab)?.label}".`
+              : `Aucun rendez-vous avec le statut "${tabs.find((item) => item.value === tab)?.label}".`
           }
           action={
             hasRole("CLIENT") ? (
@@ -156,15 +195,30 @@ export function AppointmentsPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((r, i) => (
-            <AppointmentCard
-              key={r.id}
-              reservation={r}
-              onUpdate={handleUpdate}
-              delay={i * 50}
-            />
-          ))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filtered.map((reservation, index) => (
+              <AppointmentCard
+                key={reservation.id}
+                reservation={reservation}
+                onUpdate={handleUpdate}
+                delay={index * 50}
+              />
+            ))}
+          </div>
+
+          {hasMore && tab === "all" && !search && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={handleLoadMore}
+                loading={loadingMore}
+                aria-label="Charger plus de rendez-vous"
+              >
+                Charger plus
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

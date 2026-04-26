@@ -1,12 +1,15 @@
 package com.app.security;
 
 import com.app.config.JwtProperties;
+import com.app.exception.JwtConfigurationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class JwtService {
 
@@ -73,7 +77,18 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
-        return Keys.hmacShaKeyFor(keyBytes);
+        String secret = jwtProperties.resolveSecret();
+        if (!StringUtils.hasText(secret)) {
+            log.error("JWT secret is missing from configuration");
+            throw new JwtConfigurationException("JWT secret is not configured");
+        }
+
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (IllegalArgumentException ex) {
+            log.error("JWT secret is not a valid Base64-encoded key");
+            throw new JwtConfigurationException("JWT secret is invalid", ex);
+        }
     }
 }

@@ -7,6 +7,20 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: [
+        'src/components/appointment/AppointmentCard.tsx',
+        'src/hooks/usePaginatedFetch.ts',
+        'src/services/apiClient.ts',
+      ],
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

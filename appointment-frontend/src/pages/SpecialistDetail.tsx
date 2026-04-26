@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   MapPin, Star, Clock, ChevronLeft, CheckCircle,
   Calendar, MessageSquare, Shield
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { specialistApi, serviceApi, slotApi, reviewApi, reservationApi, paymentApi } from '@/services/api'
+import { useAuth } from '@/hooks/useAuth'
 import { Avatar, StarRating, StatusBadge, Spinner, EmptyState } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
+import { ServiceCard } from '@/components/specialist/ServiceCard'
 import { formatCurrency, formatTime, formatDuration } from '@/utils'
 import type {
   SpecialistResponse, SpecialistServiceResponse,
@@ -18,6 +20,12 @@ import { cn } from '@/utils'
 export function SpecialistDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { isAuthenticated, hasRole } = useAuth()
+
+  // Get serviceId from query params
+  const searchParams = new URLSearchParams(location.search)
+  const initialServiceId = searchParams.get('serviceId')
 
   const [specialist, setSpecialist] = useState<SpecialistResponse | null>(null)
   const [services,   setServices]   = useState<SpecialistServiceResponse[]>([])
@@ -25,7 +33,22 @@ export function SpecialistDetail() {
   const [slots,      setSlots]      = useState<SlotResponse[]>([])
   const [loading,    setLoading]    = useState(true)
 
-  const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [selectedService, setSelectedService] = useState<string | null>(initialServiceId)
+  
+  useEffect(() => {
+    if (initialServiceId) {
+      setSelectedService(initialServiceId)
+    }
+  }, [initialServiceId])
+
+  const focusedService = useMemo(() => 
+    services.find(s => s.id === selectedService), 
+  [services, selectedService])
+
+  const otherServices = useMemo(() => 
+    services.filter(s => s.id !== selectedService),
+  [services, selectedService])
+
   const [selectedDate,    setSelectedDate]    = useState<string>('')
   const [selectedSlot,    setSelectedSlot]    = useState<string | null>(null)
   const [message,         setMessage]         = useState('')
@@ -52,8 +75,13 @@ export function SpecialistDetail() {
       setSpecialist(spec)
       setServices(svc)
       setReviews(rev.content)
+      
+      // If no service pre-selected, select the first one
+      if (!initialServiceId && svc.length > 0) {
+        setSelectedService(svc[0].id)
+      }
     }).finally(() => setLoading(false))
-  }, [id])
+  }, [id, initialServiceId])
 
   useEffect(() => {
     if (!id || !selectedDate) return
@@ -61,18 +89,34 @@ export function SpecialistDetail() {
   }, [id, selectedDate])
 
   async function handleBook() {
-    if (!selectedSlot || !selectedService) return
-    const service = services.find(s => s.id === selectedService)
+    if (!isAuthenticated) {
+      toast.error("Veuillez vous connecter pour réserver")
+      navigate('/login', { state: { from: location.pathname + location.search } })
+      return
+    }
+
+    if (!hasRole('CLIENT')) {
+      toast.error("Seuls les patients peuvent effectuer une réservation")
+      return
+    }
+
+    if (!selectedSlot || !selectedService) {
+      toast.error("Veuillez sélectionner un créneau")
+      return
+    }
     
     setBooking(true)
     try {
       const res = await reservationApi.book({ slotId: selectedSlot, serviceId: selectedService, clientMessage: message })
       setReservationId(res.id)
       
-      if (service?.depositEnabled) {
+      if (focusedService?.depositEnabled) {
         setShowPayment(true)
       } else {
         setBooked(true)
+        if (id && selectedDate) {
+           slotApi.getBySpecialistAndDate(id, selectedDate).then(setSlots)
+        }
       }
     } catch { 
       toast.error("Erreur lors de la réservation")
@@ -109,16 +153,16 @@ export function SpecialistDetail() {
   const name = specialist.displayName ?? `${specialist.firstName} ${specialist.lastName}`
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-20">
       {/* Back */}
       <button onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-muted hover:text-text transition-colors text-sm font-medium">
         <ChevronLeft size={16} />Retour
       </button>
 
-      {/* Cover + Profile */}
+      {/* Specialist Header */}
       <div className="card overflow-hidden p-0">
-        <div className="h-36 bg-gradient-to-r from-primary-800 via-primary to-primary-400 relative">
+        <div className="h-32 bg-gradient-to-r from-primary-800 via-primary to-primary-400 relative">
           <div className="absolute inset-0 opacity-20"
             style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }}
           />
@@ -147,75 +191,52 @@ export function SpecialistDetail() {
               </div>
             </div>
           </div>
-
           <div className="flex flex-wrap gap-4 text-sm text-muted">
-            {specialist.averageRating && (
-              <div className="flex items-center gap-1.5">
-                <StarRating rating={specialist.averageRating} size={14} />
-                <span className="text-muted">({reviews.length} avis)</span>
-              </div>
-            )}
-            {specialist.serviceAddress && (
-              <span className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-primary" />
-                {specialist.serviceAddress.city}
-              </span>
-            )}
+             {specialist.averageRating && (
+               <div className="flex items-center gap-1.5">
+                 <StarRating rating={specialist.averageRating} size={14} />
+                 <span className="text-muted">({reviews.length} avis)</span>
+               </div>
+             )}
+             {specialist.serviceAddress && (
+               <span className="flex items-center gap-1.5">
+                 <MapPin size={14} className="text-primary" />
+                 {specialist.serviceAddress.city}
+               </span>
+             )}
           </div>
-
-          {specialist.bio && (
-            <p className="mt-4 text-sm text-muted leading-relaxed max-w-2xl">{specialist.bio}</p>
-          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left: Services + Reviews */}
+        {/* Left: Focused Service Info + Reviews */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Services */}
-          <div className="card p-0 overflow-hidden">
-            <div className="px-5 py-4 border-b border-border">
-              <h2 className="section-title">Services proposés</h2>
-            </div>
-            <div className="divide-y divide-border">
-              {services.map(svc => (
-                <div key={svc.id}
-                  onClick={() => setSelectedService(svc.id)}
-                  className={cn(
-                    'flex items-center justify-between px-5 py-4 cursor-pointer transition-colors',
-                    selectedService === svc.id ? 'bg-primary/5' : 'hover:bg-soft'
-                  )}>
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0',
-                      selectedService === svc.id ? 'border-primary bg-primary' : 'border-border'
-                    )}>
-                      {selectedService === svc.id && <CheckCircle size={12} className="text-white" />}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-text">{svc.name}</p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs text-muted flex items-center gap-1">
-                          <Clock size={10} />{formatDuration(svc.durationMinutes)}
-                        </span>
-                        {svc.depositEnabled && (
-                          <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
-                            Dépôt requis
-                          </span>
-                        )}
-                      </div>
-                    </div>
+          {/* Focused Service Detail */}
+          <div className="card p-6 border-l-4 border-primary">
+            <div className="flex justify-between items-start mb-4">
+               <div>
+                  <h2 className="text-xl font-bold text-text mb-1">{focusedService?.name || 'Service sélectionné'}</h2>
+                  <div className="flex items-center gap-3 text-sm text-muted">
+                     <span className="flex items-center gap-1"><Clock size={14} /> {focusedService ? formatDuration(focusedService.durationMinutes) : '-'}</span>
+                     {focusedService?.depositEnabled && <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Dépôt requis</span>}
                   </div>
-                  <div className="text-right">
-                    <p className="font-display font-bold text-text">{formatCurrency(svc.price)}</p>
-                    {svc.depositEnabled && svc.depositAmount && (
-                      <p className="text-xs text-muted">Dépôt: {formatCurrency(svc.depositAmount)}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
+               </div>
+               <div className="text-right">
+                  <p className="text-2xl font-display font-black text-primary">{focusedService ? formatCurrency(focusedService.price) : '-'}</p>
+               </div>
             </div>
+            {focusedService?.description && (
+               <p className="text-sm text-muted leading-relaxed">{focusedService.description}</p>
+            )}
           </div>
+
+          {/* Specialist Bio if not showing service desc */}
+          {!focusedService?.description && specialist.bio && (
+            <div className="card p-6">
+               <h3 className="text-sm font-bold text-text uppercase tracking-widest mb-3">À propos du spécialiste</h3>
+               <p className="text-sm text-muted leading-relaxed">{specialist.bio}</p>
+            </div>
+          )}
 
           {/* Reviews */}
           <div className="card p-0 overflow-hidden">
@@ -247,11 +268,31 @@ export function SpecialistDetail() {
               </div>
             )}
           </div>
+
+          {/* Other Services section at the bottom */}
+          {otherServices.length > 0 && (
+            <div className="space-y-6 pt-6 border-t border-border/50">
+              <h3 className="section-title flex items-center gap-2 text-lg">
+                <Calendar size={20} className="text-primary" />
+                Autres prestations de {specialist.displayName || specialist.firstName}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {otherServices.map(svc => (
+                  <div key={svc.id} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                    <ServiceCard 
+                      service={svc} 
+                      specialist={specialist} 
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right: Booking panel */}
         <div className="lg:col-span-2">
-          <div className="card p-5 space-y-5 sticky top-6">
+          <div className="card p-5 space-y-5 sticky top-6 border-t-4 border-primary">
             {booked ? (
               <div className="text-center py-8 space-y-3">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
@@ -269,15 +310,15 @@ export function SpecialistDetail() {
                   <div className="bg-soft p-4 rounded-xl border border-primary/20 space-y-3">
                      <div className="flex justify-between text-sm">
                         <span className="text-muted">Service</span>
-                        <span className="font-bold text-text">{services.find(s => s.id === selectedService)?.name}</span>
+                        <span className="font-bold text-text">{focusedService?.name}</span>
                      </div>
                      <div className="flex justify-between text-sm">
                         <span className="text-muted">Montant total</span>
-                        <span className="text-text font-medium">{formatCurrency(services.find(s => s.id === selectedService)?.price || 0)}</span>
+                        <span className="text-text font-medium">{formatCurrency(focusedService?.price || 0)}</span>
                      </div>
                      <div className="flex justify-between pt-2 border-t border-border">
                         <span className="text-text font-bold">Dépôt à payer</span>
-                        <span className="text-primary font-extrabold">{formatCurrency(services.find(s => s.id === selectedService)?.depositAmount || 0)}</span>
+                        <span className="text-primary font-extrabold">{formatCurrency(focusedService?.depositAmount || 0)}</span>
                      </div>
                   </div>
                   
@@ -298,12 +339,12 @@ export function SpecialistDetail() {
             ) : (
               <>
                 <h3 className="section-title flex items-center gap-2">
-                  <Calendar size={18} className="text-primary" />Réserver un créneau
+                  <Calendar size={18} className="text-primary" />Réserver ce service
                 </h3>
 
                 {/* Date picker */}
                 <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">Choisir une date</p>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">1. Choisir une date</p>
                   <div className="grid grid-cols-4 gap-1.5">
                     {dates.map(d => {
                       const date = new Date(d)
@@ -329,7 +370,7 @@ export function SpecialistDetail() {
                 {/* Time slots */}
                 {selectedDate && (
                   <div>
-                    <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">Créneaux disponibles</p>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">2. Créneaux disponibles</p>
                     {slots.length === 0 ? (
                       <p className="text-sm text-muted text-center py-4">Aucun créneau disponible ce jour.</p>
                     ) : (
@@ -354,7 +395,7 @@ export function SpecialistDetail() {
                 {/* Message */}
                 <div>
                   <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                    Message (optionnel)
+                    3. Message (optionnel)
                   </p>
                   <textarea
                     value={message}
@@ -368,15 +409,15 @@ export function SpecialistDetail() {
                 <Button
                   fullWidth
                   loading={booking}
-                  disabled={!selectedSlot || !selectedService}
+                  disabled={!selectedSlot || !selectedService || (isAuthenticated && !hasRole('CLIENT'))}
                   onClick={handleBook}
                   size="lg"
                   icon={<Calendar size={16} />}
                 >
-                  Confirmer la réservation
+                  {isAuthenticated && !hasRole('CLIENT') ? 'Réservation réservée aux patients' : 'Confirmer la réservation'}
                 </Button>
 
-                {(!selectedService || !selectedSlot) && (
+                {(!selectedService || !selectedSlot) && !(isAuthenticated && !hasRole('CLIENT')) && (
                   <p className="text-xs text-muted text-center">
                     {!selectedService ? 'Sélectionnez un service' : 'Sélectionnez un créneau'}
                   </p>

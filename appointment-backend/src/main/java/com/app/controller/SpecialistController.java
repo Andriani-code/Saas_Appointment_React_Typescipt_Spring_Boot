@@ -8,14 +8,18 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/specialists")
 @RequiredArgsConstructor
 @Tag(name = "Specialists", description = "Specialist profile and discovery")
@@ -72,9 +76,29 @@ public class SpecialistController {
     @GetMapping
     @Operation(summary = "List all verified specialists (public)")
     public ResponseEntity<PageResponse<SpecialistResponse>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(specialistService.getAll(PageRequest.of(page, size)));
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "List all specialists for admin")
+    public ResponseEntity<PageResponse<SpecialistResponse>> getAllForAdmin(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return ResponseEntity.ok(specialistService.getAllForAdmin(PageRequest.of(page, size)));
+    }
+
+    @GetMapping("/admin/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "List specialists pending verification")
+    public ResponseEntity<PageResponse<SpecialistResponse>> getPending(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return ResponseEntity.ok(specialistService.getByStatus("PENDING", PageRequest.of(page, size)));
     }
 
     @GetMapping("/nearby")
@@ -83,8 +107,8 @@ public class SpecialistController {
             @RequestParam double lat,
             @RequestParam double lng,
             @RequestParam(defaultValue = "25.0") double radiusKm,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(specialistService.getNearby(lat, lng, radiusKm, PageRequest.of(page, size)));
     }
 

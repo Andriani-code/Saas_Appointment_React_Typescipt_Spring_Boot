@@ -68,7 +68,7 @@ Set these environment variables (or edit `application.yml`):
 ```bash
 export DB_USERNAME=postgres
 export DB_PASSWORD=yourpassword
-export JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+export JWT_SECRET=base64-encoded-32-byte-secret
 export STRIPE_SECRET_KEY=sk_test_your_stripe_key
 export STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
@@ -80,6 +80,13 @@ mvn spring-boot:run
 ```
 
 Flyway will automatically apply all migrations on startup.
+
+### JWT secret rotation
+
+- Set a new Base64-encoded `JWT_SECRET`
+- Restart the backend to apply the new signing key
+- Existing access and refresh tokens become invalid after restart
+- If you use a secret manager, expose it through a Spring bean implementing `com.app.security.JwtSecretProvider`
 
 ---
 

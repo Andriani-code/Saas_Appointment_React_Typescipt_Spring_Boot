@@ -52,7 +52,7 @@ public class Specialist extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false)
     @Builder.Default
-    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+    private VerificationStatus verificationStatus = VerificationStatus.NONE;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "personal_address_id")

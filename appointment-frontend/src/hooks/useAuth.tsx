@@ -3,6 +3,8 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import type { AuthUser, Role } from "@/types";
@@ -35,31 +37,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (authUser: AuthUser & { accessToken?: string; refreshToken?: string }) => {
+  const login = useCallback((authUser: AuthUser & { accessToken?: string; refreshToken?: string }) => {
     storeAuthSession(authUser);
     setUser({ email: authUser.email, role: authUser.role });
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     clearAuthSession();
     setUser(null);
-  };
+  }, []);
 
-  const hasRole = (...roles: Role[]) => {
+  const hasRole = useCallback((...roles: Role[]) => {
     return user ? roles.includes(user.role) : false;
-  };
+  }, [user]);
+
+  const value = useMemo(() => ({
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    logout,
+    hasRole,
+  }), [user, isLoading, login, logout, hasRole]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

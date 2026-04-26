@@ -2,12 +2,14 @@ package com.app.dto.response;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
 public class AvailabilityResponse {
     private String id;
     private String specialistId;
+    private LocalDate date;
     private String dayOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;

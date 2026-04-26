@@ -16,6 +16,7 @@ import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +73,7 @@ public class MessagingServiceImpl implements MessagingService {
     @Override
     @Transactional
     public PageResponse<MessageResponse> getMessages(String conversationId, Pageable pageable) {
+        Pageable cappedPageable = capPageSize(pageable);
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
@@ -85,13 +87,14 @@ public class MessagingServiceImpl implements MessagingService {
         messageRepository.markAsReadByConversationIdAndNotSender(
                 UUID.fromString(conversationId), user.getId());
 
-        Page<Message> page = messageRepository.findByConversationId(UUID.fromString(conversationId), pageable);
+        Page<Message> page = messageRepository.findByConversationId(UUID.fromString(conversationId), cappedPageable);
         return PageResponse.from(page, messageMapper::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ConversationResponse> getMyConversations(Pageable pageable) {
+        Pageable cappedPageable = capPageSize(pageable);
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
@@ -103,11 +106,11 @@ public class MessagingServiceImpl implements MessagingService {
         var specialistOpt = specialistRepository.findByUserEmail(email);
 
         if (clientOpt.isPresent()) {
-            page = conversationRepository.findActiveByClientId(clientOpt.get().getId(), pageable);
+            page = conversationRepository.findActiveByClientId(clientOpt.get().getId(), cappedPageable);
         } else if (specialistOpt.isPresent()) {
-            page = conversationRepository.findActiveBySpecialistId(specialistOpt.get().getId(), pageable);
+            page = conversationRepository.findActiveBySpecialistId(specialistOpt.get().getId(), cappedPageable);
         } else {
-            return PageResponse.empty(pageable);
+            return PageResponse.empty(cappedPageable);
         }
 
         return PageResponse.from(page, c -> {
@@ -167,5 +170,13 @@ public class MessagingServiceImpl implements MessagingService {
             return SenderType.CLIENT;
         }
         return SenderType.SPECIALIST;
+    }
+
+    private Pageable capPageSize(Pageable pageable) {
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 100),
+                pageable.getSort()
+        );
     }
 }

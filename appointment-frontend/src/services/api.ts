@@ -73,6 +73,18 @@ export const specialistApi = {
         PageResponse<SpecialistResponse>
       >(`/specialists?page=${page}&size=${size}`)
       .then((r) => r.data),
+  getAllForAdmin: (page = 0, size = 100) =>
+    apiClient
+      .get<
+        PageResponse<SpecialistResponse>
+      >(`/specialists/admin/all?page=${page}&size=${size}`)
+      .then((r) => r.data),
+  getPendingForAdmin: (page = 0, size = 100) =>
+    apiClient
+      .get<
+        PageResponse<SpecialistResponse>
+      >(`/specialists/admin/pending?page=${page}&size=${size}`)
+      .then((r) => r.data),
   getNearby: (lat: number, lng: number, radiusKm = 25, page = 0, size = 20) =>
     apiClient
       .get<

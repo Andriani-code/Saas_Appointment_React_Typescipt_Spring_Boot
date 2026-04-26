@@ -1,94 +1,173 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Search, SlidersHorizontal, MapPin, X } from 'lucide-react'
-import { specialistApi, serviceApi } from '@/services/api'
-import { SpecialistCard } from '@/components/specialist/SpecialistCard'
-import { Input } from '@/components/ui/Input'
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
+import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { ServiceCard } from '@/components/specialist/ServiceCard'
 import { Button } from '@/components/ui/Button'
-import { Spinner, EmptyState } from '@/components/ui'
+import { EmptyState, Spinner } from '@/components/ui'
+import { Input } from '@/components/ui/Input'
+import { usePaginatedFetch } from '@/hooks/usePaginatedFetch'
+import { serviceApi, specialistApi } from '@/services/api'
 import type { SpecialistResponse, SpecialistServiceResponse } from '@/types'
 
 type Filter = 'all' | 'nearby' | 'top-rated' | 'available'
 
 const filterLabels: Record<Filter, string> = {
-  all:        'Tous',
-  nearby:     'À proximité',
+  all: 'Tous',
+  nearby: 'À proximité',
   'top-rated': 'Mieux notés',
-  available:  'Disponibles',
+  available: 'Disponibles',
 }
 
 export function SpecialistsPage() {
-  const [specialists, setSpecialists]   = useState<SpecialistResponse[]>([])
-  const [servicesMap, setServicesMap]   = useState<Record<string, SpecialistServiceResponse[]>>({})
-  const [loading, setLoading]           = useState(true)
-  const [search, setSearch]             = useState('')
-  const [filter, setFilter]             = useState<Filter>('all')
-  const [page, setPage]                 = useState(0)
-  const [totalPages, setTotalPages]     = useState(1)
+  const [servicesMap, setServicesMap] = useState<Record<string, SpecialistServiceResponse[]>>({})
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState<Filter>('all')
+  const [nearbyCoords, setNearbyCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [nearbyError, setNearbyError] = useState<string | null>(null)
+  const initialErrorShown = useRef(false)
 
-  const fetchSpecialists = useCallback(async () => {
-    setLoading(true)
-    try {
-      let data
-      if (filter === 'nearby' && navigator.geolocation) {
-        const pos = await new Promise<GeolocationPosition>((res, rej) =>
-          navigator.geolocation.getCurrentPosition(res, rej)
-        )
-        data = await specialistApi.getNearby(pos.coords.latitude, pos.coords.longitude, 25, page)
-      } else {
-        data = await specialistApi.getAll(page)
+  const fetchSpecialists = useCallback((page: number, size: number) => {
+    if (filter === 'nearby') {
+      if (!nearbyCoords) {
+        throw new Error(nearbyError ?? 'Location unavailable')
       }
-      setSpecialists(data.content)
-      setTotalPages(data.totalPages)
+      return specialistApi.getNearby(nearbyCoords.lat, nearbyCoords.lng, 25, page, size)
+    }
+    return specialistApi.getAll(page, size)
+  }, [filter, nearbyCoords, nearbyError])
 
-      // Fetch services for each specialist
-      const svcEntries = await Promise.allSettled(
-        data.content.map(s => serviceApi.getActiveBySpecialist(s.id))
+  const {
+    items: specialists,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadMore,
+  } = usePaginatedFetch<SpecialistResponse>(
+    fetchSpecialists,
+    {
+      pageSize: 12,
+      deps: [filter, nearbyCoords?.lat, nearbyCoords?.lng, nearbyError],
+      getItemKey: (specialist) => specialist.id,
+    },
+  )
+
+  useEffect(() => {
+    if (error && !initialErrorShown.current) {
+      toast.error('Erreur lors du chargement des données')
+      initialErrorShown.current = true
+    }
+  }, [error])
+
+  useEffect(() => {
+    initialErrorShown.current = false
+  }, [filter, search])
+
+  useEffect(() => {
+    if (filter !== 'nearby') {
+      setNearbyError(null)
+      return
+    }
+    if (!navigator.geolocation) {
+      setNearbyCoords(null)
+      setNearbyError('La géolocalisation n’est pas disponible sur cet appareil.')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setNearbyCoords({ lat: position.coords.latitude, lng: position.coords.longitude })
+        setNearbyError(null)
+      },
+      () => {
+        setNearbyCoords(null)
+        setNearbyError('Impossible d’obtenir votre position.')
+      },
+    )
+  }, [filter])
+
+  useEffect(() => {
+    const missingIds = specialists
+      .map((s) => s.id)
+      .filter((id) => servicesMap[id] === undefined)
+
+    if (missingIds.length === 0) return
+
+    let cancelled = false
+    async function loadServices() {
+      const idsToFetch = [...missingIds]
+      const entries = await Promise.allSettled(
+        idsToFetch.map((id) => serviceApi.getActiveBySpecialist(id)),
       )
-      const map: Record<string, SpecialistServiceResponse[]> = {}
-      data.content.forEach((s, i) => {
-        const result = svcEntries[i]
-        map[s.id] = result.status === 'fulfilled' ? result.value : []
+      if (cancelled) return
+      setServicesMap((current) => {
+        const next = { ...current }
+        idsToFetch.forEach((id, index) => {
+          const result = entries[index]
+          next[id] = result.status === 'fulfilled' ? result.value : []
+        })
+        return next
       })
-      setServicesMap(map)
-    } catch { /* no-op */ }
-    finally { setLoading(false) }
-  }, [filter, page])
+    }
+    void loadServices()
+    return () => { cancelled = true }
+  }, [specialists])
 
-  useEffect(() => { fetchSpecialists() }, [fetchSpecialists])
+  // Aplatir les spécialistes en services
+  const allServices = useMemo(() => {
+    const list: { service: SpecialistServiceResponse; specialist: SpecialistResponse }[] = []
+    specialists.forEach(specialist => {
+      const specialistServices = servicesMap[specialist.id] || []
+      specialistServices.forEach(service => {
+        list.push({ service, specialist })
+      })
+    })
+    return list
+  }, [specialists, servicesMap])
 
-  const filtered = specialists.filter(s => {
-    if (!search) return true
-    const name = (s.displayName ?? `${s.firstName} ${s.lastName}`).toLowerCase()
-    const title = (s.profileTitle ?? '').toLowerCase()
-    const q = search.toLowerCase()
-    return name.includes(q) || title.includes(q)
-  }).filter(s => {
-    if (filter === 'top-rated') return (s.averageRating ?? 0) >= 4
-    return true
-  })
+  const filteredServices = useMemo(() => {
+    return allServices
+      .filter(({ service, specialist }) => {
+        if (!search) return true
+        const query = search.toLowerCase()
+        const specName = (specialist.displayName ?? `${specialist.firstName} ${specialist.lastName}`).toLowerCase()
+        const specTitle = (specialist.profileTitle ?? '').toLowerCase()
+        const svcName = service.name.toLowerCase()
+        return specName.includes(query) || specTitle.includes(query) || svcName.includes(query)
+      })
+      .filter(({ specialist }) => {
+        if (filter === 'top-rated') return (specialist.averageRating ?? 0) >= 4
+        return true
+      })
+  }, [allServices, search, filter])
+
+  async function handleLoadMore() {
+    try {
+      await loadMore()
+    } catch {
+      toast.error('Impossible de charger plus de résultats')
+    }
+  }
 
   return (
     <div className="space-y-7 animate-fade-in">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="page-title">Trouver un spécialiste</h1>
+          <h1 className="page-title">Trouver un service</h1>
           <p className="text-muted mt-1">
-            Recherchez par nom, spécialité ou localisation
+            Recherchez par prestation, spécialité ou nom
           </p>
         </div>
       </div>
 
-      {/* Search + Filter bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
           <Input
-            placeholder="Ex: 'cardiologue' ou 'Dr Martin'…"
+            placeholder="Ex: 'Massage', 'Consultation', 'Dr Martin'…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             icon={<Search size={16} />}
             iconRight={search ? (
-              <button onClick={() => setSearch('')} className="text-muted hover:text-text transition-colors">
+              <button type="button" onClick={() => setSearch('')} className="text-muted hover:text-text transition-colors">
                 <X size={14} />
               </button>
             ) : undefined}
@@ -99,84 +178,67 @@ export function SpecialistsPage() {
         </Button>
       </div>
 
-      {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
-        {(Object.keys(filterLabels) as Filter[]).map(f => (
+        {(Object.keys(filterLabels) as Filter[]).map((currentFilter) => (
           <button
-            key={f}
-            onClick={() => { setFilter(f); setPage(0) }}
+            key={currentFilter}
+            onClick={() => setFilter(currentFilter)}
             className={`
               inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium
               transition-all duration-200
-              ${filter === f
+              ${filter === currentFilter
                 ? 'bg-text text-white shadow-sm'
                 : 'bg-surface border border-border text-muted hover:border-primary/40 hover:text-primary'
               }
             `}
           >
-            {f === 'nearby' && <MapPin size={13} />}
-            {filterLabels[f]}
+            {currentFilter === 'nearby' && <MapPin size={13} />}
+            {filterLabels[currentFilter]}
           </button>
         ))}
       </div>
 
-      {/* Results count */}
       {!loading && (
         <p className="text-sm text-muted">
-          <span className="font-semibold text-text">{filtered.length}</span> spécialiste{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}
+          <span className="font-semibold text-text">{filteredServices.length}</span> prestation{filteredServices.length !== 1 ? 's' : ''} trouvée{filteredServices.length !== 1 ? 's' : ''}
         </p>
       )}
 
-      {/* Grid */}
-      {loading ? (
+      {loading && !nearbyError ? (
         <div className="flex items-center justify-center py-24">
           <Spinner size={32} />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : nearbyError ? (
+        <EmptyState icon={<MapPin size={28} />} title="Position indisponible" description={nearbyError} />
+      ) : error ? (
+        <EmptyState icon={<Search size={28} />} title="Chargement impossible" description="Une erreur est survenue." />
+      ) : filteredServices.length === 0 ? (
         <EmptyState
           icon={<Search size={28} />}
-          title="Aucun spécialiste trouvé"
-          description="Essayez d'autres mots-clés ou modifiez vos filtres."
-          action={
-            <Button variant="outline" onClick={() => { setSearch(''); setFilter('all') }}>
-              Réinitialiser les filtres
-            </Button>
-          }
+          title="Aucun résultat"
+          description="Essayez d'autres critères de recherche."
+          action={<Button variant="outline" onClick={() => { setSearch(''); setFilter('all') }}>Réinitialiser</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((s, i) => (
-            <SpecialistCard
-              key={s.id}
-              specialist={s}
-              services={servicesMap[s.id] ?? []}
-              delay={i * 60}
-            />
-          ))}
-        </div>
-      )}
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filteredServices.map(({ service, specialist }, index) => (
+              <ServiceCard
+                key={`${specialist.id}-${service.id}`}
+                service={service}
+                specialist={specialist}
+                delay={index * 40}
+              />
+            ))}
+          </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && !loading && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
-            Précédent
-          </Button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i)}
-              className={`
-                w-9 h-9 rounded-xl text-sm font-semibold transition-all duration-200
-                ${page === i ? 'bg-primary text-white shadow-primary/30' : 'bg-surface border border-border text-muted hover:border-primary'}
-              `}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <Button variant="outline" size="sm" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>
-            Suivant
-          </Button>
+          {hasMore && !search && filter !== 'top-rated' && (
+            <div className="flex items-center justify-center pt-2">
+              <Button variant="outline" onClick={handleLoadMore} loading={loadingMore}>
+                Charger plus de prestations
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

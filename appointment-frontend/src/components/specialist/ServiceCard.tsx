@@ -1,0 +1,92 @@
+import { Link } from 'react-router-dom'
+import { MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Avatar, StarRating } from '@/components/ui'
+import { formatCurrency, formatDuration } from '@/utils'
+import type { SpecialistResponse, SpecialistServiceResponse } from '@/types'
+
+interface ServiceCardProps {
+  service: SpecialistServiceResponse
+  specialist: SpecialistResponse
+  delay?: number
+}
+
+export function ServiceCard({ service, specialist, delay = 0 }: ServiceCardProps) {
+  const specialistName = specialist.displayName
+    ?? `${specialist.firstName} ${specialist.lastName}`
+
+  return (
+    <div
+      className="card-hover p-0 animate-slide-up flex flex-col overflow-hidden border-none shadow-sm bg-white"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+    >
+      {/* Service Image/Cover Placeholder */}
+      <div className="h-32 bg-gradient-to-br from-primary/80 to-primary-600 relative overflow-hidden shrink-0">
+        <div className="absolute inset-0 opacity-10" 
+          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} 
+        />
+        <div className="absolute bottom-3 left-4 right-4">
+           <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 drop-shadow-sm">
+             {service.name}
+           </h3>
+        </div>
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+           <p className="text-xs font-black text-primary">{formatCurrency(service.price)}</p>
+        </div>
+      </div>
+
+      <div className="p-4 flex flex-col flex-1 gap-4">
+        {/* Specialist Mini Info */}
+        <div className="flex items-center gap-3">
+          <div className="relative shrink-0">
+            <Avatar name={specialistName} src={specialist.profilePhoto} size="sm" className="rounded-xl ring-2 ring-soft" />
+            {specialist.isVerified && (
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 border-2 border-white">
+                <ShieldCheck size={8} />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-text truncate">{specialistName}</p>
+            <div className="flex items-center gap-2">
+               {specialist.averageRating !== undefined && (
+                 <StarRating rating={specialist.averageRating} size={10} />
+               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Service Details */}
+        <div className="space-y-2">
+           {service.description && (
+             <p className="text-xs text-muted line-clamp-2 leading-relaxed h-8">
+               {service.description}
+             </p>
+           )}
+           
+           <div className="flex items-center gap-3 pt-1">
+             <div className="flex items-center gap-1 text-[10px] text-muted font-medium bg-soft px-2 py-1 rounded-lg">
+                <Clock size={12} className="text-primary" />
+                <span>{formatDuration(service.durationMinutes)}</span>
+             </div>
+             {specialist.serviceAddress && (
+               <div className="flex items-center gap-1 text-[10px] text-muted font-medium bg-soft px-2 py-1 rounded-lg truncate max-w-[140px]">
+                  <MapPin size={12} className="text-primary" />
+                  <span className="truncate">{specialist.serviceAddress.city}</span>
+               </div>
+             )}
+           </div>
+        </div>
+
+        {/* Action */}
+        <div className="mt-auto pt-2 border-t border-border/50">
+          <Link to={`/specialists/${specialist.id}?serviceId=${service.id}`} className="block">
+            <Button fullWidth size="sm" icon={<Calendar size={14} />} className="rounded-xl">
+              Réserver maintenant
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
