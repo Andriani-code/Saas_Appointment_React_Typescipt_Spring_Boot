@@ -44,11 +44,19 @@ public class AuthServiceImpl implements AuthService {
     private final ClientMapper clientMapper;
     private final SpecialistMapper specialistMapper;
     private final AddressMapper addressMapper;
+    private final EmailValidationService emailValidationService;
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         log.info("Registering new user with role {}", request.getRole());
+        
+        if (request.getRole() == Role.ADMIN) {
+            throw new BadRequestException("L'inscription en tant qu'ADMIN n'est pas autorisée via cette API");
+        }
+
+        emailValidationService.validateEmailExists(request.getEmail());
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered: " + request.getEmail());
         }

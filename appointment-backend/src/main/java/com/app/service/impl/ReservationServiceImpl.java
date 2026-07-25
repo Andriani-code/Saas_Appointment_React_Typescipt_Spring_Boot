@@ -34,6 +34,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final AvailableSlotRepository slotRepository;
     private final ConversationRepository conversationRepository;
     private final ReservationMapper reservationMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -42,7 +43,7 @@ public class ReservationServiceImpl implements ReservationService {
         Client client = clientRepository.findByUserEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Client profile not found"));
 
-        AvailableSlot slot = slotRepository.findById(UUID.fromString(request.getSlotId()))
+        AvailableSlot slot = slotRepository.findByIdWithLock(UUID.fromString(request.getSlotId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Slot", "id", request.getSlotId()));
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
@@ -80,6 +81,9 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Update conversation if exists or create new one, and link last reservation
         updateConversation(client, slot.getSpecialist(), saved);
+
+        // Send email confirmation to client
+        emailService.sendBookingConfirmation(saved);
 
         return reservationMapper.toResponse(saved);
     }
@@ -142,7 +146,12 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = getReservationAsSpecialist(id);
         assertStatus(reservation, ReservationStatus.PENDING, "confirm");
         reservation.setStatus(ReservationStatus.CONFIRMED);
-        return reservationMapper.toResponse(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        
+        // Send email notification to client
+        emailService.sendReservationAccepted(saved);
+        
+        return reservationMapper.toResponse(saved);
     }
 
     @Override

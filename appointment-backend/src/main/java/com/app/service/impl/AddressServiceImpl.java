@@ -27,7 +27,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     public AddressResponse create(String userId, AddressRequest request) {
         Address address = addressMapper.toEntity(request);
-        address.setUserId(userId);
+        address.setUserId(UUID.fromString(userId));
         Address saved = addressRepository.save(address);
         return addressMapper.toResponse(saved);
     }
@@ -35,7 +35,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional(readOnly = true)
     public List<AddressResponse> getByUser(String userId) {
-        return addressRepository.findByUserId(userId)
+        return addressRepository.findByUserId(UUID.fromString(userId))
                 .stream()
                 .map(addressMapper::toResponse)
                 .collect(Collectors.toList());
@@ -47,7 +47,7 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Address", "id", id));
         // Ensure the address belongs to the user trying to update it
-        if (!address.getUserId().equals(userId)) {
+        if (!address.getUserId().toString().equals(userId)) {
             throw new UnauthorizedException("You are not authorized to update this address");
         }
         addressMapper.updateEntityFromRequest(request, address);
