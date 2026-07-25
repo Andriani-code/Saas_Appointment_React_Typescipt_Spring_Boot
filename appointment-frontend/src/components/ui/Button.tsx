@@ -1,11 +1,12 @@
-import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react'
+import { forwardRef, ReactNode } from 'react'
 import { cn } from '@/utils'
 import { Loader2 } from 'lucide-react'
+import { motion, HTMLMotionProps } from 'framer-motion'
 
 type Variant = 'primary' | 'outline' | 'ghost' | 'danger'
 type Size    = 'sm' | 'md' | 'lg'
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?:  Variant
   size?:     Size
   loading?:  boolean
@@ -15,10 +16,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-primary text-white shadow-primary/20 hover:bg-primary-600 active:bg-primary-700 hover:shadow-primary',
-  outline: 'border border-primary text-primary hover:bg-primary/8 active:bg-primary/15',
+  primary: 'bg-primary text-white shadow-primary/20 hover:bg-primary/90 active:bg-primary-700 hover:shadow-primary',
+  outline: 'border border-primary text-primary hover:bg-primary/5 active:bg-primary/10',
   ghost:   'text-muted hover:bg-soft hover:text-text',
-  danger:  'bg-danger text-white hover:bg-red-600 active:bg-red-700',
+  danger:  'bg-danger text-white hover:bg-danger/90 active:bg-danger/80',
 }
 
 const sizeClasses: Record<Size, string> = {
@@ -40,12 +41,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   ...props
 }, ref) => {
   return (
-    <button
+    <motion.button
       ref={ref}
+      whileHover={disabled || loading ? {} : { scale: 1.01 }}
+      whileTap={disabled || loading ? {} : { scale: 0.98 }}
       disabled={disabled || loading}
       className={cn(
         'inline-flex items-center justify-center rounded-xl font-semibold',
-        'transition-all duration-200 cursor-pointer',
+        'transition-colors duration-200 cursor-pointer',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
@@ -61,7 +64,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       ) : null}
       {children}
       {iconRight && !loading && <span className="shrink-0">{iconRight}</span>}
-    </button>
+    </motion.button>
   )
 })
 

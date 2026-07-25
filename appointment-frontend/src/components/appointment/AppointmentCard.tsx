@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Calendar, Check, Clock, Eye, MessageSquare, MoreVertical, RotateCcw, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { reservationApi } from '@/services/api'
 import { Avatar, StatusBadge } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
@@ -15,7 +15,7 @@ interface AppointmentCardProps {
 }
 
 export function AppointmentCard({ reservation, onUpdate, delay = 0 }: AppointmentCardProps) {
-  const { hasRole } = useAuth()
+  const { hasRole } = useAuthStore()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
