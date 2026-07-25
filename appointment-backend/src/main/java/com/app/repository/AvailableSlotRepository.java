@@ -44,4 +44,7 @@ public interface AvailableSlotRepository extends JpaRepository<AvailableSlot, UU
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM AvailableSlot s WHERE s.id = :id")
+    java.util.Optional<AvailableSlot> findByIdWithLock(@Param("id") UUID id);
 }

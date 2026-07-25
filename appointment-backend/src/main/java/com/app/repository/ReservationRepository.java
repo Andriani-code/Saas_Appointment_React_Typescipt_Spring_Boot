@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -70,6 +72,20 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             WHERE r.id = :id
             """)
     Optional<Reservation> findByIdWithDetails(@Param("id") UUID id);
+
+    @Query("""
+            SELECT r FROM Reservation r
+            JOIN FETCH r.client c
+            JOIN FETCH r.specialist s
+            JOIN FETCH r.service sv
+            JOIN FETCH r.slot sl
+            WHERE sl.date = :date 
+            AND r.status = :status 
+            AND r.reminderSent = false
+            """)
+    List<Reservation> findForReminder(
+            @Param("date") LocalDate date, 
+            @Param("status") ReservationStatus status);
 
     boolean existsBySlotIdAndStatusNot(UUID slotId, ReservationStatus status);
 }
