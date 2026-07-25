@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { reservationApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Avatar, Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,7 +29,7 @@ interface Patient {
 }
 
 export function PatientsPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

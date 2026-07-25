@@ -11,7 +11,7 @@ import {
   ArrowDownLeft,
 } from "lucide-react";
 import { paymentApi, reservationApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,7 +22,7 @@ import { cn } from "@/utils";
 type Tab = "all" | "pending" | "success" | "failed";
 
 export function PaymentsPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [payments, setPayments] = useState<PaymentResponse[]>([]);
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);

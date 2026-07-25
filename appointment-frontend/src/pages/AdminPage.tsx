@@ -14,11 +14,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { specialistApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Avatar, Spinner, EmptyState, StarRating } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { formatDate, formatCurrency } from "@/utils";
+import { formatDate, formatCurrency, getErrorMessage } from "@/utils";
 import type {
   SpecialistResponse,
   ReservationResponse,
@@ -30,7 +30,7 @@ import toast from "react-hot-toast";
 type Tab = "verification" | "specialists" | "reservations" | "reviews";
 
 export function AdminPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [specialists, setSpecialists] = useState<SpecialistResponse[]>([]);
   const [pending, setPending] = useState<SpecialistResponse[]>([]);
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
@@ -55,8 +55,8 @@ export function AdminPage() {
       setPending(pendingSpecs.content);
       setReservations([]);
       setReviews([]);
-    } catch {
-      toast.error("Erreur de chargement des données admin");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -72,8 +72,8 @@ export function AdminPage() {
       await specialistApi.approve(id);
       toast.success("Spécialiste approuvé !");
       loadData();
-    } catch {
-      toast.error("Échec de l'approbation");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(null);
     }
@@ -86,8 +86,8 @@ export function AdminPage() {
       await specialistApi.reject(id);
       toast.success("Spécialiste rejeté");
       loadData();
-    } catch {
-      toast.error("Échec du rejet");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(null);
     }

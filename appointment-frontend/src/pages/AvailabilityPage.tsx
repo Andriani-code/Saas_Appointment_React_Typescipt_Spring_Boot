@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Clock, Plus, Edit, Trash2, CalendarDays } from "lucide-react";
 import toast from "react-hot-toast";
 import { availabilityApi, slotApi, specialistApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import type { AvailabilityResponse, DayOfWeek } from "@/types";
@@ -25,7 +25,7 @@ const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => `${i.toString().padSta
 const INTERVALS = [15, 30, 45, 60, 90, 120];
 
 export function AvailabilityPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [availabilities, setAvailabilities] = useState<AvailabilityResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(true);
