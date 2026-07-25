@@ -8,7 +8,7 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { reservationApi } from "@/services/api";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge, Avatar, Spinner, EmptyState } from "@/components/ui";
@@ -17,7 +17,7 @@ import { formatDate, formatTime, formatCurrency } from "@/utils";
 import type { ReservationResponse } from "@/types";
 
 export function DashboardPage() {
-  const { user, hasRole } = useAuth();
+  const { user, hasRole } = useAuthStore();
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);
 

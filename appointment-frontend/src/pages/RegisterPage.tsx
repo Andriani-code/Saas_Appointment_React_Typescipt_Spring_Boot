@@ -14,10 +14,10 @@ import {
   Phone,
 } from "lucide-react";
 import { authApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { cn } from "@/utils";
+import { cn, getErrorMessage } from "@/utils";
 import type { RegisterRequest, Role } from "@/types";
 
 type SignupRole = Exclude<Role, "ADMIN">;
@@ -45,7 +45,7 @@ const roles: {
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
 
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<SignupRole>("CLIENT");
@@ -161,38 +161,37 @@ export function RegisterPage() {
 
     return payload;
   }
+async function handleSubmit(e: FormEvent) {
+  e.preventDefault();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
-
-    if (!validateProfileStep()) {
-      setStep("profile");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-    try {
-      const data = await authApi.register(buildRegisterPayload());
-      login({
-        email: data.email,
-        role: data.role,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-      });
-      navigate("/dashboard");
-    } catch {
-      setError("Inscription impossible. Vérifie les champs ou utilise un autre email.");
-    } finally {
-      setLoading(false);
-    }
+  if (password.length < 8) {
+    setError("Le mot de passe doit contenir au moins 8 caractères.");
+    return;
   }
 
+  if (!validateProfileStep()) {
+    setStep("profile");
+    return;
+  }
+
+  setError("");
+  setLoading(true);
+
+  try {
+    const data = await authApi.register(buildRegisterPayload());
+
+    login({
+      email: data.email,
+      role: data.role,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    });
+
+    navigate("/dashboard");
+  } catch (err: unknown) {
+    setError(getErrorMessage(err));
+  }
+}
   const stepIndex = step === "role" ? 0 : step === "profile" ? 1 : 2;
 
   return (
@@ -264,7 +263,7 @@ export function RegisterPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 animate-slide-down">
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 animate-slide-down whitespace-pre-line">
               {error}
             </div>
           )}

@@ -6,7 +6,8 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { specialistApi, serviceApi, slotApi, reviewApi, reservationApi, paymentApi } from '@/services/api'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
+import { useBookingStore } from '@/store/bookingStore'
 import { Avatar, StarRating, StatusBadge, Spinner, EmptyState } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { ServiceCard } from '@/components/specialist/ServiceCard'
@@ -21,13 +22,24 @@ export function SpecialistDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { isAuthenticated, hasRole } = useAuth()
+  const { isAuthenticated, hasRole } = useAuthStore()
+  
+  const { 
+    selectedSpecialist, 
+    selectedDate, 
+    selectedSlot, 
+    setSpecialist, 
+    setDate, 
+    setSlot,
+    resetBooking 
+  } = useBookingStore()
 
   // Get serviceId from query params
   const searchParams = new URLSearchParams(location.search)
   const initialServiceId = searchParams.get('serviceId')
 
-  const [specialist, setSpecialist] = useState<SpecialistResponse | null>(null)
+  // We use selectedSpecialist from the store or fallback to a local state if not set yet.
+  const [localSpecialist, setLocalSpecialist] = useState<SpecialistResponse | null>(null)
   const [services,   setServices]   = useState<SpecialistServiceResponse[]>([])
   const [reviews,    setReviews]    = useState<ReviewResponse[]>([])
   const [slots,      setSlots]      = useState<SlotResponse[]>([])
@@ -49,8 +61,6 @@ export function SpecialistDetail() {
     services.filter(s => s.id !== selectedService),
   [services, selectedService])
 
-  const [selectedDate,    setSelectedDate]    = useState<string>('')
-  const [selectedSlot,    setSelectedSlot]    = useState<string | null>(null)
   const [message,         setMessage]         = useState('')
   const [booking,         setBooking]         = useState(false)
   const [booked,          setBooked]          = useState(false)
@@ -67,11 +77,13 @@ export function SpecialistDetail() {
 
   useEffect(() => {
     if (!id) return
+    resetBooking() // clear previous booking state
     Promise.all([
       specialistApi.getById(id),
       serviceApi.getActiveBySpecialist(id),
       reviewApi.getBySpecialist(id),
     ]).then(([spec, svc, rev]) => {
+      setLocalSpecialist(spec)
       setSpecialist(spec)
       setServices(svc)
       setReviews(rev.content)
@@ -84,7 +96,10 @@ export function SpecialistDetail() {
   }, [id, initialServiceId])
 
   useEffect(() => {
-    if (!id || !selectedDate) return
+    if (!id || !selectedDate) {
+       setSlots([])
+       return
+    }
     slotApi.getBySpecialistAndDate(id, selectedDate).then(setSlots)
   }, [id, selectedDate])
 
@@ -100,8 +115,8 @@ export function SpecialistDetail() {
       return
     }
 
-    if (!selectedSlot || !selectedService) {
-      toast.error("Veuillez sélectionner un créneau")
+    if (!selectedSlot || !selectedService || !selectedDate) {
+      toast.error("Veuillez sélectionner une date, un créneau et un service")
       return
     }
     
@@ -146,11 +161,11 @@ export function SpecialistDetail() {
     </div>
   )
 
-  if (!specialist) return (
+  if (!localSpecialist) return (
     <EmptyState icon={<Star size={28} />} title="Spécialiste introuvable" />
   )
 
-  const name = specialist.displayName ?? `${specialist.firstName} ${specialist.lastName}`
+  const name = localSpecialist.displayName ?? `${localSpecialist.firstName} ${localSpecialist.lastName}`
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
@@ -176,13 +191,13 @@ export function SpecialistDetail() {
               <div className="flex items-start justify-between flex-wrap gap-3">
                 <div>
                   <h1 className="font-display text-2xl font-bold text-text">{name}</h1>
-                  <p className="text-primary font-medium">{specialist.profileTitle ?? 'Spécialiste'}</p>
+                  <p className="text-primary font-medium">{localSpecialist.profileTitle ?? 'Spécialiste'}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" icon={<MessageSquare size={14} />}>
                     Message
                   </Button>
-                  {specialist.isVerified && (
+                  {localSpecialist.isVerified && (
                     <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-full font-semibold">
                       <Shield size={12} />Vérifié
                     </span>
@@ -192,16 +207,16 @@ export function SpecialistDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-muted">
-             {specialist.averageRating && (
+             {localSpecialist.averageRating && (
                <div className="flex items-center gap-1.5">
-                 <StarRating rating={specialist.averageRating} size={14} />
+                 <StarRating rating={localSpecialist.averageRating} size={14} />
                  <span className="text-muted">({reviews.length} avis)</span>
                </div>
              )}
-             {specialist.serviceAddress && (
+             {localSpecialist.serviceAddress && (
                <span className="flex items-center gap-1.5">
                  <MapPin size={14} className="text-primary" />
-                 {specialist.serviceAddress.city}
+                 {localSpecialist.serviceAddress.city}
                </span>
              )}
           </div>
@@ -231,10 +246,10 @@ export function SpecialistDetail() {
           </div>
 
           {/* Specialist Bio if not showing service desc */}
-          {!focusedService?.description && specialist.bio && (
+          {!focusedService?.description && localSpecialist.bio && (
             <div className="card p-6">
                <h3 className="text-sm font-bold text-text uppercase tracking-widest mb-3">À propos du spécialiste</h3>
-               <p className="text-sm text-muted leading-relaxed">{specialist.bio}</p>
+               <p className="text-sm text-muted leading-relaxed">{localSpecialist.bio}</p>
             </div>
           )}
 
@@ -242,10 +257,10 @@ export function SpecialistDetail() {
           <div className="card p-0 overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <h2 className="section-title">Avis clients</h2>
-              {specialist.averageRating && (
+              {localSpecialist.averageRating && (
                 <div className="flex items-center gap-2">
-                  <span className="font-display text-2xl font-bold text-primary">{specialist.averageRating.toFixed(1)}</span>
-                  <StarRating rating={specialist.averageRating} size={15} />
+                  <span className="font-display text-2xl font-bold text-primary">{localSpecialist.averageRating.toFixed(1)}</span>
+                  <StarRating rating={localSpecialist.averageRating} size={15} />
                 </div>
               )}
             </div>
@@ -274,14 +289,14 @@ export function SpecialistDetail() {
             <div className="space-y-6 pt-6 border-t border-border/50">
               <h3 className="section-title flex items-center gap-2 text-lg">
                 <Calendar size={20} className="text-primary" />
-                Autres prestations de {specialist.displayName || specialist.firstName}
+                Autres prestations de {localSpecialist.displayName || localSpecialist.firstName}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {otherServices.map(svc => (
                   <div key={svc.id} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                     <ServiceCard 
                       service={svc} 
-                      specialist={specialist} 
+                      specialist={localSpecialist} 
                     />
                   </div>
                 ))}
@@ -350,7 +365,7 @@ export function SpecialistDetail() {
                       const date = new Date(d)
                       const isSelected = selectedDate === d
                       return (
-                        <button key={d} onClick={() => { setSelectedDate(d); setSelectedSlot(null) }}
+                        <button key={d} onClick={() => { setDate(d); setSlot(null) }}
                           className={cn(
                             'flex flex-col items-center py-2.5 rounded-xl text-xs font-medium transition-all duration-200',
                             isSelected
@@ -377,7 +392,7 @@ export function SpecialistDetail() {
                       <div className="grid grid-cols-3 gap-1.5">
                         {slots.map(slot => (
                           <button key={slot.id}
-                            onClick={() => setSelectedSlot(slot.id)}
+                            onClick={() => setSlot(slot.id)}
                             className={cn(
                               'py-2 rounded-lg text-xs font-semibold transition-all duration-200',
                               selectedSlot === slot.id
