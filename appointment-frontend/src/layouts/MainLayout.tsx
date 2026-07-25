@@ -1,7 +1,7 @@
-import { ReactNode, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useNavigate, Outlet } from "react-router-dom";
 import { cn } from "@/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import {
   LayoutDashboard,
   Calendar,
@@ -18,12 +18,11 @@ import {
   X,
   Search,
   Bell,
-  User,
 } from "lucide-react";
 
 interface NavItem {
   to: string;
-  icon: ReactNode;
+  icon: React.ReactNode;
   label: string;
   roles?: string[];
 }
@@ -74,12 +73,8 @@ const navItems: NavItem[] = [
   { to: "/settings", icon: <Settings size={18} />, label: "Paramètres" },
 ];
 
-interface SidebarProps {
-  children: ReactNode;
-}
-
-export function MainLayout({ children }: SidebarProps) {
-  const { user, logout, hasRole } = useAuth();
+export function MainLayout() {
+  const { user, logout, hasRole } = useAuthStore();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -192,7 +187,7 @@ export function MainLayout({ children }: SidebarProps) {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F9FAFB]">
-        {/* Unified Header - Style Dribbble White */}
+        {/* Unified Header */}
         <header className="h-20 bg-white border-b border-gray-100 px-6 lg:px-10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 flex-1">
             {/* Mobile Menu Toggle */}
@@ -203,7 +198,7 @@ export function MainLayout({ children }: SidebarProps) {
               <Menu size={22} />
             </button>
             
-            {/* Search Bar - Rounded & Soft */}
+            {/* Search Bar */}
             <div className="relative max-w-md w-full hidden md:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
@@ -239,7 +234,7 @@ export function MainLayout({ children }: SidebarProps) {
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-6 py-8 lg:py-10">
-            {children}
+            <Outlet />
           </div>
         </div>
       </main>
