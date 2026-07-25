@@ -6,6 +6,7 @@ export type Provider = 'LOCAL' | 'GOOGLE'
 export interface AuthResponse {
   email: string
   role: Role
+  profileCompleted?: boolean
   accessToken?: string
   refreshToken?: string
   tokenType?: string
@@ -272,4 +273,5 @@ export interface ApiError {
 export interface AuthUser {
   email: string
   role: Role
+  profileCompleted?: boolean
 }

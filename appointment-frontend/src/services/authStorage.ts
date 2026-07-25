@@ -2,12 +2,14 @@ import type { Role } from '@/types'
 
 const EMAIL_KEY = 'userEmail'
 const ROLE_KEY = 'userRole'
+const PROFILE_COMPLETED_KEY = 'profileCompleted'
 const ACCESS_TOKEN_KEY = 'accessToken'
 const REFRESH_TOKEN_KEY = 'refreshToken'
 
 export interface StoredAuthSession {
   email: string
   role: Role
+  profileCompleted?: boolean
   accessToken?: string
   refreshToken?: string
 }
@@ -15,6 +17,7 @@ export interface StoredAuthSession {
 export function getStoredAuthSession(): StoredAuthSession | null {
   const email = localStorage.getItem(EMAIL_KEY)
   const role = localStorage.getItem(ROLE_KEY) as Role | null
+  const profileCompletedStr = localStorage.getItem(PROFILE_COMPLETED_KEY)
 
   if (!email || !role) {
     return null
@@ -23,6 +26,7 @@ export function getStoredAuthSession(): StoredAuthSession | null {
   return {
     email,
     role,
+    profileCompleted: profileCompletedStr ? profileCompletedStr === 'true' : undefined,
     accessToken: localStorage.getItem(ACCESS_TOKEN_KEY) ?? undefined,
     refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) ?? undefined,
   }
@@ -31,6 +35,12 @@ export function getStoredAuthSession(): StoredAuthSession | null {
 export function storeAuthSession(session: StoredAuthSession) {
   localStorage.setItem(EMAIL_KEY, session.email)
   localStorage.setItem(ROLE_KEY, session.role)
+
+  if (session.profileCompleted !== undefined) {
+    localStorage.setItem(PROFILE_COMPLETED_KEY, String(session.profileCompleted))
+  } else {
+    localStorage.removeItem(PROFILE_COMPLETED_KEY)
+  }
 
   if (session.accessToken) {
     localStorage.setItem(ACCESS_TOKEN_KEY, session.accessToken)
@@ -48,6 +58,7 @@ export function storeAuthSession(session: StoredAuthSession) {
 export function clearAuthSession() {
   localStorage.removeItem(EMAIL_KEY)
   localStorage.removeItem(ROLE_KEY)
+  localStorage.removeItem(PROFILE_COMPLETED_KEY)
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
 }

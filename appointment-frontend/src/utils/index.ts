@@ -1,8 +1,29 @@
 import { type ClassValue, clsx } from 'clsx'
 import type { ReservationStatus } from '@/types'
+import axios from 'axios'
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs)
+}
+
+export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data
+    
+    // Handle Validation Errors (fieldErrors map)
+    if (data?.fieldErrors) {
+      const messages = Object.entries(data.fieldErrors)
+        .map(([field, msg]) => `${field}: ${msg}`)
+        .join('\n')
+      return messages || data.message || 'Validation échouée'
+    }
+
+    return data?.message || error.message || 'Une erreur est survenue'
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'Une erreur est survenue'
 }
 
 export function formatDate(dateStr: string): string {

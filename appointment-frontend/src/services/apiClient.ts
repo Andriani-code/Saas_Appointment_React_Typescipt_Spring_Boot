@@ -51,9 +51,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    const errorData = error.response?.data as { message?: string } | undefined
-    const errMsg = errorData?.message || error.message
-    toast.error(errMsg)
     return Promise.reject(error)
   }
 )
