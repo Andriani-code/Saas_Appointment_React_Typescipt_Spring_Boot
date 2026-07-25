@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { Avatar, EmptyState, Spinner } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { usePaginatedFetch } from '@/hooks/usePaginatedFetch'
 import { messagingApi } from '@/services/api'
 import { getStoredAuthSession } from '@/services/authStorage'
@@ -14,7 +14,7 @@ import { cn } from '@/utils'
 import type { ConversationResponse, MessageResponse } from '@/types'
 
 export function MessagesPage() {
-  const { user, hasRole } = useAuth()
+  const { user, hasRole } = useAuthStore()
   const isSpecialist = hasRole('SPECIALIST')
   const isClient = hasRole('CLIENT')
   const isEnabled = isSpecialist || isClient

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Star, Search, MessageSquare, Filter } from "lucide-react";
 import { reviewApi, reservationApi, specialistApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState, StarRating, Avatar } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/utils";
@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 type Tab = "received" | "given";
 
 export function ReviewsPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [completedReservations, setCompletedReservations] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);

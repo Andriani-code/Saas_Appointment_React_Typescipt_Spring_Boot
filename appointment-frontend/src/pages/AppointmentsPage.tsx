@@ -6,10 +6,11 @@ import { AppointmentCard } from "@/components/appointment/AppointmentCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState, Spinner } from "@/components/ui";
 import { Input } from "@/components/ui/Input";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { usePaginatedFetch } from "@/hooks/usePaginatedFetch";
 import { reservationApi } from "@/services/api";
 import type { ReservationResponse, ReservationStatus } from "@/types";
+import { getErrorMessage } from "@/utils";
 
 type Tab = "all" | ReservationStatus;
 
@@ -22,7 +23,7 @@ const tabs: { value: Tab; label: string }[] = [
 ];
 
 export function AppointmentsPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   
@@ -100,8 +101,8 @@ export function AppointmentsPage() {
   async function handleLoadMore() {
     try {
       await loadMore();
-    } catch {
-      toast.error("Impossible de charger plus de rendez-vous");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     }
   }
 

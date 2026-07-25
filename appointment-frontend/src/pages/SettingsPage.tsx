@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent } from 'react'
 import { User, MapPin, Phone, Save, Briefcase, AlertCircle, ShieldCheck, Clock as ClockIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { clientApi, specialistApi } from '@/services/api'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui'
@@ -11,7 +11,7 @@ import { cn } from '@/utils'
 type Tab = 'profile' | 'address' | 'security'
 
 export function SettingsPage() {
-  const { user, hasRole } = useAuth()
+  const { user, hasRole } = useAuthStore()
   const [tab, setTab]         = useState<Tab>('profile')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)

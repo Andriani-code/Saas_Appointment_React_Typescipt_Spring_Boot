@@ -12,7 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { serviceApi, specialistApi } from "@/services/api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -26,7 +26,7 @@ import { cn } from "@/utils";
 import toast from "react-hot-toast";
 
 export function ServicesPage() {
-  const { hasRole } = useAuth();
+  const { hasRole } = useAuthStore();
   const [services, setServices] = useState<SpecialistServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(true);
