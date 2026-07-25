@@ -46,4 +46,8 @@ public class Reservation extends BaseEntity {
 
     @Column(name = "deposit_amount", precision = 10, scale = 2)
     private BigDecimal depositAmount;
+
+    @Column(name = "reminder_sent", nullable = false)
+    @Builder.Default
+    private Boolean reminderSent = false;
 }

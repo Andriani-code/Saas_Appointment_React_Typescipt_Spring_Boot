@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "addresses")
@@ -14,8 +15,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @SuperBuilder
 public class Address extends BaseEntity {
-    @Column(nullable = false, columnDefinition = "UUID")
-    private String userId;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
     @Column(nullable = false)
     private String country;

@@ -28,7 +28,7 @@ public class Client extends BaseEntity {
     @Column(name = "profile_photo")
     private String profilePhoto;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "address_id")
     private Address address;
 }

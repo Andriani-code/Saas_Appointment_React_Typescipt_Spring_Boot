@@ -29,5 +29,5 @@ public class VerificationRequest extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private VerificationStatus status = VerificationStatus.PENDING;
+    private VerificationStatus status = VerificationStatus.NONE;
 }

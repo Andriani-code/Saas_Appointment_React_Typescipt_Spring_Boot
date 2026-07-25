@@ -54,11 +54,11 @@ public class Specialist extends BaseEntity {
     @Builder.Default
     private VerificationStatus verificationStatus = VerificationStatus.NONE;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "personal_address_id")
     private Address personalAddress;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "service_address_id")
     private Address serviceAddress;
 }
