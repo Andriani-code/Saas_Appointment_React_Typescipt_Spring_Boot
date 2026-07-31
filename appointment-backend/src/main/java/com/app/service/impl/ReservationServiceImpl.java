@@ -11,6 +11,7 @@ import com.app.exception.ResourceNotFoundException;
 import com.app.exception.UnauthorizedException;
 import com.app.mapper.ReservationMapper;
 import com.app.repository.*;
+import com.app.service.EmailService;
 import com.app.service.ReservationService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;

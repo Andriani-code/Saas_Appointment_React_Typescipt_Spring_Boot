@@ -20,6 +20,7 @@ import com.app.repository.ConversationRepository;
 import com.app.repository.ReservationRepository;
 import com.app.repository.SpecialistRepository;
 import com.app.repository.SpecialistServiceRepository;
+import com.app.service.EmailService;
 import com.app.util.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +67,9 @@ class ReservationServiceImplTest {
     @Mock
     private ReservationMapper reservationMapper;
 
+    @Mock
+    private EmailService emailService;
+
     @Test
     void getMyReservationsAsClientCapsRequestedPageSizeAtOneHundred() {
         ReservationServiceImpl service = new ReservationServiceImpl(
@@ -75,7 +79,8 @@ class ReservationServiceImplTest {
                 specialistServiceRepository,
                 slotRepository,
                 conversationRepository,
-                reservationMapper
+                reservationMapper,
+                emailService
         );
 
         Client client = Client.builder()
@@ -112,7 +117,8 @@ class ReservationServiceImplTest {
                 specialistServiceRepository,
                 slotRepository,
                 conversationRepository,
-                reservationMapper
+                reservationMapper,
+                emailService
         );
 
         UUID reservationId = UUID.randomUUID();

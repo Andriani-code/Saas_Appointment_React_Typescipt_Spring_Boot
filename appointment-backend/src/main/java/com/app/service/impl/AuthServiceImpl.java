@@ -19,6 +19,7 @@ import com.app.repository.SpecialistRepository;
 import com.app.repository.UserRepository;
 import com.app.security.JwtService;
 import com.app.service.AuthService;
+import com.app.service.EmailValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
