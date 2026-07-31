@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.idea/
+.vscode/
+*.iml
+.git/
+.gitignore
+*.log
+logs/
