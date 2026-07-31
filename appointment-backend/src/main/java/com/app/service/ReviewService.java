@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface ReviewService {
     ReviewResponse create(ReviewRequest request);
-    PageResponse<ReviewResponse> getBySpecialist(String specialistId, Pageable pageable);
+    PageResponse<ReviewResponse> getByProvider(String providerId, Pageable pageable);
     PageResponse<ReviewResponse> getMyReviews(Pageable pageable);
     void toggleVisibility(String reviewId);
 }

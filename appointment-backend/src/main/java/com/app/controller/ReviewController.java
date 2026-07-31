@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
-@Tag(name = "Reviews", description = "Client reviews for specialists")
+@Tag(name = "Reviews", description = "Client reviews for providers")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -31,13 +31,13 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.create(request));
     }
 
-    @GetMapping("/specialist/{specialistId}")
-    @Operation(summary = "Get visible reviews for a specialist (public)")
-    public ResponseEntity<PageResponse<ReviewResponse>> getBySpecialist(
-            @PathVariable String specialistId,
+    @GetMapping("/provider/{providerId}")
+    @Operation(summary = "Get visible reviews for a provider (public)")
+    public ResponseEntity<PageResponse<ReviewResponse>> getByProvider(
+            @PathVariable String providerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(reviewService.getBySpecialist(specialistId, PageRequest.of(page, size)));
+        return ResponseEntity.ok(reviewService.getByProvider(providerId, PageRequest.of(page, size)));
     }
 
     @GetMapping("/my")

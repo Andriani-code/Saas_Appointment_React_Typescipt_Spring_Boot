@@ -6,7 +6,7 @@ import com.app.dto.response.PageResponse;
 import com.app.dto.response.SlotResponse;
 import com.app.entity.Availability;
 import com.app.entity.AvailableSlot;
-import com.app.entity.Specialist;
+import com.app.entity.Provider;
 import com.app.entity.enums.SlotStatus;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
@@ -14,7 +14,7 @@ import com.app.exception.UnauthorizedException;
 import com.app.mapper.SlotMapper;
 import com.app.repository.AvailabilityRepository;
 import com.app.repository.AvailableSlotRepository;
-import com.app.repository.SpecialistRepository;
+import com.app.repository.ProviderRepository;
 import com.app.service.SlotService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class SlotServiceImpl implements SlotService {
 
     private final AvailableSlotRepository slotRepository;
     private final AvailabilityRepository availabilityRepository;
-    private final SpecialistRepository specialistRepository;
+    private final ProviderRepository providerRepository;
     private final SlotMapper slotMapper;
 
     @Override
@@ -49,19 +49,19 @@ public class SlotServiceImpl implements SlotService {
             throw new BadRequestException("Start time must be before end time");
         }
 
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
         
-        // Ensure date is active for this specialist
-        availabilityRepository.findBySpecialistIdAndDate(specialist.getId(), request.getDate())
+        // Ensure date is active for this provider
+        availabilityRepository.findByProviderIdAndDate(provider.getId(), request.getDate())
                 .orElseThrow(() -> new BadRequestException("Date " + request.getDate() + " must be activated first in availability"));
 
         // Check for overlap or identical start time
-        if (slotRepository.existsBySpecialistIdAndDateAndStartTime(specialist.getId(), request.getDate(), request.getStartTime())) {
+        if (slotRepository.existsByProviderIdAndDateAndStartTime(provider.getId(), request.getDate(), request.getStartTime())) {
             throw new BadRequestException("A slot starting at " + request.getStartTime() + " already exists for this date");
         }
 
         AvailableSlot slot = AvailableSlot.builder()
-                .specialist(specialist)
+                .provider(provider)
                 .date(request.getDate())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
@@ -74,8 +74,8 @@ public class SlotServiceImpl implements SlotService {
     @Override
     @Transactional
     public void deleteSlot(String slotId) {
-        Specialist specialist = getAuthenticatedSpecialist();
-        AvailableSlot slot = getSlotOwnedBy(slotId, specialist);
+        Provider provider = getAuthenticatedProvider();
+        AvailableSlot slot = getSlotOwnedBy(slotId, provider);
 
         if (slot.getStatus() == SlotStatus.BOOKED) {
             throw new BadRequestException("Cannot delete a booked slot");
@@ -93,9 +93,9 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SlotResponse> getAvailableSlotsBySpecialistAndDate(String specialistId, LocalDate date) {
+    public List<SlotResponse> getAvailableSlotsByProviderAndDate(String providerId, LocalDate date) {
         // Return ALL slots for the date so frontend can grey out BOOKED ones
-        return slotRepository.findBySpecialistIdAndDate(UUID.fromString(specialistId), date)
+        return slotRepository.findByProviderIdAndDate(UUID.fromString(providerId), date)
                 .stream()
                 .map(slotMapper::toResponse)
                 .collect(Collectors.toList());
@@ -103,11 +103,11 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SlotResponse> getSlotsBySpecialistAndDateRange(
-            String specialistId, LocalDate start, LocalDate end, Pageable pageable) {
+    public PageResponse<SlotResponse> getSlotsByProviderAndDateRange(
+            String providerId, LocalDate start, LocalDate end, Pageable pageable) {
         return PageResponse.from(
-                slotRepository.findBySpecialistIdAndDateRange(
-                        UUID.fromString(specialistId), start, end, pageable),
+                slotRepository.findByProviderIdAndDateRange(
+                        UUID.fromString(providerId), start, end, pageable),
                 slotMapper::toResponse
         );
     }
@@ -115,8 +115,8 @@ public class SlotServiceImpl implements SlotService {
     @Override
     @Transactional
     public SlotResponse blockSlot(String slotId) {
-        Specialist specialist = getAuthenticatedSpecialist();
-        AvailableSlot slot = getSlotOwnedBy(slotId, specialist);
+        Provider provider = getAuthenticatedProvider();
+        AvailableSlot slot = getSlotOwnedBy(slotId, provider);
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new BadRequestException("Only AVAILABLE slots can be blocked");
@@ -129,8 +129,8 @@ public class SlotServiceImpl implements SlotService {
     @Override
     @Transactional
     public SlotResponse unblockSlot(String slotId) {
-        Specialist specialist = getAuthenticatedSpecialist();
-        AvailableSlot slot = getSlotOwnedBy(slotId, specialist);
+        Provider provider = getAuthenticatedProvider();
+        AvailableSlot slot = getSlotOwnedBy(slotId, provider);
 
         if (slot.getStatus() != SlotStatus.BLOCKED) {
             throw new BadRequestException("Only BLOCKED slots can be unblocked");
@@ -140,18 +140,18 @@ public class SlotServiceImpl implements SlotService {
         return slotMapper.toResponse(slotRepository.save(slot));
     }
 
-    private AvailableSlot getSlotOwnedBy(String slotId, Specialist specialist) {
+    private AvailableSlot getSlotOwnedBy(String slotId, Provider provider) {
         AvailableSlot slot = slotRepository.findById(UUID.fromString(slotId))
                 .orElseThrow(() -> new ResourceNotFoundException("Slot", "id", slotId));
-        if (!slot.getSpecialist().getId().equals(specialist.getId())) {
+        if (!slot.getProvider().getId().equals(provider.getId())) {
             throw new UnauthorizedException("You do not own this slot");
         }
         return slot;
     }
 
-    private Specialist getAuthenticatedSpecialist() {
+    private Provider getAuthenticatedProvider() {
         String email = SecurityUtils.getCurrentUserEmail();
-        return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        return providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
     }
 }

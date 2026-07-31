@@ -1,14 +1,14 @@
 package com.app.mapper;
 
-import com.app.dto.request.SpecialistRequest;
-import com.app.dto.response.SpecialistResponse;
-import com.app.entity.Specialist;
+import com.app.dto.request.ProviderRequest;
+import com.app.dto.response.ProviderResponse;
+import com.app.entity.Provider;
 import org.mapstruct.*;
 
 import java.util.UUID;
 
 @Mapper(componentModel = "spring", uses = {AddressMapper.class})
-public interface SpecialistMapper {
+public interface ProviderMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
@@ -19,14 +19,14 @@ public interface SpecialistMapper {
     @Mapping(target = "verificationStatus", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    Specialist toEntity(SpecialistRequest request);
+    Provider toEntity(ProviderRequest request);
 
-    @Mapping(target = "id", expression = "java(uuidToString(specialist.getId()))")
-    @Mapping(target = "userId", expression = "java(uuidToString(specialist.getUser().getId()))")
+    @Mapping(target = "id", expression = "java(uuidToString(provider.getId()))")
+    @Mapping(target = "userId", expression = "java(uuidToString(provider.getUser().getId()))")
     @Mapping(target = "email", source = "user.email")
-    @Mapping(target = "verificationStatus", expression = "java(specialist.getVerificationStatus().name())")
+    @Mapping(target = "verificationStatus", expression = "java(provider.getVerificationStatus().name())")
     @Mapping(target = "averageRating", ignore = true)
-    SpecialistResponse toResponse(Specialist specialist);
+    ProviderResponse toResponse(Provider provider);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
@@ -38,7 +38,7 @@ public interface SpecialistMapper {
     @Mapping(target = "verificationStatus", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    void updateEntityFromRequest(SpecialistRequest request, @MappingTarget Specialist specialist);
+    void updateEntityFromRequest(ProviderRequest request, @MappingTarget Provider provider);
 
     default String uuidToString(UUID uuid) {
         return uuid == null ? null : uuid.toString();

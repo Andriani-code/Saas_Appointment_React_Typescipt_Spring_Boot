@@ -10,7 +10,7 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "available_slots",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"specialist_id", "date", "start_time"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"provider_id", "date", "start_time"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,12 +19,12 @@ import java.time.LocalTime;
 public class AvailableSlot extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialist_id", nullable = false)
-    private Specialist specialist;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
-    private SpecialistService service;
+    private ProviderService service;
 
     @Column(nullable = false)
     private LocalDate date;

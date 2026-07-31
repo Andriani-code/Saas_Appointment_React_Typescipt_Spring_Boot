@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Messaging", description = "Conversations and messages between clients and specialists")
+@Tag(name = "Messaging", description = "Conversations and messages between clients and providers")
 public class MessageController {
 
     private final MessagingService messagingService;

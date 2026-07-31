@@ -8,7 +8,7 @@ import java.time.LocalTime;
 @Data
 public class AvailabilityResponse {
     private String id;
-    private String specialistId;
+    private String providerId;
     private LocalDate date;
     private String dayOfWeek;
     private LocalTime startTime;

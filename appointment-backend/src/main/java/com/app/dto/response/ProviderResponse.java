@@ -3,7 +3,7 @@ package com.app.dto.response;
 import lombok.Data;
 
 @Data
-public class SpecialistResponse {
+public class ProviderResponse {
     private String id;
     private String userId;
     private String email;
@@ -15,6 +15,7 @@ public class SpecialistResponse {
     private String bio;
     private String profilePhoto;
     private String coverPhoto;
+    private String category;
     private Boolean isActive;
     private Boolean isVerified;
     private String verificationStatus;

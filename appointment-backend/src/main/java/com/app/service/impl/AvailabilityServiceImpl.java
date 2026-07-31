@@ -3,13 +3,13 @@ package com.app.service.impl;
 import com.app.dto.request.AvailabilityRequest;
 import com.app.dto.response.AvailabilityResponse;
 import com.app.entity.Availability;
-import com.app.entity.Specialist;
+import com.app.entity.Provider;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
 import com.app.exception.UnauthorizedException;
 import com.app.mapper.AvailabilityMapper;
 import com.app.repository.AvailabilityRepository;
-import com.app.repository.SpecialistRepository;
+import com.app.repository.ProviderRepository;
 import com.app.service.AvailabilityService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final AvailabilityRepository availabilityRepository;
-    private final SpecialistRepository specialistRepository;
+    private final ProviderRepository providerRepository;
     private final AvailabilityMapper availabilityMapper;
 
     @Override
@@ -36,15 +36,15 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             throw new BadRequestException("Cannot set availability for a past date");
         }
 
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
-        availabilityRepository.findBySpecialistIdAndDate(specialist.getId(), request.getDate())
+        availabilityRepository.findByProviderIdAndDate(provider.getId(), request.getDate())
                 .ifPresent(a -> {
                     throw new BadRequestException("Availability already set for " + request.getDate());
                 });
 
         Availability availability = availabilityMapper.toEntity(request);
-        availability.setSpecialist(specialist);
+        availability.setProvider(provider);
 
         return availabilityMapper.toResponse(availabilityRepository.save(availability));
     }
@@ -56,12 +56,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             throw new BadRequestException("Cannot set availability for a past date");
         }
 
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
         Availability availability = availabilityRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Availability", "id", id));
 
-        if (!availability.getSpecialist().getId().equals(specialist.getId())) {
+        if (!availability.getProvider().getId().equals(provider.getId())) {
             throw new UnauthorizedException("You do not own this availability");
         }
 
@@ -72,12 +72,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
     @Transactional
     public void delete(String id) {
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
         Availability availability = availabilityRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Availability", "id", id));
 
-        if (!availability.getSpecialist().getId().equals(specialist.getId())) {
+        if (!availability.getProvider().getId().equals(provider.getId())) {
             throw new UnauthorizedException("You do not own this availability");
         }
 
@@ -87,8 +87,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
     @Transactional(readOnly = true)
     public List<AvailabilityResponse> getMyAvailabilities() {
-        Specialist specialist = getAuthenticatedSpecialist();
-        return availabilityRepository.findActiveBySpecialistId(specialist.getId())
+        Provider provider = getAuthenticatedProvider();
+        return availabilityRepository.findActiveByProviderId(provider.getId())
                 .stream()
                 .map(availabilityMapper::toResponse)
                 .collect(Collectors.toList());
@@ -96,16 +96,16 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AvailabilityResponse> getBySpecialist(String specialistId) {
-        return availabilityRepository.findActiveBySpecialistId(UUID.fromString(specialistId))
+    public List<AvailabilityResponse> getByProvider(String providerId) {
+        return availabilityRepository.findActiveByProviderId(UUID.fromString(providerId))
                 .stream()
                 .map(availabilityMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
-    private Specialist getAuthenticatedSpecialist() {
+    private Provider getAuthenticatedProvider() {
         String email = SecurityUtils.getCurrentUserEmail();
-        return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        return providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
     }
 }

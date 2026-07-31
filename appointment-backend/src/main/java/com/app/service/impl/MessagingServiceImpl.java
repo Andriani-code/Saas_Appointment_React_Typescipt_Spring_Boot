@@ -30,7 +30,7 @@ public class MessagingServiceImpl implements MessagingService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
     private final ClientRepository clientRepository;
-    private final SpecialistRepository specialistRepository;
+    private final ProviderRepository providerRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
     private final ConversationMapper conversationMapper;
@@ -103,12 +103,12 @@ public class MessagingServiceImpl implements MessagingService {
 
         // Determine role and fetch accordingly
         var clientOpt = clientRepository.findByUserEmail(email);
-        var specialistOpt = specialistRepository.findByUserEmail(email);
+        var providerOpt = providerRepository.findByUserEmail(email);
 
         if (clientOpt.isPresent()) {
             page = conversationRepository.findActiveByClientId(clientOpt.get().getId(), cappedPageable);
-        } else if (specialistOpt.isPresent()) {
-            page = conversationRepository.findActiveBySpecialistId(specialistOpt.get().getId(), cappedPageable);
+        } else if (providerOpt.isPresent()) {
+            page = conversationRepository.findActiveByProviderId(providerOpt.get().getId(), cappedPageable);
         } else {
             return PageResponse.empty(cappedPageable);
         }
@@ -159,8 +159,8 @@ public class MessagingServiceImpl implements MessagingService {
 
     private void assertParticipant(Conversation conversation, User user) {
         boolean isClient = conversation.getClient().getUser().getId().equals(user.getId());
-        boolean isSpecialist = conversation.getSpecialist().getUser().getId().equals(user.getId());
-        if (!isClient && !isSpecialist) {
+        boolean isProvider = conversation.getProvider().getUser().getId().equals(user.getId());
+        if (!isClient && !isProvider) {
             throw new UnauthorizedException("You are not a participant of this conversation");
         }
     }
@@ -169,7 +169,7 @@ public class MessagingServiceImpl implements MessagingService {
         if (conversation.getClient().getUser().getId().equals(user.getId())) {
             return SenderType.CLIENT;
         }
-        return SenderType.SPECIALIST;
+        return SenderType.PROVIDER;
     }
 
     private Pageable capPageSize(Pageable pageable) {

@@ -1,17 +1,17 @@
 package com.app.service;
 
-import com.app.dto.request.SpecialistServiceRequest;
+import com.app.dto.request.ProviderServiceRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistServiceResponse;
+import com.app.dto.response.ProviderServiceResponse;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-public interface SpecialistOfferingService {
-    SpecialistServiceResponse create(SpecialistServiceRequest request);
-    SpecialistServiceResponse getById(String id);
-    List<SpecialistServiceResponse> getActiveBySpecialist(String specialistId);
-    PageResponse<SpecialistServiceResponse> getBySpecialist(String specialistId, Pageable pageable);
-    SpecialistServiceResponse update(String id, SpecialistServiceRequest request);
+public interface ProviderOfferingService {
+    ProviderServiceResponse create(ProviderServiceRequest request);
+    ProviderServiceResponse getById(String id);
+    List<ProviderServiceResponse> getActiveByProvider(String providerId);
+    PageResponse<ProviderServiceResponse> getByProvider(String providerId, Pageable pageable);
+    ProviderServiceResponse update(String id, ProviderServiceRequest request);
     void deactivate(String id);
 }

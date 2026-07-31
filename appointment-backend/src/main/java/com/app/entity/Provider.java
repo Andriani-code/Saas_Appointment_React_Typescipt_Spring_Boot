@@ -6,13 +6,13 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "specialists")
+@Table(name = "providers")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Specialist extends BaseEntity {
+public class Provider extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -40,6 +40,9 @@ public class Specialist extends BaseEntity {
 
     @Column(name = "cover_photo")
     private String coverPhoto;
+
+    @Column(name = "category")
+    private String category;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default

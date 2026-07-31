@@ -1,16 +1,16 @@
 package com.app.service.impl;
 
-import com.app.dto.request.SpecialistServiceRequest;
+import com.app.dto.request.ProviderServiceRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistServiceResponse;
-import com.app.entity.Specialist;
-import com.app.entity.SpecialistService;
+import com.app.dto.response.ProviderServiceResponse;
+import com.app.entity.Provider;
+import com.app.entity.ProviderService;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
-import com.app.mapper.SpecialistServiceMapper;
-import com.app.repository.SpecialistRepository;
-import com.app.repository.SpecialistServiceRepository;
-import com.app.service.SpecialistOfferingService;
+import com.app.mapper.ProviderServiceMapper;
+import com.app.repository.ProviderRepository;
+import com.app.repository.ProviderServiceRepository;
+import com.app.service.ProviderOfferingService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,37 +24,37 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SpecialistOfferingServiceImpl implements SpecialistOfferingService {
+public class ProviderOfferingServiceImpl implements ProviderOfferingService {
 
-    private final SpecialistServiceRepository serviceRepository;
-    private final SpecialistRepository specialistRepository;
-    private final SpecialistServiceMapper serviceMapper;
+    private final ProviderServiceRepository serviceRepository;
+    private final ProviderRepository providerRepository;
+    private final ProviderServiceMapper serviceMapper;
 
     @Override
     @Transactional
-    public SpecialistServiceResponse create(SpecialistServiceRequest request) {
+    public ProviderServiceResponse create(ProviderServiceRequest request) {
         validateServiceRequest(request);
 
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
-        SpecialistService service = serviceMapper.toEntity(request);
-        service.setSpecialist(specialist);
+        ProviderService service = serviceMapper.toEntity(request);
+        service.setProvider(provider);
 
         return serviceMapper.toResponse(serviceRepository.save(service));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SpecialistServiceResponse getById(String id) {
-        SpecialistService service = serviceRepository.findById(UUID.fromString(id))
+    public ProviderServiceResponse getById(String id) {
+        ProviderService service = serviceRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
         return serviceMapper.toResponse(service);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SpecialistServiceResponse> getActiveBySpecialist(String specialistId) {
-        return serviceRepository.findActiveBySpecialistId(UUID.fromString(specialistId))
+    public List<ProviderServiceResponse> getActiveByProvider(String providerId) {
+        return serviceRepository.findActiveByProviderId(UUID.fromString(providerId))
                 .stream()
                 .map(serviceMapper::toResponse)
                 .collect(Collectors.toList());
@@ -62,21 +62,21 @@ public class SpecialistOfferingServiceImpl implements SpecialistOfferingService 
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SpecialistServiceResponse> getBySpecialist(String specialistId, Pageable pageable) {
+    public PageResponse<ProviderServiceResponse> getByProvider(String providerId, Pageable pageable) {
         return PageResponse.from(
-                serviceRepository.findBySpecialistId(UUID.fromString(specialistId), pageable),
+                serviceRepository.findByProviderId(UUID.fromString(providerId), pageable),
                 serviceMapper::toResponse
         );
     }
 
     @Override
     @Transactional
-    public SpecialistServiceResponse update(String id, SpecialistServiceRequest request) {
+    public ProviderServiceResponse update(String id, ProviderServiceRequest request) {
         validateServiceRequest(request);
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
-        SpecialistService service = serviceRepository
-                .findByIdAndSpecialistId(UUID.fromString(id), specialist.getId())
+        ProviderService service = serviceRepository
+                .findByIdAndProviderId(UUID.fromString(id), provider.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
 
         serviceMapper.updateEntityFromRequest(request, service);
@@ -86,17 +86,17 @@ public class SpecialistOfferingServiceImpl implements SpecialistOfferingService 
     @Override
     @Transactional
     public void deactivate(String id) {
-        Specialist specialist = getAuthenticatedSpecialist();
+        Provider provider = getAuthenticatedProvider();
 
-        SpecialistService service = serviceRepository
-                .findByIdAndSpecialistId(UUID.fromString(id), specialist.getId())
+        ProviderService service = serviceRepository
+                .findByIdAndProviderId(UUID.fromString(id), provider.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
 
         service.setIsActive(false);
         serviceRepository.save(service);
     }
 
-    private void validateServiceRequest(SpecialistServiceRequest request) {
+    private void validateServiceRequest(ProviderServiceRequest request) {
         if (request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Price must be greater than 0");
         }
@@ -110,9 +110,9 @@ public class SpecialistOfferingServiceImpl implements SpecialistOfferingService 
         }
     }
 
-    private Specialist getAuthenticatedSpecialist() {
+    private Provider getAuthenticatedProvider() {
         String email = SecurityUtils.getCurrentUserEmail();
-        return specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        return providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
     }
 }

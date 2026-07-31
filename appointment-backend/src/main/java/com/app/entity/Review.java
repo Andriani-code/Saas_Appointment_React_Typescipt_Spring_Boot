@@ -19,8 +19,8 @@ public class Review extends BaseEntity {
     private Client client;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialist_id", nullable = false)
-    private Specialist specialist;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false, unique = true)

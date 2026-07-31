@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class SpecialistRequest {
+public class ProviderRequest {
 
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -22,6 +22,7 @@ public class SpecialistRequest {
     private String bio;
     private String profilePhoto;
     private String coverPhoto;
+    private String category;
 
     @Valid
     private AddressRequest personalAddress;

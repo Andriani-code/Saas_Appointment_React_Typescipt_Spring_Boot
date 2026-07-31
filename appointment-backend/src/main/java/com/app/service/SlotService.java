@@ -13,8 +13,8 @@ public interface SlotService {
     SlotResponse createSlot(SlotRequest request);
     void deleteSlot(String slotId);
     List<SlotResponse> generateSlots(SlotGenerationRequest request);
-    List<SlotResponse> getAvailableSlotsBySpecialistAndDate(String specialistId, LocalDate date);
-    PageResponse<SlotResponse> getSlotsBySpecialistAndDateRange(String specialistId, LocalDate start, LocalDate end, Pageable pageable);
+    List<SlotResponse> getAvailableSlotsByProviderAndDate(String providerId, LocalDate date);
+    PageResponse<SlotResponse> getSlotsByProviderAndDateRange(String providerId, LocalDate start, LocalDate end, Pageable pageable);
     SlotResponse blockSlot(String slotId);
     SlotResponse unblockSlot(String slotId);
 }

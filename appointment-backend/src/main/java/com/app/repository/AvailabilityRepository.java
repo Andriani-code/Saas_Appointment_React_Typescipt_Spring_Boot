@@ -14,14 +14,14 @@ import java.util.UUID;
 @Repository
 public interface AvailabilityRepository extends JpaRepository<Availability, UUID> {
 
-    @Query("SELECT a FROM Availability a JOIN FETCH a.specialist s WHERE s.id = :specialistId AND a.isActive = true")
-    List<Availability> findActiveBySpecialistId(@Param("specialistId") UUID specialistId);
+    @Query("SELECT a FROM Availability a JOIN FETCH a.provider s WHERE s.id = :providerId AND a.isActive = true")
+    List<Availability> findActiveByProviderId(@Param("providerId") UUID providerId);
 
-    @Query("SELECT a FROM Availability a JOIN FETCH a.specialist s WHERE s.id = :specialistId AND a.date = :date")
-    Optional<Availability> findBySpecialistIdAndDate(
-            @Param("specialistId") UUID specialistId,
+    @Query("SELECT a FROM Availability a JOIN FETCH a.provider s WHERE s.id = :providerId AND a.date = :date")
+    Optional<Availability> findByProviderIdAndDate(
+            @Param("providerId") UUID providerId,
             @Param("date") LocalDate date);
 
-    @Query("SELECT a FROM Availability a JOIN FETCH a.specialist s WHERE s.id = :specialistId")
-    List<Availability> findAllBySpecialistId(@Param("specialistId") UUID specialistId);
+    @Query("SELECT a FROM Availability a JOIN FETCH a.provider s WHERE s.id = :providerId")
+    List<Availability> findAllByProviderId(@Param("providerId") UUID providerId);
 }

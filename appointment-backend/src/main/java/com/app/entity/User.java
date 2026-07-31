@@ -1,6 +1,6 @@
 package com.app.entity;
 
-import com.app.entity.enums.Provider;
+import com.app.entity.enums.AuthProvider;
 import com.app.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private Provider provider = Provider.LOCAL;
+    private AuthProvider provider = AuthProvider.LOCAL;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default

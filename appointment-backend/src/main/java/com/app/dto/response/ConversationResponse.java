@@ -9,8 +9,8 @@ public class ConversationResponse {
     private String id;
     private String clientId;
     private String clientFullName;
-    private String specialistId;
-    private String specialistDisplayName;
+    private String providerId;
+    private String providerDisplayName;
     private String reservationId;
     private Boolean isActive;
     private long unreadCount;

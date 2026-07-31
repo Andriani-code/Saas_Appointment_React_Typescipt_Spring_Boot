@@ -26,5 +26,5 @@ public class RegisterRequest {
     private ClientRequest clientProfile;
 
     @Valid
-    private SpecialistRequest specialistProfile;
+    private ProviderRequest providerProfile;
 }

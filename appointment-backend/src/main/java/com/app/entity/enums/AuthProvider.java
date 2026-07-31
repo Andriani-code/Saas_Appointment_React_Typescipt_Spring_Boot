@@ -1,6 +1,6 @@
 package com.app.entity.enums;
 
-public enum Provider {
+public enum AuthProvider {
     LOCAL,
     GOOGLE
 }

@@ -31,15 +31,15 @@ public class SlotController {
     private final SlotService slotService;
 
     @PostMapping
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Create a manual slot for a specialist")
+    @Operation(summary = "Create a manual slot for a provider")
     public ResponseEntity<SlotResponse> createSlot(@Valid @RequestBody SlotRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(slotService.createSlot(request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Delete a manual slot")
     public ResponseEntity<Void> deleteSlot(@PathVariable String id) {
@@ -48,35 +48,35 @@ public class SlotController {
     }
 
     @PostMapping("/generate")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Generate slots from availability for a date range")
     public ResponseEntity<List<SlotResponse>> generateSlots(@Valid @RequestBody SlotGenerationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(slotService.generateSlots(request));
     }
 
-    @GetMapping("/specialist/{specialistId}")
-    @Operation(summary = "Get available slots for a specialist on a date (public)")
-    public ResponseEntity<List<SlotResponse>> getBySpecialistAndDate(
-            @PathVariable String specialistId,
+    @GetMapping("/provider/{providerId}")
+    @Operation(summary = "Get available slots for a provider on a date (public)")
+    public ResponseEntity<List<SlotResponse>> getByProviderAndDate(
+            @PathVariable String providerId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(slotService.getAvailableSlotsBySpecialistAndDate(specialistId, date));
+        return ResponseEntity.ok(slotService.getAvailableSlotsByProviderAndDate(providerId, date));
     }
 
-    @GetMapping("/specialist/{specialistId}/range")
-    @Operation(summary = "Get available slots for a specialist within a date range (paginated)")
-    public ResponseEntity<PageResponse<SlotResponse>> getBySpecialistAndRange(
-            @PathVariable String specialistId,
+    @GetMapping("/provider/{providerId}/range")
+    @Operation(summary = "Get available slots for a provider within a date range (paginated)")
+    public ResponseEntity<PageResponse<SlotResponse>> getByProviderAndRange(
+            @PathVariable String providerId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         return ResponseEntity.ok(
-                slotService.getSlotsBySpecialistAndDateRange(specialistId, start, end, PageRequest.of(page, size)));
+                slotService.getSlotsByProviderAndDateRange(providerId, start, end, PageRequest.of(page, size)));
     }
 
     @PatchMapping("/{id}/block")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Block a slot")
     public ResponseEntity<SlotResponse> block(@PathVariable String id) {
@@ -84,7 +84,7 @@ public class SlotController {
     }
 
     @PatchMapping("/{id}/unblock")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Unblock a slot")
     public ResponseEntity<SlotResponse> unblock(@PathVariable String id) {

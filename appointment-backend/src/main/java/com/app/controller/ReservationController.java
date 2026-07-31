@@ -50,44 +50,44 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getMyReservationsAsClient(PageRequest.of(page, size)));
     }
 
-    @GetMapping("/my/specialist")
-    @PreAuthorize("hasRole('SPECIALIST')")
-    @Operation(summary = "Get my reservations as a specialist")
-    public ResponseEntity<PageResponse<ReservationResponse>> getMyAsSpecialist(
+    @GetMapping("/my/provider")
+    @PreAuthorize("hasRole('PROVIDER')")
+    @Operation(summary = "Get my reservations as a provider")
+    public ResponseEntity<PageResponse<ReservationResponse>> getMyAsProvider(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(reservationService.getMyReservationsAsSpecialist(PageRequest.of(page, size)));
+        return ResponseEntity.ok(reservationService.getMyReservationsAsProvider(PageRequest.of(page, size)));
     }
 
     @PatchMapping("/{id}/confirm")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Confirm a reservation")
     public ResponseEntity<ReservationResponse> confirm(@PathVariable String id) {
         return ResponseEntity.ok(reservationService.confirm(id));
     }
 
     @PatchMapping("/{id}/reject")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Reject a reservation")
     public ResponseEntity<ReservationResponse> reject(@PathVariable String id) {
         return ResponseEntity.ok(reservationService.reject(id));
     }
 
     @PatchMapping("/{id}/cancel")
-    @Operation(summary = "Cancel a reservation (client or specialist)")
+    @Operation(summary = "Cancel a reservation (client or provider)")
     public ResponseEntity<ReservationResponse> cancel(@PathVariable String id) {
         return ResponseEntity.ok(reservationService.cancel(id));
     }
 
     @PatchMapping("/{id}/complete")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Mark reservation as completed")
     public ResponseEntity<ReservationResponse> complete(@PathVariable String id) {
         return ResponseEntity.ok(reservationService.markCompleted(id));
     }
 
     @PatchMapping("/{id}/no-show")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Mark reservation as no-show")
     public ResponseEntity<ReservationResponse> noShow(@PathVariable String id) {
         return ResponseEntity.ok(reservationService.markNoShow(id));

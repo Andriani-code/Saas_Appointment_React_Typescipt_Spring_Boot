@@ -5,10 +5,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class SpecialistServiceResponse {
+public class ProviderServiceResponse {
     private String id;
-    private String specialistId;
-    private String specialistDisplayName;
+    private String providerId;
+    private String providerDisplayName;
     private String name;
     private String description;
     private Integer durationMinutes;

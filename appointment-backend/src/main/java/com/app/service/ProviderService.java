@@ -1,21 +1,21 @@
 package com.app.service;
 
-import com.app.dto.request.SpecialistRequest;
+import com.app.dto.request.ProviderRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistResponse;
+import com.app.dto.response.ProviderResponse;
 import org.springframework.data.domain.Pageable;
 
-public interface SpecialistService {
-    SpecialistResponse createProfile(SpecialistRequest request);
+public interface ProviderService {
+    ProviderResponse createProfile(ProviderRequest request);
     boolean hasMyProfile();
-    SpecialistResponse getMyProfile();
-    SpecialistResponse getById(String id);
-    SpecialistResponse updateProfile(SpecialistRequest request);
-    SpecialistResponse requestVerification();
-    PageResponse<SpecialistResponse> getAll(Pageable pageable);
-    PageResponse<SpecialistResponse> getByStatus(String status, Pageable pageable);
-    PageResponse<SpecialistResponse> getAllForAdmin(Pageable pageable);
-    PageResponse<SpecialistResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable);
-    SpecialistResponse approveVerification(String specialistId);
-    SpecialistResponse rejectVerification(String specialistId);
+    ProviderResponse getMyProfile();
+    ProviderResponse getById(String id);
+    ProviderResponse updateProfile(ProviderRequest request);
+    ProviderResponse requestVerification();
+    PageResponse<ProviderResponse> getAll(Pageable pageable);
+    PageResponse<ProviderResponse> getByStatus(String status, Pageable pageable);
+    PageResponse<ProviderResponse> getAllForAdmin(Pageable pageable);
+    PageResponse<ProviderResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable);
+    ProviderResponse approveVerification(String providerId);
+    ProviderResponse rejectVerification(String providerId);
 }

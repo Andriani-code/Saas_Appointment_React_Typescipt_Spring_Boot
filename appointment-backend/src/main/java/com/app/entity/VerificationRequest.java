@@ -12,12 +12,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 @Table(name = "verification_requests",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"specialist_id"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = {"provider_id"}))
 public class VerificationRequest extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialist_id", nullable = false, unique = true)
-    private Specialist specialist;
+    @JoinColumn(name = "provider_id", nullable = false, unique = true)
+    private Provider provider;
 
     @Column(columnDefinition = "TEXT")
     private String description;

@@ -1,9 +1,9 @@
 package com.app.controller;
 
-import com.app.dto.request.SpecialistRequest;
+import com.app.dto.request.ProviderRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistResponse;
-import com.app.service.SpecialistService;
+import com.app.dto.response.ProviderResponse;
+import com.app.service.ProviderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,111 +20,111 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/specialists")
+@RequestMapping("/api/v1/providers")
 @RequiredArgsConstructor
-@Tag(name = "Specialists", description = "Specialist profile and discovery")
-public class SpecialistController {
+@Tag(name = "Providers", description = "Provider profile and discovery")
+public class ProviderController {
 
-    private final SpecialistService specialistService;
+    private final ProviderService providerService;
 
     @PostMapping
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Create specialist profile")
-    public ResponseEntity<SpecialistResponse> create(@Valid @RequestBody SpecialistRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(specialistService.createProfile(request));
+    @Operation(summary = "Create provider profile")
+    public ResponseEntity<ProviderResponse> create(@Valid @RequestBody ProviderRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(providerService.createProfile(request));
     }
 
     @GetMapping("/me/exists")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Check whether my specialist profile exists")
+    @Operation(summary = "Check whether my provider profile exists")
     public ResponseEntity<Boolean> exists() {
-        return ResponseEntity.ok(specialistService.hasMyProfile());
+        return ResponseEntity.ok(providerService.hasMyProfile());
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get current specialist profile")
-    public ResponseEntity<SpecialistResponse> getMe() {
-        return ResponseEntity.ok(specialistService.getMyProfile());
+    @Operation(summary = "Get current provider profile")
+    public ResponseEntity<ProviderResponse> getMe() {
+        return ResponseEntity.ok(providerService.getMyProfile());
     }
 
     @PostMapping("/me/verify")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Request profile verification")
-    public ResponseEntity<SpecialistResponse> requestVerification() {
-        return ResponseEntity.ok(specialistService.requestVerification());
+    public ResponseEntity<ProviderResponse> requestVerification() {
+        return ResponseEntity.ok(providerService.requestVerification());
     }
 
     @PutMapping("/me")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Update my specialist profile")
-    public ResponseEntity<SpecialistResponse> update(@Valid @RequestBody SpecialistRequest request) {
-        return ResponseEntity.ok(specialistService.updateProfile(request));
+    @Operation(summary = "Update my provider profile")
+    public ResponseEntity<ProviderResponse> update(@Valid @RequestBody ProviderRequest request) {
+        return ResponseEntity.ok(providerService.updateProfile(request));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get specialist by ID (public)")
-    public ResponseEntity<SpecialistResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(specialistService.getById(id));
+    @Operation(summary = "Get provider by ID (public)")
+    public ResponseEntity<ProviderResponse> getById(@PathVariable String id) {
+        return ResponseEntity.ok(providerService.getById(id));
     }
 
     @GetMapping
-    @Operation(summary = "List all verified specialists (public)")
-    public ResponseEntity<PageResponse<SpecialistResponse>> getAll(
+    @Operation(summary = "List all verified providers (public)")
+    public ResponseEntity<PageResponse<ProviderResponse>> getAll(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(specialistService.getAll(PageRequest.of(page, size)));
+        return ResponseEntity.ok(providerService.getAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "List all specialists for admin")
-    public ResponseEntity<PageResponse<SpecialistResponse>> getAllForAdmin(
+    @Operation(summary = "List all providers for admin")
+    public ResponseEntity<PageResponse<ProviderResponse>> getAllForAdmin(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(specialistService.getAllForAdmin(PageRequest.of(page, size)));
+        return ResponseEntity.ok(providerService.getAllForAdmin(PageRequest.of(page, size)));
     }
 
     @GetMapping("/admin/pending")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "List specialists pending verification")
-    public ResponseEntity<PageResponse<SpecialistResponse>> getPending(
+    @Operation(summary = "List providers pending verification")
+    public ResponseEntity<PageResponse<ProviderResponse>> getPending(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(specialistService.getByStatus("PENDING", PageRequest.of(page, size)));
+        return ResponseEntity.ok(providerService.getByStatus("PENDING", PageRequest.of(page, size)));
     }
 
     @GetMapping("/nearby")
-    @Operation(summary = "Find nearby specialists by geolocation (public)")
-    public ResponseEntity<PageResponse<SpecialistResponse>> getNearby(
+    @Operation(summary = "Find nearby providers by geolocation (public)")
+    public ResponseEntity<PageResponse<ProviderResponse>> getNearby(
             @RequestParam double lat,
             @RequestParam double lng,
             @RequestParam(defaultValue = "25.0") double radiusKm,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(specialistService.getNearby(lat, lng, radiusKm, PageRequest.of(page, size)));
+        return ResponseEntity.ok(providerService.getNearby(lat, lng, radiusKm, PageRequest.of(page, size)));
     }
 
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Approve specialist verification (admin only)")
-    public ResponseEntity<SpecialistResponse> approve(@PathVariable String id) {
-        return ResponseEntity.ok(specialistService.approveVerification(id));
+    @Operation(summary = "Approve provider verification (admin only)")
+    public ResponseEntity<ProviderResponse> approve(@PathVariable String id) {
+        return ResponseEntity.ok(providerService.approveVerification(id));
     }
 
     @PatchMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Reject specialist verification (admin only)")
-    public ResponseEntity<SpecialistResponse> reject(@PathVariable String id) {
-        return ResponseEntity.ok(specialistService.rejectVerification(id));
+    @Operation(summary = "Reject provider verification (admin only)")
+    public ResponseEntity<ProviderResponse> reject(@PathVariable String id) {
+        return ResponseEntity.ok(providerService.rejectVerification(id));
     }
 }

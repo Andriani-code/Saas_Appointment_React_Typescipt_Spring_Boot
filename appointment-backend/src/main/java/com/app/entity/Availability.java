@@ -18,8 +18,8 @@ import java.time.LocalTime;
 public class Availability extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialist_id", nullable = false)
-    private Specialist specialist;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @Column(nullable = false)
     private LocalDate date;

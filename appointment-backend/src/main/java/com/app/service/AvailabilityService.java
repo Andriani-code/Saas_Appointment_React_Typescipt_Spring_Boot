@@ -10,5 +10,5 @@ public interface AvailabilityService {
     AvailabilityResponse update(String id, AvailabilityRequest request);
     void delete(String id);
     List<AvailabilityResponse> getMyAvailabilities();
-    List<AvailabilityResponse> getBySpecialist(String specialistId);
+    List<AvailabilityResponse> getByProvider(String providerId);
 }

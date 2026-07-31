@@ -57,7 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = Review.builder()
                 .client(client)
-                .specialist(reservation.getSpecialist())
+                .provider(reservation.getProvider())
                 .reservation(reservation)
                 .rating(request.getRating().shortValue())
                 .comment(request.getComment())
@@ -69,9 +69,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ReviewResponse> getBySpecialist(String specialistId, Pageable pageable) {
+    public PageResponse<ReviewResponse> getByProvider(String providerId, Pageable pageable) {
         return PageResponse.from(
-                reviewRepository.findVisibleBySpecialistId(UUID.fromString(specialistId), pageable),
+                reviewRepository.findVisibleByProviderId(UUID.fromString(providerId), pageable),
                 reviewMapper::toResponse);
     }
 

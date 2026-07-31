@@ -17,30 +17,30 @@ import java.util.UUID;
 @Repository
 public interface AvailableSlotRepository extends JpaRepository<AvailableSlot, UUID> {
 
-    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.specialist s WHERE s.id = :specialistId AND slot.date = :date AND slot.status = :status")
-    List<AvailableSlot> findBySpecialistIdAndDateAndStatus(
-            @Param("specialistId") UUID specialistId,
+    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.provider s WHERE s.id = :providerId AND slot.date = :date AND slot.status = :status")
+    List<AvailableSlot> findByProviderIdAndDateAndStatus(
+            @Param("providerId") UUID providerId,
             @Param("date") LocalDate date,
             @Param("status") SlotStatus status);
 
-    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.specialist s WHERE s.id = :specialistId AND slot.date BETWEEN :startDate AND :endDate AND slot.status = :status")
-    Page<AvailableSlot> findBySpecialistIdAndDateRangeAndStatus(
-            @Param("specialistId") UUID specialistId,
+    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.provider s WHERE s.id = :providerId AND slot.date BETWEEN :startDate AND :endDate AND slot.status = :status")
+    Page<AvailableSlot> findByProviderIdAndDateRangeAndStatus(
+            @Param("providerId") UUID providerId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("status") SlotStatus status,
             Pageable pageable);
 
-    boolean existsBySpecialistIdAndDateAndStartTime(UUID specialistId, LocalDate date, LocalTime startTime);
+    boolean existsByProviderIdAndDateAndStartTime(UUID providerId, LocalDate date, LocalTime startTime);
 
-    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.specialist s WHERE s.id = :specialistId AND slot.date = :date")
-    List<AvailableSlot> findBySpecialistIdAndDate(
-            @Param("specialistId") UUID specialistId,
+    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.provider s WHERE s.id = :providerId AND slot.date = :date")
+    List<AvailableSlot> findByProviderIdAndDate(
+            @Param("providerId") UUID providerId,
             @Param("date") LocalDate date);
 
-    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.specialist s WHERE s.id = :specialistId AND slot.date BETWEEN :startDate AND :endDate")
-    Page<AvailableSlot> findBySpecialistIdAndDateRange(
-            @Param("specialistId") UUID specialistId,
+    @Query("SELECT slot FROM AvailableSlot slot JOIN FETCH slot.provider s WHERE s.id = :providerId AND slot.date BETWEEN :startDate AND :endDate")
+    Page<AvailableSlot> findByProviderIdAndDateRange(
+            @Param("providerId") UUID providerId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);

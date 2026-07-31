@@ -17,7 +17,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
     @Query("""
             SELECT c FROM Conversation c
             JOIN FETCH c.client cl
-            JOIN FETCH c.specialist s
+            JOIN FETCH c.provider s
             WHERE cl.id = :clientId AND c.isActive = true
             """)
     Page<Conversation> findActiveByClientId(@Param("clientId") UUID clientId, Pageable pageable);
@@ -25,23 +25,23 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
     @Query("""
             SELECT c FROM Conversation c
             JOIN FETCH c.client cl
-            JOIN FETCH c.specialist s
-            WHERE s.id = :specialistId AND c.isActive = true
+            JOIN FETCH c.provider s
+            WHERE s.id = :providerId AND c.isActive = true
             """)
-    Page<Conversation> findActiveBySpecialistId(@Param("specialistId") UUID specialistId, Pageable pageable);
+    Page<Conversation> findActiveByProviderId(@Param("providerId") UUID providerId, Pageable pageable);
 
     @Query("""
             SELECT c FROM Conversation c
-            WHERE c.client.id = :clientId AND c.specialist.id = :specialistId AND c.isActive = true
+            WHERE c.client.id = :clientId AND c.provider.id = :providerId AND c.isActive = true
             """)
-    Optional<Conversation> findByClientIdAndSpecialistId(
+    Optional<Conversation> findByClientIdAndProviderId(
             @Param("clientId") UUID clientId,
-            @Param("specialistId") UUID specialistId);
+            @Param("providerId") UUID providerId);
 
     @Query("""
             SELECT c FROM Conversation c
             JOIN FETCH c.client cl
-            JOIN FETCH c.specialist s
+            JOIN FETCH c.provider s
             WHERE c.reservation.id = :reservationId
             """)
     Optional<Conversation> findByReservationId(@Param("reservationId") UUID reservationId);

@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface SlotMapper {
 
     @Mapping(target = "id", expression = "java(uuidToString(slot.getId()))")
-    @Mapping(target = "specialistId", expression = "java(uuidToString(slot.getSpecialist().getId()))")
+    @Mapping(target = "providerId", expression = "java(uuidToString(slot.getProvider().getId()))")
     @Mapping(target = "serviceId", expression = "java(slot.getService() != null ? uuidToString(slot.getService().getId()) : null)")
     @Mapping(target = "status", expression = "java(slot.getStatus().name())")
     SlotResponse toResponse(AvailableSlot slot);

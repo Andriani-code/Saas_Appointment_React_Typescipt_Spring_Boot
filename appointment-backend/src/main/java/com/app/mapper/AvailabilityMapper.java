@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface AvailabilityMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "specialist", ignore = true)
+    @Mapping(target = "provider", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -22,12 +22,12 @@ public interface AvailabilityMapper {
     Availability toEntity(AvailabilityRequest request);
 
     @Mapping(target = "id", expression = "java(uuidToString(availability.getId()))")
-    @Mapping(target = "specialistId", expression = "java(uuidToString(availability.getSpecialist().getId()))")
+    @Mapping(target = "providerId", expression = "java(uuidToString(availability.getProvider().getId()))")
     AvailabilityResponse toResponse(Availability availability);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "specialist", ignore = true)
+    @Mapping(target = "provider", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

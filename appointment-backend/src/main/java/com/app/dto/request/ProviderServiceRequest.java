@@ -6,7 +6,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class SpecialistServiceRequest {
+public class ProviderServiceRequest {
 
     @NotBlank(message = "Service name is required")
     private String name;

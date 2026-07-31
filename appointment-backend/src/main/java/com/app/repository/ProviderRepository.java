@@ -1,6 +1,6 @@
 package com.app.repository;
 
-import com.app.entity.Specialist;
+import com.app.entity.Provider;
 import com.app.entity.enums.VerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,24 +13,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SpecialistRepository extends JpaRepository<Specialist, UUID> {
+public interface ProviderRepository extends JpaRepository<Provider, UUID> {
 
-    @Query("SELECT s FROM Specialist s JOIN FETCH s.user WHERE s.user.id = :userId")
-    Optional<Specialist> findByUserId(@Param("userId") UUID userId);
+    @Query("SELECT s FROM Provider s JOIN FETCH s.user WHERE s.user.id = :userId")
+    Optional<Provider> findByUserId(@Param("userId") UUID userId);
 
-    @Query("SELECT s FROM Specialist s JOIN FETCH s.user WHERE s.user.email = :email")
-    Optional<Specialist> findByUserEmail(@Param("email") String email);
+    @Query("SELECT s FROM Provider s JOIN FETCH s.user WHERE s.user.email = :email")
+    Optional<Provider> findByUserEmail(@Param("email") String email);
 
-    Page<Specialist> findByIsActiveAndIsVerified(Boolean isActive, Boolean isVerified, Pageable pageable);
+    Page<Provider> findByIsActiveAndIsVerified(Boolean isActive, Boolean isVerified, Pageable pageable);
 
-    Page<Specialist> findByVerificationStatus(VerificationStatus status, Pageable pageable);
+    Page<Provider> findByVerificationStatus(VerificationStatus status, Pageable pageable);
 
     /**
-     * Find specialists sorted by distance from given coordinates using Haversine formula.
-     * Returns specialists within radiusKm kilometers.
+     * Find providers sorted by distance from given coordinates using Haversine formula.
+     * Returns providers within radiusKm kilometers.
      */
     @Query(value = """
-            SELECT s.* FROM specialists s
+            SELECT s.* FROM providers s
             JOIN addresses a ON s.service_address_id = a.id
             WHERE s.is_active = true AND s.is_verified = true
               AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
@@ -50,7 +50,7 @@ public interface SpecialistRepository extends JpaRepository<Specialist, UUID> {
             ) ASC
             """,
             countQuery = """
-            SELECT COUNT(s.id) FROM specialists s
+            SELECT COUNT(s.id) FROM providers s
             JOIN addresses a ON s.service_address_id = a.id
             WHERE s.is_active = true AND s.is_verified = true
               AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
@@ -63,7 +63,7 @@ public interface SpecialistRepository extends JpaRepository<Specialist, UUID> {
               ) <= :radiusKm
             """,
             nativeQuery = true)
-    Page<Specialist> findNearbySpecialists(
+    Page<Provider> findNearbyProviders(
             @Param("lat") double lat,
             @Param("lng") double lng,
             @Param("radiusKm") double radiusKm,

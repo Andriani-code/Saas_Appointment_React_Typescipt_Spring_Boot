@@ -8,7 +8,7 @@ import java.time.LocalTime;
 @Data
 public class SlotResponse {
     private String id;
-    private String specialistId;
+    private String providerId;
     private String serviceId;
     private LocalDate date;
     private LocalTime startTime;

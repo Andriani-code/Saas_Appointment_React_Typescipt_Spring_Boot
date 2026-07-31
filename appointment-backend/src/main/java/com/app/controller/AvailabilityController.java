@@ -19,20 +19,20 @@ import java.util.List;
 @RequestMapping("/api/v1/availability")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Availability", description = "Specialist weekly availability schedule")
+@Tag(name = "Availability", description = "Provider weekly availability schedule")
 public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
 
     @PostMapping
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Create availability for a day of week")
     public ResponseEntity<AvailabilityResponse> create(@Valid @RequestBody AvailabilityRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(availabilityService.create(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Update availability")
     public ResponseEntity<AvailabilityResponse> update(
             @PathVariable String id,
@@ -41,7 +41,7 @@ public class AvailabilityController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Delete availability")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         availabilityService.delete(id);
@@ -49,15 +49,15 @@ public class AvailabilityController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @Operation(summary = "Get my availabilities")
     public ResponseEntity<List<AvailabilityResponse>> getMyAvailabilities() {
         return ResponseEntity.ok(availabilityService.getMyAvailabilities());
     }
 
-    @GetMapping("/specialist/{specialistId}")
-    @Operation(summary = "Get availabilities for a specialist (public)")
-    public ResponseEntity<List<AvailabilityResponse>> getBySpecialist(@PathVariable String specialistId) {
-        return ResponseEntity.ok(availabilityService.getBySpecialist(specialistId));
+    @GetMapping("/provider/{providerId}")
+    @Operation(summary = "Get availabilities for a provider (public)")
+    public ResponseEntity<List<AvailabilityResponse>> getByProvider(@PathVariable String providerId) {
+        return ResponseEntity.ok(availabilityService.getByProvider(providerId));
     }
 }

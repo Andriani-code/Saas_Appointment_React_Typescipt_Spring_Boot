@@ -13,8 +13,8 @@ public interface ConversationMapper {
     @Mapping(target = "id", expression = "java(uuidToString(c.getId()))")
     @Mapping(target = "clientId", expression = "java(uuidToString(c.getClient().getId()))")
     @Mapping(target = "clientFullName", expression = "java(c.getClient().getFirstName() + ' ' + c.getClient().getLastName())")
-    @Mapping(target = "specialistId", expression = "java(uuidToString(c.getSpecialist().getId()))")
-    @Mapping(target = "specialistDisplayName", source = "specialist.displayName")
+    @Mapping(target = "providerId", expression = "java(uuidToString(c.getProvider().getId()))")
+    @Mapping(target = "providerDisplayName", source = "provider.displayName")
     @Mapping(target = "reservationId", expression = "java(c.getReservation() != null ? uuidToString(c.getReservation().getId()) : null)")
     @Mapping(target = "unreadCount", ignore = true)
     ConversationResponse toResponse(Conversation c);

@@ -13,7 +13,7 @@ public interface ReviewMapper {
     @Mapping(target = "id", expression = "java(uuidToString(r.getId()))")
     @Mapping(target = "clientId", expression = "java(uuidToString(r.getClient().getId()))")
     @Mapping(target = "clientFullName", expression = "java(r.getClient().getFirstName() + ' ' + r.getClient().getLastName())")
-    @Mapping(target = "specialistId", expression = "java(uuidToString(r.getSpecialist().getId()))")
+    @Mapping(target = "providerId", expression = "java(uuidToString(r.getProvider().getId()))")
     @Mapping(target = "reservationId", expression = "java(uuidToString(r.getReservation().getId()))")
     @Mapping(target = "rating", expression = "java(shortToInteger(r.getRating()))")
     ReviewResponse toResponse(Review r);

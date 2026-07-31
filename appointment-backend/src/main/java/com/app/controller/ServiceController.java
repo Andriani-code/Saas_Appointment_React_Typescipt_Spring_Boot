@@ -1,9 +1,9 @@
 package com.app.controller;
 
-import com.app.dto.request.SpecialistServiceRequest;
+import com.app.dto.request.ProviderServiceRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistServiceResponse;
-import com.app.service.SpecialistOfferingService;
+import com.app.dto.response.ProviderServiceResponse;
+import com.app.service.ProviderOfferingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,54 +20,54 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/services")
 @RequiredArgsConstructor
-@Tag(name = "Specialist Services", description = "Services offered by specialists")
+@Tag(name = "Provider Services", description = "Services offered by providers")
 public class ServiceController {
 
-    private final SpecialistOfferingService offeringService;
+    private final ProviderOfferingService offeringService;
 
     @PostMapping
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create a new service offering")
-    public ResponseEntity<SpecialistServiceResponse> create(@Valid @RequestBody SpecialistServiceRequest request) {
+    public ResponseEntity<ProviderServiceResponse> create(@Valid @RequestBody ProviderServiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(offeringService.create(request));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get service by ID")
-    public ResponseEntity<SpecialistServiceResponse> getById(@PathVariable String id) {
+    public ResponseEntity<ProviderServiceResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(offeringService.getById(id));
     }
 
-    @GetMapping("/specialist/{specialistId}")
-    @Operation(summary = "Get all active services for a specialist")
-    public ResponseEntity<List<SpecialistServiceResponse>> getActiveBySpecialist(@PathVariable String specialistId) {
-        return ResponseEntity.ok(offeringService.getActiveBySpecialist(specialistId));
+    @GetMapping("/provider/{providerId}")
+    @Operation(summary = "Get all active services for a provider")
+    public ResponseEntity<List<ProviderServiceResponse>> getActiveByProvider(@PathVariable String providerId) {
+        return ResponseEntity.ok(offeringService.getActiveByProvider(providerId));
     }
 
-    @GetMapping("/specialist/{specialistId}/all")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SPECIALIST')")
+    @GetMapping("/provider/{providerId}/all")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get all services for a specialist (paginated, admin/specialist)")
-    public ResponseEntity<PageResponse<SpecialistServiceResponse>> getAll(
-            @PathVariable String specialistId,
+    @Operation(summary = "Get all services for a provider (paginated, admin/provider)")
+    public ResponseEntity<PageResponse<ProviderServiceResponse>> getAll(
+            @PathVariable String providerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(offeringService.getBySpecialist(specialistId, PageRequest.of(page, size)));
+        return ResponseEntity.ok(offeringService.getByProvider(providerId, PageRequest.of(page, size)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update a service offering")
-    public ResponseEntity<SpecialistServiceResponse> update(
+    public ResponseEntity<ProviderServiceResponse> update(
             @PathVariable String id,
-            @Valid @RequestBody SpecialistServiceRequest request) {
+            @Valid @RequestBody ProviderServiceRequest request) {
         return ResponseEntity.ok(offeringService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SPECIALIST')")
+    @PreAuthorize("hasRole('PROVIDER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Deactivate a service offering")
     public ResponseEntity<Void> deactivate(@PathVariable String id) {

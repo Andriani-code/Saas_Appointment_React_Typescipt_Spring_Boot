@@ -9,7 +9,7 @@ public class ReviewResponse {
     private String id;
     private String clientId;
     private String clientFullName;
-    private String specialistId;
+    private String providerId;
     private String reservationId;
     private Integer rating;
     private String comment;

@@ -20,7 +20,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
             WHERE c.id = :clientId
@@ -30,17 +30,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
-            WHERE s.id = :specialistId
+            WHERE s.id = :providerId
             """)
-    Page<Reservation> findBySpecialistId(@Param("specialistId") UUID specialistId, Pageable pageable);
+    Page<Reservation> findByProviderId(@Param("providerId") UUID providerId, Pageable pageable);
 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
             WHERE c.id = :clientId AND r.status = :status
@@ -53,20 +53,20 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
-            WHERE s.id = :specialistId AND r.status = :status
+            WHERE s.id = :providerId AND r.status = :status
             """)
-    Page<Reservation> findBySpecialistIdAndStatus(
-            @Param("specialistId") UUID specialistId,
+    Page<Reservation> findByProviderIdAndStatus(
+            @Param("providerId") UUID providerId,
             @Param("status") ReservationStatus status,
             Pageable pageable);
 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
             WHERE r.id = :id
@@ -76,7 +76,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     @Query("""
             SELECT r FROM Reservation r
             JOIN FETCH r.client c
-            JOIN FETCH r.specialist s
+            JOIN FETCH r.provider s
             JOIN FETCH r.service sv
             JOIN FETCH r.slot sl
             WHERE sl.date = :date 

@@ -1,20 +1,20 @@
 package com.app.service.impl;
 
-import com.app.dto.request.SpecialistRequest;
+import com.app.dto.request.ProviderRequest;
 import com.app.dto.response.PageResponse;
-import com.app.dto.response.SpecialistResponse;
+import com.app.dto.response.ProviderResponse;
 import com.app.entity.Address;
-import com.app.entity.Specialist;
+import com.app.entity.Provider;
 import com.app.entity.User;
 import com.app.entity.enums.VerificationStatus;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
 import com.app.mapper.AddressMapper;
-import com.app.mapper.SpecialistMapper;
+import com.app.mapper.ProviderMapper;
 import com.app.repository.ReviewRepository;
-import com.app.repository.SpecialistRepository;
+import com.app.repository.ProviderRepository;
 import com.app.repository.UserRepository;
-import com.app.service.SpecialistService;
+import com.app.service.ProviderService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,172 +27,172 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class SpecialistServiceImpl implements SpecialistService {
+public class ProviderServiceImpl implements ProviderService {
 
-    private final SpecialistRepository specialistRepository;
+    private final ProviderRepository providerRepository;
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
-    private final SpecialistMapper specialistMapper;
+    private final ProviderMapper providerMapper;
     private final AddressMapper addressMapper;
 
     @Override
     @Transactional
-    public SpecialistResponse createProfile(SpecialistRequest request) {
+    public ProviderResponse createProfile(ProviderRequest request) {
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-        if (specialistRepository.findByUserId(user.getId()).isPresent()) {
-            throw new BadRequestException("Specialist profile already exists for this user");
+        if (providerRepository.findByUserId(user.getId()).isPresent()) {
+            throw new BadRequestException("Provider profile already exists for this user");
         }
 
-        Specialist specialist = specialistMapper.toEntity(request);
-        specialist.setUser(user);
+        Provider provider = providerMapper.toEntity(request);
+        provider.setUser(user);
 
         if (request.getPersonalAddress() != null) {
-            specialist.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
+            provider.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
         }
         if (request.getServiceAddress() != null) {
-            specialist.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
+            provider.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
         }
 
-        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
+        return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean hasMyProfile() {
         String email = SecurityUtils.getCurrentUserEmail();
-        return specialistRepository.findByUserEmail(email).isPresent();
+        return providerRepository.findByUserEmail(email).isPresent();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SpecialistResponse getMyProfile() {
+    public ProviderResponse getMyProfile() {
         String email = SecurityUtils.getCurrentUserEmail();
-        Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
-        return enrichWithRating(specialistMapper.toResponse(specialist));
+        Provider provider = providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
+        return enrichWithRating(providerMapper.toResponse(provider));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SpecialistResponse getById(String id) {
-        Specialist specialist = specialistRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist", "id", id));
-        return enrichWithRating(specialistMapper.toResponse(specialist));
+    public ProviderResponse getById(String id) {
+        Provider provider = providerRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Provider", "id", id));
+        return enrichWithRating(providerMapper.toResponse(provider));
     }
 
     @Override
     @Transactional
-    public SpecialistResponse updateProfile(SpecialistRequest request) {
+    public ProviderResponse updateProfile(ProviderRequest request) {
         String email = SecurityUtils.getCurrentUserEmail();
-        Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        Provider provider = providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
-        specialistMapper.updateEntityFromRequest(request, specialist);
+        providerMapper.updateEntityFromRequest(request, provider);
 
         if (request.getPersonalAddress() != null) {
-            if (specialist.getPersonalAddress() != null) {
-                addressMapper.updateEntityFromRequest(request.getPersonalAddress(), specialist.getPersonalAddress());
+            if (provider.getPersonalAddress() != null) {
+                addressMapper.updateEntityFromRequest(request.getPersonalAddress(), provider.getPersonalAddress());
             } else {
-                specialist.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
+                provider.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
             }
         }
         if (request.getServiceAddress() != null) {
-            if (specialist.getServiceAddress() != null) {
-                addressMapper.updateEntityFromRequest(request.getServiceAddress(), specialist.getServiceAddress());
+            if (provider.getServiceAddress() != null) {
+                addressMapper.updateEntityFromRequest(request.getServiceAddress(), provider.getServiceAddress());
             } else {
-                specialist.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
+                provider.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
             }
         }
 
-        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
+        return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SpecialistResponse> getAll(Pageable pageable) {
+    public PageResponse<ProviderResponse> getAll(Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);
-        Page<Specialist> page = specialistRepository.findByIsActiveAndIsVerified(true, true, cappedPageable);
-        return PageResponse.from(page, s -> enrichWithRating(specialistMapper.toResponse(s)));
+        Page<Provider> page = providerRepository.findByIsActiveAndIsVerified(true, true, cappedPageable);
+        return PageResponse.from(page, s -> enrichWithRating(providerMapper.toResponse(s)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SpecialistResponse> getByStatus(String status, Pageable pageable) {
+    public PageResponse<ProviderResponse> getByStatus(String status, Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);
         VerificationStatus verificationStatus = VerificationStatus.valueOf(status.toUpperCase());
-        Page<Specialist> page = specialistRepository.findByVerificationStatus(verificationStatus, cappedPageable);
-        return PageResponse.from(page, s -> enrichWithRating(specialistMapper.toResponse(s)));
+        Page<Provider> page = providerRepository.findByVerificationStatus(verificationStatus, cappedPageable);
+        return PageResponse.from(page, s -> enrichWithRating(providerMapper.toResponse(s)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SpecialistResponse> getAllForAdmin(Pageable pageable) {
+    public PageResponse<ProviderResponse> getAllForAdmin(Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);
-        Page<Specialist> page = specialistRepository.findAll(cappedPageable);
-        return PageResponse.from(page, s -> enrichWithRating(specialistMapper.toResponse(s)));
+        Page<Provider> page = providerRepository.findAll(cappedPageable);
+        return PageResponse.from(page, s -> enrichWithRating(providerMapper.toResponse(s)));
     }
 
     @Override
     @Transactional
-    public SpecialistResponse requestVerification() {
+    public ProviderResponse requestVerification() {
         String email = SecurityUtils.getCurrentUserEmail();
-        Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        Provider provider = providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
         
-        if (specialist.getVerificationStatus() == VerificationStatus.APPROVED) {
+        if (provider.getVerificationStatus() == VerificationStatus.APPROVED) {
             throw new BadRequestException("Profile is already verified");
         }
-        if (specialist.getVerificationStatus() == VerificationStatus.PENDING) {
+        if (provider.getVerificationStatus() == VerificationStatus.PENDING) {
             throw new BadRequestException("Verification is already pending");
         }
         
-        specialist.setVerificationStatus(VerificationStatus.PENDING);
-        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
+        provider.setVerificationStatus(VerificationStatus.PENDING);
+        return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<SpecialistResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable) {
+    public PageResponse<ProviderResponse> getNearby(double lat, double lng, double radiusKm, Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);
-        Page<Specialist> page = specialistRepository.findNearbySpecialists(lat, lng, radiusKm, cappedPageable);
-        return PageResponse.from(page, s -> enrichWithRating(specialistMapper.toResponse(s)));
+        Page<Provider> page = providerRepository.findNearbyProviders(lat, lng, radiusKm, cappedPageable);
+        return PageResponse.from(page, s -> enrichWithRating(providerMapper.toResponse(s)));
     }
 
     @Override
     @Transactional
-    public SpecialistResponse approveVerification(String specialistId) {
-        Specialist specialist = specialistRepository.findById(UUID.fromString(specialistId))
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist", "id", specialistId));
+    public ProviderResponse approveVerification(String providerId) {
+        Provider provider = providerRepository.findById(UUID.fromString(providerId))
+                .orElseThrow(() -> new ResourceNotFoundException("Provider", "id", providerId));
 
-        if (specialist.getVerificationStatus() != VerificationStatus.PENDING) {
+        if (provider.getVerificationStatus() != VerificationStatus.PENDING) {
             throw new BadRequestException("Only pending profiles can be approved");
         }
 
-        specialist.setVerificationStatus(VerificationStatus.APPROVED);
-        specialist.setIsVerified(true);
-        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
+        provider.setVerificationStatus(VerificationStatus.APPROVED);
+        provider.setIsVerified(true);
+        return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
     }
 
     @Override
     @Transactional
-    public SpecialistResponse rejectVerification(String specialistId) {
-        Specialist specialist = specialistRepository.findById(UUID.fromString(specialistId))
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist", "id", specialistId));
+    public ProviderResponse rejectVerification(String providerId) {
+        Provider provider = providerRepository.findById(UUID.fromString(providerId))
+                .orElseThrow(() -> new ResourceNotFoundException("Provider", "id", providerId));
 
-        if (specialist.getVerificationStatus() != VerificationStatus.PENDING) {
+        if (provider.getVerificationStatus() != VerificationStatus.PENDING) {
             throw new BadRequestException("Only pending profiles can be rejected");
         }
 
-        specialist.setVerificationStatus(VerificationStatus.REJECTED);
-        specialist.setIsVerified(false);
-        return enrichWithRating(specialistMapper.toResponse(specialistRepository.save(specialist)));
+        provider.setVerificationStatus(VerificationStatus.REJECTED);
+        provider.setIsVerified(false);
+        return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
     }
 
-    private SpecialistResponse enrichWithRating(SpecialistResponse response) {
-        reviewRepository.findAverageRatingBySpecialistId(UUID.fromString(response.getId()))
+    private ProviderResponse enrichWithRating(ProviderResponse response) {
+        reviewRepository.findAverageRatingByProviderId(UUID.fromString(response.getId()))
                 .ifPresent(response::setAverageRating);
         return response;
     }

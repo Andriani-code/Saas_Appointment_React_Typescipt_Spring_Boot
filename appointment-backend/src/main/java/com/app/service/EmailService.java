@@ -39,7 +39,7 @@ public class EmailService {
                 "</ul>" +
                 "<p>Statut actuel : <strong>EN ATTENTE</strong>. Vous recevrez un e-mail dès que le spécialiste aura confirmé.</p>",
                 reservation.getClient().getFirstName(),
-                reservation.getSpecialist().getFirstName(), reservation.getSpecialist().getLastName(),
+                reservation.getProvider().getFirstName(), reservation.getProvider().getLastName(),
                 reservation.getService().getName(),
                 reservation.getSlot().getDate().format(dateFormatter),
                 reservation.getSlot().getStartTime().format(timeFormatter)
@@ -61,7 +61,7 @@ public class EmailService {
                 "</ul>" +
                 "<p>Nous vous attendons avec impatience.</p>",
                 reservation.getClient().getFirstName(),
-                reservation.getSpecialist().getFirstName(), reservation.getSpecialist().getLastName(),
+                reservation.getProvider().getFirstName(), reservation.getProvider().getLastName(),
                 reservation.getService().getName(),
                 reservation.getSlot().getDate().format(dateFormatter),
                 reservation.getSlot().getStartTime().format(timeFormatter)
@@ -82,7 +82,7 @@ public class EmailService {
                 "</ul>" +
                 "<p>À demain !</p>",
                 reservation.getClient().getFirstName(),
-                reservation.getSpecialist().getFirstName(), reservation.getSpecialist().getLastName(),
+                reservation.getProvider().getFirstName(), reservation.getProvider().getLastName(),
                 reservation.getService().getName(),
                 reservation.getSlot().getStartTime().format(timeFormatter)
         );

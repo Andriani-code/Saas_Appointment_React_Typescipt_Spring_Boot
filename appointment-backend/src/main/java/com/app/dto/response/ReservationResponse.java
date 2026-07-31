@@ -10,8 +10,8 @@ public class ReservationResponse {
     private String id;
     private String clientId;
     private String clientFullName;
-    private String specialistId;
-    private String specialistDisplayName;
+    private String providerId;
+    private String providerDisplayName;
     private String serviceId;
     private String serviceName;
     private SlotResponse slot;

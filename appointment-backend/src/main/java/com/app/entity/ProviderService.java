@@ -7,17 +7,17 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "specialist_services")
+@Table(name = "provider_services")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class SpecialistService extends BaseEntity {
+public class ProviderService extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialist_id", nullable = false)
-    private Specialist specialist;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @Column(nullable = false)
     private String name;

@@ -46,10 +46,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/specialists/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/specialists/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/specialists").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/specialists/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/providers/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/providers/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/providers").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/providers/**").authenticated()
                         
                         .requestMatchers("/api/v1/services/**").authenticated()
                         .requestMatchers("/api/v1/availability/**").authenticated()

@@ -9,7 +9,7 @@ public interface ReservationService {
     ReservationResponse book(ReservationRequest request);
     ReservationResponse getById(String id);
     PageResponse<ReservationResponse> getMyReservationsAsClient(Pageable pageable);
-    PageResponse<ReservationResponse> getMyReservationsAsSpecialist(Pageable pageable);
+    PageResponse<ReservationResponse> getMyReservationsAsProvider(Pageable pageable);
     ReservationResponse confirm(String id);
     ReservationResponse reject(String id);
     ReservationResponse cancel(String id);
