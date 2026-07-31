@@ -30,8 +30,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ClientRepository clientRepository;
-    private final SpecialistRepository specialistRepository;
-    private final SpecialistServiceRepository specialistServiceRepository;
+    private final ProviderRepository providerRepository;
+    private final ProviderServiceRepository providerServiceRepository;
     private final AvailableSlotRepository slotRepository;
     private final ConversationRepository conversationRepository;
     private final ReservationMapper reservationMapper;
@@ -51,7 +51,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new BadRequestException("Slot is not available for booking");
         }
 
-        SpecialistService service = specialistServiceRepository
+        ProviderService service = providerServiceRepository
                 .findById(UUID.fromString(request.getServiceId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", request.getServiceId()));
 
@@ -59,8 +59,8 @@ public class ReservationServiceImpl implements ReservationService {
             throw new BadRequestException("This service is no longer active");
         }
 
-        if (!service.getSpecialist().getId().equals(slot.getSpecialist().getId())) {
-            throw new BadRequestException("Service and slot belong to different specialists");
+        if (!service.getProvider().getId().equals(slot.getProvider().getId())) {
+            throw new BadRequestException("Service and slot belong to different providers");
         }
 
         // Mark slot as booked
@@ -69,7 +69,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         Reservation reservation = Reservation.builder()
                 .client(client)
-                .specialist(slot.getSpecialist())
+                .provider(slot.getProvider())
                 .service(service)
                 .slot(slot)
                 .status(ReservationStatus.PENDING)
@@ -81,7 +81,7 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation saved = reservationRepository.save(reservation);
 
         // Update conversation if exists or create new one, and link last reservation
-        updateConversation(client, slot.getSpecialist(), saved);
+        updateConversation(client, slot.getProvider(), saved);
 
         // Send email confirmation to client
         emailService.sendBookingConfirmation(saved);
@@ -89,11 +89,11 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationMapper.toResponse(saved);
     }
 
-    private void updateConversation(Client client, Specialist specialist, Reservation reservation) {
-        Conversation conversation = conversationRepository.findByClientIdAndSpecialistId(client.getId(), specialist.getId())
+    private void updateConversation(Client client, Provider provider, Reservation reservation) {
+        Conversation conversation = conversationRepository.findByClientIdAndProviderId(client.getId(), provider.getId())
                 .orElseGet(() -> Conversation.builder()
                         .client(client)
-                        .specialist(specialist)
+                        .provider(provider)
                         .isActive(true)
                         .build());
         
@@ -127,16 +127,16 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ReservationResponse> getMyReservationsAsSpecialist(Pageable pageable) {
+    public PageResponse<ReservationResponse> getMyReservationsAsProvider(Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);
         String email = SecurityUtils.getCurrentUserEmail();
-        var specialistOpt = specialistRepository.findByUserEmail(email);
-        if (specialistOpt.isEmpty()) {
+        var providerOpt = providerRepository.findByUserEmail(email);
+        if (providerOpt.isEmpty()) {
             return PageResponse.empty(cappedPageable);
         }
-        Specialist specialist = specialistOpt.get();
+        Provider provider = providerOpt.get();
         return PageResponse.from(
-                reservationRepository.findBySpecialistId(specialist.getId(), cappedPageable),
+                reservationRepository.findByProviderId(provider.getId(), cappedPageable),
                 reservationMapper::toResponse);
     }
 
@@ -144,7 +144,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse confirm(String id) {
         log.info("Confirming reservation {}", id);
-        Reservation reservation = getReservationAsSpecialist(id);
+        Reservation reservation = getReservationAsProvider(id);
         assertStatus(reservation, ReservationStatus.PENDING, "confirm");
         reservation.setStatus(ReservationStatus.CONFIRMED);
         Reservation saved = reservationRepository.save(reservation);
@@ -159,7 +159,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse reject(String id) {
         log.info("Rejecting reservation {}", id);
-        Reservation reservation = getReservationAsSpecialist(id);
+        Reservation reservation = getReservationAsProvider(id);
         assertStatus(reservation, ReservationStatus.PENDING, "reject");
         reservation.setStatus(ReservationStatus.REJECTED);
         freeSlot(reservation);
@@ -175,9 +175,12 @@ public class ReservationServiceImpl implements ReservationService {
 
         assertCanAccess(reservation);
 
-        if (reservation.getStatus() == ReservationStatus.COMPLETED ||
-                reservation.getStatus() == ReservationStatus.CANCELED) {
-            throw new BadRequestException("Cannot cancel a reservation with status: " + reservation.getStatus());
+        ReservationStatus status = reservation.getStatus();
+        if (status == ReservationStatus.COMPLETED ||
+                status == ReservationStatus.CANCELED ||
+                status == ReservationStatus.REJECTED ||
+                status == ReservationStatus.NO_SHOW) {
+            throw new BadRequestException("Cannot cancel a reservation with status: " + status);
         }
 
         reservation.setStatus(ReservationStatus.CANCELED);
@@ -189,7 +192,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse markCompleted(String id) {
         log.info("Completing reservation {}", id);
-        Reservation reservation = getReservationAsSpecialist(id);
+        Reservation reservation = getReservationAsProvider(id);
         assertStatus(reservation, ReservationStatus.CONFIRMED, "complete");
         reservation.setStatus(ReservationStatus.COMPLETED);
         return reservationMapper.toResponse(reservationRepository.save(reservation));
@@ -199,7 +202,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse markNoShow(String id) {
         log.info("Marking reservation {} as no-show", id);
-        Reservation reservation = getReservationAsSpecialist(id);
+        Reservation reservation = getReservationAsProvider(id);
         assertStatus(reservation, ReservationStatus.CONFIRMED, "mark as no-show");
         reservation.setStatus(ReservationStatus.NO_SHOW);
         return reservationMapper.toResponse(reservationRepository.save(reservation));
@@ -207,15 +210,15 @@ public class ReservationServiceImpl implements ReservationService {
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
-    private Reservation getReservationAsSpecialist(String id) {
+    private Reservation getReservationAsProvider(String id) {
         String email = SecurityUtils.getCurrentUserEmail();
-        Specialist specialist = specialistRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialist profile not found"));
+        Provider provider = providerRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
         Reservation reservation = reservationRepository.findByIdWithDetails(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", id));
 
-        if (!reservation.getSpecialist().getId().equals(specialist.getId())) {
+        if (!reservation.getProvider().getId().equals(provider.getId())) {
             throw new UnauthorizedException("You do not own this reservation");
         }
         return reservation;
@@ -231,8 +234,8 @@ public class ReservationServiceImpl implements ReservationService {
     private void assertCanAccess(Reservation reservation) {
         String email = SecurityUtils.getCurrentUserEmail();
         boolean isClient = reservation.getClient().getUser().getEmail().equals(email);
-        boolean isSpecialist = reservation.getSpecialist().getUser().getEmail().equals(email);
-        if (!isClient && !isSpecialist && !SecurityUtils.hasRole("ADMIN")) {
+        boolean isProvider = reservation.getProvider().getUser().getEmail().equals(email);
+        if (!isClient && !isProvider && !SecurityUtils.hasRole("ADMIN")) {
             throw new UnauthorizedException("Access denied to this reservation");
         }
     }

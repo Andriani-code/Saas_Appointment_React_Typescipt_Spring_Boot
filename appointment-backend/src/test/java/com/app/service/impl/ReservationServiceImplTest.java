@@ -6,8 +6,8 @@ import com.app.entity.AvailableSlot;
 import com.app.entity.Client;
 import com.app.entity.Conversation;
 import com.app.entity.Reservation;
-import com.app.entity.Specialist;
-import com.app.entity.SpecialistService;
+import com.app.entity.Provider;
+import com.app.entity.ProviderService;
 import com.app.entity.User;
 import com.app.entity.enums.ReservationStatus;
 import com.app.entity.enums.Role;
@@ -18,8 +18,8 @@ import com.app.repository.AvailableSlotRepository;
 import com.app.repository.ClientRepository;
 import com.app.repository.ConversationRepository;
 import com.app.repository.ReservationRepository;
-import com.app.repository.SpecialistRepository;
-import com.app.repository.SpecialistServiceRepository;
+import com.app.repository.ProviderRepository;
+import com.app.repository.ProviderServiceRepository;
 import com.app.service.EmailService;
 import com.app.util.SecurityUtils;
 import org.junit.jupiter.api.Test;
@@ -53,10 +53,10 @@ class ReservationServiceImplTest {
     private ClientRepository clientRepository;
 
     @Mock
-    private SpecialistRepository specialistRepository;
+    private ProviderRepository providerRepository;
 
     @Mock
-    private SpecialistServiceRepository specialistServiceRepository;
+    private ProviderServiceRepository providerServiceRepository;
 
     @Mock
     private AvailableSlotRepository slotRepository;
@@ -75,8 +75,8 @@ class ReservationServiceImplTest {
         ReservationServiceImpl service = new ReservationServiceImpl(
                 reservationRepository,
                 clientRepository,
-                specialistRepository,
-                specialistServiceRepository,
+                providerRepository,
+                providerServiceRepository,
                 slotRepository,
                 conversationRepository,
                 reservationMapper,
@@ -113,8 +113,8 @@ class ReservationServiceImplTest {
         ReservationServiceImpl service = new ReservationServiceImpl(
                 reservationRepository,
                 clientRepository,
-                specialistRepository,
-                specialistServiceRepository,
+                providerRepository,
+                providerServiceRepository,
                 slotRepository,
                 conversationRepository,
                 reservationMapper,
@@ -122,13 +122,13 @@ class ReservationServiceImplTest {
         );
 
         UUID reservationId = UUID.randomUUID();
-        UUID specialistId = UUID.randomUUID();
+        UUID providerId = UUID.randomUUID();
 
-        Specialist specialist = Specialist.builder()
-                .id(specialistId)
-                .user(User.builder().email("specialist@example.com").role(Role.SPECIALIST).build())
+        Provider provider = Provider.builder()
+                .id(providerId)
+                .user(User.builder().email("provider@example.com").role(Role.PROVIDER).build())
                 .firstName("Sam")
-                .lastName("Specialist")
+                .lastName("Provider")
                 .build();
 
         AvailableSlot slot = AvailableSlot.builder()
@@ -138,23 +138,23 @@ class ReservationServiceImplTest {
 
         Reservation reservation = Reservation.builder()
                 .id(reservationId)
-                .specialist(specialist)
+                .provider(provider)
                 .client(Client.builder()
                         .user(User.builder().email("client@example.com").role(Role.CLIENT).build())
                         .firstName("Jane")
                         .lastName("Doe")
                         .build())
-                .service(SpecialistService.builder().name("Consultation").build())
+                .service(ProviderService.builder().name("Consultation").build())
                 .slot(slot)
                 .status(ReservationStatus.PENDING)
                 .build();
 
-        when(specialistRepository.findByUserEmail("specialist@example.com")).thenReturn(Optional.of(specialist));
+        when(providerRepository.findByUserEmail("provider@example.com")).thenReturn(Optional.of(provider));
         when(reservationRepository.findByIdWithDetails(reservationId)).thenReturn(Optional.of(reservation));
         when(slotRepository.save(any())).thenThrow(new RuntimeException("slot write failed"));
 
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
-            securityUtils.when(SecurityUtils::getCurrentUserEmail).thenReturn("specialist@example.com");
+            securityUtils.when(SecurityUtils::getCurrentUserEmail).thenReturn("provider@example.com");
 
             RuntimeException exception = assertThrows(RuntimeException.class,
                     () -> service.reject(reservationId.toString()));
