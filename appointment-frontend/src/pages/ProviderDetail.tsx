@@ -191,7 +191,14 @@ export function ProviderDetail() {
               <div className="flex items-start justify-between flex-wrap gap-3">
                 <div>
                   <h1 className="font-display text-2xl font-bold text-text">{name}</h1>
-                  <p className="text-primary font-medium">{localProvider.profileTitle ?? 'Prestataire'}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-primary font-medium">{localProvider.profileTitle ?? 'Prestataire'}</p>
+                    {localProvider.category && (
+                      <span className="text-[10px] uppercase tracking-wider font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                        {localProvider.category}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" icon={<MessageSquare size={14} />}>
@@ -313,8 +320,8 @@ export function ProviderDetail() {
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
                   <CheckCircle size={32} className="text-green-600" />
                 </div>
-                <h3 className="font-semibold text-text">Réservation confirmée !</h3>
-                <p className="text-sm text-muted">Merci pour votre confiance. Vous recevrez une notification d'approbation.</p>
+                <h3 className="font-semibold text-text">Réservation envoyée !</h3>
+                <p className="text-sm text-muted">Merci pour votre confiance. Vous recevrez une notification dès l'approbation de votre rendez-vous.</p>
                 <Button variant="outline" fullWidth onClick={() => navigate('/appointments')}>
                   Voir mes rendez-vous
                 </Button>
@@ -390,18 +397,26 @@ export function ProviderDetail() {
                       <p className="text-sm text-muted text-center py-4">Aucun créneau disponible ce jour.</p>
                     ) : (
                       <div className="grid grid-cols-3 gap-1.5">
-                        {slots.map(slot => (
-                          <button key={slot.id}
-                            onClick={() => setSlot(slot.id)}
-                            className={cn(
-                              'py-2 rounded-lg text-xs font-semibold transition-all duration-200',
-                              selectedSlot === slot.id
-                                ? 'bg-primary text-white'
-                                : 'bg-soft text-muted hover:bg-primary/10 hover:text-primary'
-                            )}>
-                            {formatTime(slot.startTime)}
-                          </button>
-                        ))}
+                        {slots.map(slot => {
+                          const isBooked = slot.status !== 'AVAILABLE'
+                          const isSelected = selectedSlot === slot.id
+                          return (
+                            <button key={slot.id}
+                              onClick={() => setSlot(slot.id)}
+                              disabled={isBooked}
+                              title={isBooked ? (slot.status === 'BOOKED' ? 'Créneau déjà réservé' : 'Créneau bloqué') : undefined}
+                              className={cn(
+                                'py-2 rounded-lg text-xs font-semibold transition-all duration-200',
+                                isBooked
+                                  ? 'bg-gray-100 text-gray-400 line-through cursor-not-allowed'
+                                  : isSelected
+                                    ? 'bg-primary text-white'
+                                    : 'bg-soft text-muted hover:bg-primary/10 hover:text-primary'
+                              )}>
+                              {formatTime(slot.startTime)}
+                            </button>
+                          )
+                        })}
                       </div>
                     )}
                   </div>

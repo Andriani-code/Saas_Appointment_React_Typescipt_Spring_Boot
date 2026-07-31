@@ -9,13 +9,12 @@ import { usePaginatedFetch } from '@/hooks/usePaginatedFetch'
 import { serviceApi, providerApi } from '@/services/api'
 import type { ProviderResponse, ProviderServiceResponse } from '@/types'
 
-type Filter = 'all' | 'nearby' | 'top-rated' | 'available'
+type Filter = 'all' | 'nearby' | 'top-rated'
 
 const filterLabels: Record<Filter, string> = {
   all: 'Tous',
   nearby: 'À proximité',
   'top-rated': 'Mieux notés',
-  available: 'Disponibles',
 }
 
 export function ProvidersPage() {

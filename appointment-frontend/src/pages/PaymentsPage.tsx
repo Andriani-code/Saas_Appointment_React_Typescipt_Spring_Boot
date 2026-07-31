@@ -33,11 +33,11 @@ export function PaymentsPage() {
     setLoading(true);
     try {
       // Load reservations and filter those with payments
-      const role = hasRole("CLIENT") ? "client" : "specialist";
+      const role = hasRole("CLIENT") ? "client" : "provider";
       const data =
         role === "client"
           ? await reservationApi.getMyAsClient(0, 50)
-          : await reservationApi.getMyAsSpecialist(0, 50);
+          : await reservationApi.getMyAsProvider(0, 50);
 
       setReservations(data.content.filter((r) => r.depositRequired));
 
@@ -53,7 +53,9 @@ export function PaymentsPage() {
           status:
             r.status === "COMPLETED"
               ? "SUCCESS"
-              : r.status === "CANCELED"
+              : r.status === "CANCELED" ||
+                  r.status === "REJECTED" ||
+                  r.status === "NO_SHOW"
                 ? "FAILED"
                 : "PENDING",
           createdAt: r.createdAt,
@@ -267,7 +269,7 @@ export function PaymentsPage() {
                   </p>
                   <p className="text-sm text-muted">
                     {hasRole("CLIENT")
-                      ? reservation?.specialistDisplayName
+                      ? reservation?.providerDisplayName
                       : reservation?.clientFullName}
                   </p>
                 </div>
