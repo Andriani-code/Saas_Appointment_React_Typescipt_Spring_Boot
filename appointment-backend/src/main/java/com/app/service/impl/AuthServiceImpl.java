@@ -6,16 +6,16 @@ import com.app.dto.request.RegisterRequest;
 import com.app.dto.response.AuthResponse;
 import com.app.entity.Address;
 import com.app.entity.Client;
-import com.app.entity.Specialist;
+import com.app.entity.Provider;
 import com.app.entity.User;
-import com.app.entity.enums.Provider;
+import com.app.entity.enums.AuthProvider;
 import com.app.entity.enums.Role;
 import com.app.exception.BadRequestException;
 import com.app.mapper.AddressMapper;
 import com.app.mapper.ClientMapper;
-import com.app.mapper.SpecialistMapper;
+import com.app.mapper.ProviderMapper;
 import com.app.repository.ClientRepository;
-import com.app.repository.SpecialistRepository;
+import com.app.repository.ProviderRepository;
 import com.app.repository.UserRepository;
 import com.app.security.JwtService;
 import com.app.service.AuthService;
@@ -37,13 +37,13 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
-    private final SpecialistRepository specialistRepository;
+    private final ProviderRepository providerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final ClientMapper clientMapper;
-    private final SpecialistMapper specialistMapper;
+    private final ProviderMapper providerMapper;
     private final AddressMapper addressMapper;
     private final EmailValidationService emailValidationService;
 
@@ -66,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
-                .provider(Provider.LOCAL)
+                .provider(AuthProvider.LOCAL)
                 .isActive(true)
                 .build();
 
@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return AuthResponse.of(accessToken, refreshToken, savedUser.getEmail(), savedUser.getRole().name());
+        return buildAuthResponse(accessToken, refreshToken, savedUser);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return AuthResponse.of(accessToken, refreshToken, user.getEmail(), user.getRole().name());
+        return buildAuthResponse(accessToken, refreshToken, user);
     }
 
     @Override
@@ -119,7 +119,23 @@ public class AuthServiceImpl implements AuthService {
         String newAccessToken = jwtService.generateAccessToken(userDetails);
         String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return AuthResponse.of(newAccessToken, newRefreshToken, user.getEmail(), user.getRole().name());
+        return buildAuthResponse(newAccessToken, newRefreshToken, user);
+    }
+
+    private AuthResponse buildAuthResponse(String accessToken, String refreshToken, User user) {
+        AuthResponse response = AuthResponse.of(accessToken, refreshToken, user.getEmail(), user.getRole().name());
+        response.setProfileCompleted(isProfileCompleted(user));
+        return response;
+    }
+
+    private boolean isProfileCompleted(User user) {
+        if (user.getRole() == Role.CLIENT) {
+            return clientRepository.findByUserEmail(user.getEmail()).isPresent();
+        }
+        if (user.getRole() == Role.PROVIDER) {
+            return providerRepository.findByUserEmail(user.getEmail()).isPresent();
+        }
+        return true;
     }
 
     private void createProfileForRole(User user, RegisterRequest request) {
@@ -140,22 +156,22 @@ public class AuthServiceImpl implements AuthService {
             return;
         }
 
-        if (user.getRole() == Role.SPECIALIST) {
-            if (request.getSpecialistProfile() == null) {
-                throw new BadRequestException("Specialist profile is required for SPECIALIST registration");
+        if (user.getRole() == Role.PROVIDER) {
+            if (request.getProviderProfile() == null) {
+                throw new BadRequestException("Provider profile is required for PROVIDER registration");
             }
 
-            Specialist specialist = specialistMapper.toEntity(request.getSpecialistProfile());
-            specialist.setUser(user);
+            Provider provider = providerMapper.toEntity(request.getProviderProfile());
+            provider.setUser(user);
 
-            if (request.getSpecialistProfile().getPersonalAddress() != null) {
-                specialist.setPersonalAddress(addressMapper.toEntity(request.getSpecialistProfile().getPersonalAddress()));
+            if (request.getProviderProfile().getPersonalAddress() != null) {
+                provider.setPersonalAddress(addressMapper.toEntity(request.getProviderProfile().getPersonalAddress()));
             }
-            if (request.getSpecialistProfile().getServiceAddress() != null) {
-                specialist.setServiceAddress(addressMapper.toEntity(request.getSpecialistProfile().getServiceAddress()));
+            if (request.getProviderProfile().getServiceAddress() != null) {
+                provider.setServiceAddress(addressMapper.toEntity(request.getProviderProfile().getServiceAddress()));
             }
 
-            specialistRepository.save(specialist);
+            providerRepository.save(provider);
         }
     }
 }

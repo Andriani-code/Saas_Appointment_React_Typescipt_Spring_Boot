@@ -15,6 +15,7 @@ public class AuthResponse {
     private String tokenType;
     private String email;
     private String role;
+    private Boolean profileCompleted;
 
     public static AuthResponse of(String accessToken, String refreshToken, String email, String role) {
         return AuthResponse.builder()
