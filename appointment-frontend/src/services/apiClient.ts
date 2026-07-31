@@ -11,6 +11,7 @@ const BASE_URL = '/api/v1'
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 15000,
 })
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {

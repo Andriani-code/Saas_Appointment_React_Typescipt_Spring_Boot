@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PageResponse } from '@/types'
 
 interface UsePaginatedFetchOptions<T> {
@@ -53,6 +53,13 @@ export function usePaginatedFetch<T>(
   const [totalElements, setTotalElements] = useState(0)
   const [hasMore, setHasMore] = useState(false)
 
+  // Keep the latest fetchPage in a ref so the effect below doesn't re-run
+  // on every render (fetchPage is often defined inline by callers).
+  const fetchPageRef = useRef(fetchPage)
+  useEffect(() => {
+    fetchPageRef.current = fetchPage
+  }, [fetchPage])
+
   const loadPage = useCallback(async (targetPage: number, append: boolean) => {
     if (!enabled) {
       setItems([])
@@ -74,7 +81,7 @@ export function usePaginatedFetch<T>(
     }
 
     try {
-      const response = await fetchPage(targetPage, pageSize)
+      const response = await fetchPageRef.current(targetPage, pageSize)
       setItems((current) =>
         append ? mergePageItems(current, response.content, getItemKey) : response.content,
       )
@@ -92,7 +99,7 @@ export function usePaginatedFetch<T>(
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [enabled, fetchPage, pageSize])
+  }, [enabled, pageSize])
 
   const refresh = useCallback(async () => {
     await loadPage(0, false)
