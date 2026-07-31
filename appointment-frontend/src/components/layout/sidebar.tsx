@@ -20,7 +20,7 @@ export const Sidebar = () => {
           Réserver
         </NavLink>
 
-        <NavLink to="/profile-specialist" className={linkClass}>
+        <NavLink to="/profile-provider" className={linkClass}>
           Profil
         </NavLink>
       </nav>

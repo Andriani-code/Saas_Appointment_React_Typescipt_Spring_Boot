@@ -7,7 +7,7 @@ import {
   EyeOff,
   UserCheck,
   User,
-  Stethoscope,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -32,14 +32,14 @@ const roles: {
   {
     value: "CLIENT",
     label: "Client",
-    desc: "Je cherche un spécialiste",
+    desc: "Je cherche un prestataire",
     icon: <User size={18} />,
   },
   {
-    value: "SPECIALIST",
-    label: "Spécialiste",
-    desc: "Je propose des consultations",
-    icon: <Stethoscope size={18} />,
+    value: "PROVIDER",
+    label: "Prestataire",
+    desc: "Je propose des prestations",
+    icon: <Briefcase size={18} />,
   },
 ];
 
@@ -84,7 +84,7 @@ export function RegisterPage() {
     }
 
     if (
-      role === "SPECIALIST" &&
+      role === "PROVIDER" &&
       ((serviceCountry.trim() && !serviceCity.trim()) ||
         (!serviceCountry.trim() && serviceCity.trim()))
     ) {
@@ -130,8 +130,8 @@ export function RegisterPage() {
       };
     }
 
-    if (role === "SPECIALIST") {
-      payload.specialistProfile = {
+    if (role === "PROVIDER") {
+      payload.providerProfile = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim() || undefined,
@@ -183,6 +183,7 @@ async function handleSubmit(e: FormEvent) {
     login({
       email: data.email,
       role: data.role,
+      profileCompleted: data.profileCompleted,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
     });
@@ -325,14 +326,14 @@ async function handleSubmit(e: FormEvent) {
                 icon={<Phone size={16} />}
               />
 
-              {role === "SPECIALIST" && (
+              {role === "PROVIDER" && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       label="Nom affiché"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Ex: Dr. Rakoto"
+                      placeholder="Ex: Rakoto"
                     />
                     <Input
                       label="Titre professionnel"
@@ -390,7 +391,7 @@ async function handleSubmit(e: FormEvent) {
                 </div>
               </div>
 
-              {role === "SPECIALIST" && (
+              {role === "PROVIDER" && (
                 <div className="rounded-2xl border border-border p-4 space-y-4">
                   <p className="font-semibold text-sm text-text flex items-center gap-2">
                     <MapPin size={16} />

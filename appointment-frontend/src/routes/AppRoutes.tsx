@@ -6,8 +6,8 @@ import { RoleRoute } from "./RoleRoute";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { SpecialistsPage } from "@/pages/SpecialistsPage";
-import { SpecialistDetail } from "@/pages/SpecialistDetail";
+import { ProvidersPage } from "@/pages/ProvidersPage";
+import { ProviderDetail } from "@/pages/ProviderDetail";
 import { AppointmentsPage } from "@/pages/AppointmentsPage";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { SettingsPage } from "@/pages/SettingsPage";
@@ -15,7 +15,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReviewsPage } from "@/pages/ReviewsPage";
 import { ServicesPage } from "@/pages/ServicesPage";
-import { PatientsPage } from "@/pages/PatientsPage";
+import { ClientsPage } from "@/pages/ClientsPage";
 import { AvailabilityPage } from "@/pages/AvailabilityPage";
 import { PaymentsPage } from "@/pages/PaymentsPage";
 import { AdminPage } from "@/pages/AdminPage";
@@ -39,14 +39,14 @@ export function AppRoutes() {
 
           {/* Client Specific */}
           <Route element={<RoleRoute allowedRoles={['CLIENT']} />}>
-            <Route path="/specialists" element={<SpecialistsPage />} />
-            <Route path="/specialists/:id" element={<SpecialistDetail />} />
+            <Route path="/providers" element={<ProvidersPage />} />
+            <Route path="/providers/:id" element={<ProviderDetail />} />
           </Route>
 
-          {/* Specialist Specific */}
-          <Route element={<RoleRoute allowedRoles={['SPECIALIST']} />}>
+          {/* Provider Specific */}
+          <Route element={<RoleRoute allowedRoles={['PROVIDER']} />}>
             <Route path="/services" element={<ServicesPage />} />
-            <Route path="/patients" element={<PatientsPage />} />
+            <Route path="/clients" element={<ClientsPage />} />
             <Route path="/availability" element={<AvailabilityPage />} />
           </Route>
 

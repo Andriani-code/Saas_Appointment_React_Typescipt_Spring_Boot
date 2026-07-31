@@ -27,8 +27,8 @@ export function DashboardPage() {
         if (hasRole("CLIENT")) {
           const data = await reservationApi.getMyAsClient(0, 5);
           setReservations(data.content);
-        } else if (hasRole("SPECIALIST")) {
-          const data = await reservationApi.getMyAsSpecialist(0, 5);
+        } else if (hasRole("PROVIDER")) {
+          const data = await reservationApi.getMyAsProvider(0, 5);
           setReservations(data.content);
         }
       } catch {
@@ -68,8 +68,8 @@ export function DashboardPage() {
       color: "green" as const,
     },
     {
-      title: hasRole("SPECIALIST") ? "Revenus" : "En attente",
-      value: hasRole("SPECIALIST") 
+      title: hasRole("PROVIDER") ? "Revenus" : "En attente",
+      value: hasRole("PROVIDER") 
         ? formatCurrency(reservations.filter(r => r.status === 'COMPLETED').reduce((acc, r) => acc + (r.depositAmount || 0), 0))
         : reservations.filter((r) => r.status === "PENDING").length,
       icon: <DollarSign size={20} />,
@@ -108,7 +108,7 @@ export function DashboardPage() {
           </p>
         </div>
         {hasRole("CLIENT") && (
-          <Link to="/specialists">
+          <Link to="/providers">
             <Button
               icon={<Calendar size={16} />}
               iconRight={<ArrowRight size={14} />}
@@ -127,7 +127,7 @@ export function DashboardPage() {
         ))}
       </div>
 
-      {hasRole("SPECIALIST") && (
+      {hasRole("PROVIDER") && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up animation-delay-200">
            <div className="lg:col-span-2 card p-6">
               <div className="flex items-center justify-between mb-6">
@@ -215,8 +215,8 @@ export function DashboardPage() {
             }
             action={
               hasRole("CLIENT") ? (
-                <Link to="/specialists">
-                  <Button size="sm">Trouver un spécialiste</Button>
+                <Link to="/providers">
+                  <Button size="sm">Trouver un prestataire</Button>
                 </Link>
               ) : undefined
             }
@@ -226,13 +226,13 @@ export function DashboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-soft border-b border-border">
-                  {hasRole("SPECIALIST") ? (
+                  {hasRole("PROVIDER") ? (
                     <th className="text-left px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wide">
-                      Patient
+                      Client
                     </th>
                   ) : (
                     <th className="text-left px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wide">
-                      Spécialiste
+                      Prestataire
                     </th>
                   )}
                   <th className="text-left px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wide">
@@ -256,16 +256,16 @@ export function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <Avatar
                           name={
-                            hasRole("SPECIALIST")
+                            hasRole("PROVIDER")
                               ? r.clientFullName
-                              : (r.specialistDisplayName ?? "Spécialiste")
+                              : (r.providerDisplayName ?? "Prestataire")
                           }
                           size="sm"
                         />
                         <span className="font-medium text-sm text-text">
-                          {hasRole("SPECIALIST")
+                          {hasRole("PROVIDER")
                             ? r.clientFullName
-                            : (r.specialistDisplayName ?? "—")}
+                            : (r.providerDisplayName ?? "—")}
                         </span>
                       </div>
                     </td>
@@ -290,8 +290,8 @@ export function DashboardPage() {
         )}
       </div>
 
-      {/* Quick actions for specialists */}
-      {hasRole("SPECIALIST") && (
+      {/* Quick actions for providers */}
+      {hasRole("PROVIDER") && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up animation-delay-400">
           {[
             {

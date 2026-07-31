@@ -1,23 +1,23 @@
 import { create } from 'zustand';
-import type { SpecialistResponse } from '@/types';
+import type { ProviderResponse } from '@/types';
 
 interface BookingState {
-  selectedSpecialist: SpecialistResponse | null;
+  selectedProvider: ProviderResponse | null;
   selectedDate: string | null; // format: YYYY-MM-DD
   selectedSlot: string | null; // format: HH:mm
-  setSpecialist: (specialist: SpecialistResponse | null) => void;
+  setProvider: (provider: ProviderResponse | null) => void;
   setDate: (date: string | null) => void;
   setSlot: (slot: string | null) => void;
   resetBooking: () => void;
 }
 
 export const useBookingStore = create<BookingState>((set) => ({
-  selectedSpecialist: null,
+  selectedProvider: null,
   selectedDate: null,
   selectedSlot: null,
   
-  setSpecialist: (specialist) => set({ 
-    selectedSpecialist: specialist, 
+  setProvider: (provider) => set({ 
+    selectedProvider: provider, 
     selectedDate: null, 
     selectedSlot: null 
   }),
@@ -32,7 +32,7 @@ export const useBookingStore = create<BookingState>((set) => ({
   }),
   
   resetBooking: () => set({ 
-    selectedSpecialist: null, 
+    selectedProvider: null, 
     selectedDate: null, 
     selectedSlot: null 
   })

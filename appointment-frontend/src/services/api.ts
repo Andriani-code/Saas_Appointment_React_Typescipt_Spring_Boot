@@ -5,10 +5,10 @@ import type {
   RegisterRequest,
   ClientResponse,
   ClientRequest,
-  SpecialistResponse,
-  SpecialistRequest,
-  SpecialistServiceResponse,
-  SpecialistServiceRequest,
+  ProviderResponse,
+  ProviderRequest,
+  ProviderServiceResponse,
+  ProviderServiceRequest,
   AvailabilityResponse,
   SlotResponse,
   ReservationResponse,
@@ -47,77 +47,77 @@ export const clientApi = {
       .then((r) => r.data),
 };
 
-// ─── Specialists ─────────────────────────────────────────────────────────────
-export const specialistApi = {
-  createProfile: (data: SpecialistRequest) =>
+// ─── Providers ─────────────────────────────────────────────────────────────
+export const providerApi = {
+  createProfile: (data: ProviderRequest) =>
     apiClient
-      .post<SpecialistResponse>("/specialists", data)
+      .post<ProviderResponse>("/providers", data)
       .then((r) => r.data),
   existsProfile: () =>
-    apiClient.get<boolean>("/specialists/me/exists").then((r) => r.data),
+    apiClient.get<boolean>("/providers/me/exists").then((r) => r.data),
   getMe: () =>
-    apiClient.get<SpecialistResponse>("/specialists/me").then((r) => r.data),
-  updateProfile: (data: SpecialistRequest) =>
+    apiClient.get<ProviderResponse>("/providers/me").then((r) => r.data),
+  updateProfile: (data: ProviderRequest) =>
     apiClient
-      .put<SpecialistResponse>("/specialists/me", data)
+      .put<ProviderResponse>("/providers/me", data)
       .then((r) => r.data),
   requestVerification: () =>
     apiClient
-      .post<SpecialistResponse>("/specialists/me/verify")
+      .post<ProviderResponse>("/providers/me/verify")
       .then((r) => r.data),
   getById: (id: string) =>
-    apiClient.get<SpecialistResponse>(`/specialists/${id}`).then((r) => r.data),
+    apiClient.get<ProviderResponse>(`/providers/${id}`).then((r) => r.data),
   getAll: (page = 0, size = 20) =>
     apiClient
       .get<
-        PageResponse<SpecialistResponse>
-      >(`/specialists?page=${page}&size=${size}`)
+        PageResponse<ProviderResponse>
+      >(`/providers?page=${page}&size=${size}`)
       .then((r) => r.data),
   getAllForAdmin: (page = 0, size = 100) =>
     apiClient
       .get<
-        PageResponse<SpecialistResponse>
-      >(`/specialists/admin/all?page=${page}&size=${size}`)
+        PageResponse<ProviderResponse>
+      >(`/providers/admin/all?page=${page}&size=${size}`)
       .then((r) => r.data),
   getPendingForAdmin: (page = 0, size = 100) =>
     apiClient
       .get<
-        PageResponse<SpecialistResponse>
-      >(`/specialists/admin/pending?page=${page}&size=${size}`)
+        PageResponse<ProviderResponse>
+      >(`/providers/admin/pending?page=${page}&size=${size}`)
       .then((r) => r.data),
   getNearby: (lat: number, lng: number, radiusKm = 25, page = 0, size = 20) =>
     apiClient
       .get<
-        PageResponse<SpecialistResponse>
-      >(`/specialists/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}&page=${page}&size=${size}`)
+        PageResponse<ProviderResponse>
+      >(`/providers/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}&page=${page}&size=${size}`)
       .then((r) => r.data),
   approve: (id: string) =>
     apiClient
-      .patch<SpecialistResponse>(`/specialists/${id}/approve`)
+      .patch<ProviderResponse>(`/providers/${id}/approve`)
       .then((r) => r.data),
   reject: (id: string) =>
     apiClient
-      .patch<SpecialistResponse>(`/specialists/${id}/reject`)
+      .patch<ProviderResponse>(`/providers/${id}/reject`)
       .then((r) => r.data),
 };
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export const serviceApi = {
-  create: (data: SpecialistServiceRequest) =>
+  create: (data: ProviderServiceRequest) =>
     apiClient
-      .post<SpecialistServiceResponse>("/services", data)
+      .post<ProviderServiceResponse>("/services", data)
       .then((r) => r.data),
   getById: (id: string) =>
     apiClient
-      .get<SpecialistServiceResponse>(`/services/${id}`)
+      .get<ProviderServiceResponse>(`/services/${id}`)
       .then((r) => r.data),
-  getActiveBySpecialist: (specialistId: string) =>
+  getActiveByProvider: (providerId: string) =>
     apiClient
-      .get<SpecialistServiceResponse[]>(`/services/specialist/${specialistId}`)
+      .get<ProviderServiceResponse[]>(`/services/provider/${providerId}`)
       .then((r) => r.data),
-  update: (id: string, data: SpecialistServiceRequest) =>
+  update: (id: string, data: ProviderServiceRequest) =>
     apiClient
-      .put<SpecialistServiceResponse>(`/services/${id}`, data)
+      .put<ProviderServiceResponse>(`/services/${id}`, data)
       .then((r) => r.data),
   deactivate: (id: string) => apiClient.delete(`/services/${id}`),
 };
@@ -128,9 +128,9 @@ export const availabilityApi = {
     apiClient
       .get<AvailabilityResponse[]>("/availability/me")
       .then((r) => r.data),
-  getBySpecialist: (specialistId: string) =>
+  getByProvider: (providerId: string) =>
     apiClient
-      .get<AvailabilityResponse[]>(`/availability/specialist/${specialistId}`)
+      .get<AvailabilityResponse[]>(`/availability/provider/${providerId}`)
       .then((r) => r.data),
   create: (data: {
     dayOfWeek: string;
@@ -162,9 +162,9 @@ export const slotApi = {
     apiClient
       .post<SlotResponse[]>("/slots/generate", { startDate, endDate })
       .then((r) => r.data),
-  getBySpecialistAndDate: (specialistId: string, date: string) =>
+  getByProviderAndDate: (providerId: string, date: string) =>
     apiClient
-      .get<SlotResponse[]>(`/slots/specialist/${specialistId}?date=${date}`)
+      .get<SlotResponse[]>(`/slots/provider/${providerId}?date=${date}`)
       .then((r) => r.data),
   blockSlot: (slotId: string) =>
     apiClient.patch<SlotResponse>(`/slots/${slotId}/block`).then((r) => r.data),
@@ -190,11 +190,11 @@ export const reservationApi = {
         PageResponse<ReservationResponse>
       >(`/reservations/my/client?page=${page}&size=${size}`)
       .then((r) => r.data),
-  getMyAsSpecialist: (page = 0, size = 20) =>
+  getMyAsProvider: (page = 0, size = 20) =>
     apiClient
       .get<
         PageResponse<ReservationResponse>
-      >(`/reservations/my/specialist?page=${page}&size=${size}`)
+      >(`/reservations/my/provider?page=${page}&size=${size}`)
       .then((r) => r.data),
   confirm: (id: string) =>
     apiClient
@@ -234,11 +234,11 @@ export const paymentApi = {
 export const reviewApi = {
   create: (data: ReviewRequest) =>
     apiClient.post<ReviewResponse>("/reviews", data).then((r) => r.data),
-  getBySpecialist: (specialistId: string, page = 0, size = 20) =>
+  getByProvider: (providerId: string, page = 0, size = 20) =>
     apiClient
       .get<
         PageResponse<ReviewResponse>
-      >(`/reviews/specialist/${specialistId}?page=${page}&size=${size}`)
+      >(`/reviews/provider/${providerId}?page=${page}&size=${size}`)
       .then((r) => r.data),
   getMyReviews: (page = 0, size = 20) =>
     apiClient

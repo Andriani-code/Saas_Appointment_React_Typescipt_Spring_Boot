@@ -11,30 +11,30 @@ import {
   AlertTriangle,
   ShieldCheck,
 } from "lucide-react";
-import { serviceApi, specialistApi } from "@/services/api";
+import { serviceApi, providerApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatCurrency, formatDuration } from "@/utils";
 import type {
-  SpecialistServiceResponse,
-  SpecialistServiceRequest,
-  SpecialistResponse,
+  ProviderServiceResponse,
+  ProviderServiceRequest,
+  ProviderResponse,
 } from "@/types";
 import { cn } from "@/utils";
 import toast from "react-hot-toast";
 
 export function ServicesPage() {
   const { hasRole } = useAuthStore();
-  const [services, setServices] = useState<SpecialistServiceResponse[]>([]);
+  const [services, setServices] = useState<ProviderServiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(true);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingService, setEditingService] = useState<SpecialistServiceResponse | null>(null);
+  const [editingService, setEditingService] = useState<ProviderServiceResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [specialist, setSpecialist] = useState<SpecialistResponse | null>(null);
+  const [provider, setProvider] = useState<ProviderResponse | null>(null);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -44,21 +44,21 @@ export function ServicesPage() {
   const [depositAmount, setDepositAmount] = useState(0);
 
   const loadData = useCallback(async () => {
-    if (!hasRole("SPECIALIST")) return;
+    if (!hasRole("PROVIDER")) return;
     setLoading(true);
     try {
-      const exists = await specialistApi.existsProfile();
+      const exists = await providerApi.existsProfile();
       setHasProfile(exists);
 
       if (!exists) {
-        setSpecialist(null);
+        setProvider(null);
         setServices([]);
         return;
       }
 
-      const specData = await specialistApi.getMe();
-      setSpecialist(specData);
-      const data = await serviceApi.getActiveBySpecialist(specData.id);
+      const specData = await providerApi.getMe();
+      setProvider(specData);
+      const data = await serviceApi.getActiveByProvider(specData.id);
       setServices(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error loading services:", err);
@@ -71,7 +71,7 @@ export function ServicesPage() {
     loadData();
   }, [loadData]);
 
-  function openModal(service?: SpecialistServiceResponse) {
+  function openModal(service?: ProviderServiceResponse) {
     if (service) {
       setEditingService(service);
       setName(service.name);
@@ -96,7 +96,7 @@ export function ServicesPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const data: SpecialistServiceRequest = {
+      const data: ProviderServiceRequest = {
         name,
         description: description || undefined,
         durationMinutes,
@@ -139,12 +139,12 @@ export function ServicesPage() {
     return s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q);
   });
 
-  if (!hasRole("SPECIALIST")) {
+  if (!hasRole("PROVIDER")) {
     return (
       <EmptyState
         icon={<DollarSign size={28} />}
         title="Accès restreint"
-        description="Cette page est réservée aux spécialistes."
+        description="Cette page est réservée aux prestataires."
       />
     );
   }
@@ -161,7 +161,7 @@ export function ServicesPage() {
         </Button>
       </div>
 
-      {specialist && !specialist.isVerified && (
+      {provider && !provider.isVerified && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4 animate-slide-down shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <AlertTriangle className="text-amber-600" size={20} />
@@ -184,7 +184,7 @@ export function ServicesPage() {
         </div>
       )}
 
-      {specialist?.isVerified && (
+      {provider?.isVerified && (
         <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-4 shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
             <ShieldCheck className="text-green-600" size={20} />
@@ -212,11 +212,11 @@ export function ServicesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<DollarSign size={28} />}
-          title={hasProfile ? "Aucun service" : "Profil spécialiste requis"}
+          title={hasProfile ? "Aucun service" : "Profil prestataire requis"}
           description={
             hasProfile
               ? "Créez votre premier service pour commencer à recevoir des clients."
-              : "Créez d'abord votre profil spécialiste dans les paramètres."
+              : "Créez d'abord votre profil prestataire dans les paramètres."
           }
           action={
             hasProfile ? (
@@ -301,7 +301,7 @@ export function ServicesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-muted mb-2">Nom du service *</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Consultation générale" required />
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Coupe, Massage, Réparation…" required />
               </div>
 
               <div>

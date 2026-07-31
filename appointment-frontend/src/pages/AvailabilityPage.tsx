@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Plus, Edit, Trash2, CalendarDays } from "lucide-react";
 import toast from "react-hot-toast";
-import { availabilityApi, slotApi, specialistApi } from "@/services/api";
+import { availabilityApi, slotApi, providerApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
@@ -40,10 +40,10 @@ export function AvailabilityPage() {
   const [intervalMinutes, setIntervalMinutes] = useState(30);
 
   const loadAvailabilities = useCallback(async () => {
-    if (!hasRole("SPECIALIST")) return;
+    if (!hasRole("PROVIDER")) return;
     setLoading(true);
     try {
-      const exists = await specialistApi.existsProfile();
+      const exists = await providerApi.existsProfile();
       setHasProfile(exists);
 
       if (!exists) {
@@ -146,12 +146,12 @@ export function AvailabilityPage() {
     {} as Record<DayOfWeek, AvailabilityResponse[]>,
   );
 
-  if (!hasRole("SPECIALIST")) {
+  if (!hasRole("PROVIDER")) {
     return (
       <EmptyState
         icon={<Clock size={28} />}
         title="Accès restreint"
-        description="Cette page est réservée aux spécialistes."
+        description="Cette page est réservée aux prestataires."
       />
     );
   }
@@ -211,8 +211,8 @@ export function AvailabilityPage() {
       ) : !hasProfile ? (
         <EmptyState
           icon={<Clock size={28} />}
-          title="Profil spécialiste requis"
-          description="Créez d'abord votre profil spécialiste dans les paramètres."
+          title="Profil prestataire requis"
+          description="Créez d'abord votre profil prestataire dans les paramètres."
           action={
             <Button onClick={() => (window.location.href = "/settings")}>
               Compléter mon profil

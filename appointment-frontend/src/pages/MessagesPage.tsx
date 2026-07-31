@@ -15,9 +15,9 @@ import type { ConversationResponse, MessageResponse } from '@/types'
 
 export function MessagesPage() {
   const { user, hasRole } = useAuthStore()
-  const isSpecialist = hasRole('SPECIALIST')
+  const isProvider = hasRole('PROVIDER')
   const isClient = hasRole('CLIENT')
-  const isEnabled = isSpecialist || isClient
+  const isEnabled = isProvider || isClient
 
   const {
     items: conversations,
@@ -165,19 +165,19 @@ export function MessagesPage() {
     const query = search.toLowerCase()
     return (
       conversation.clientFullName.toLowerCase().includes(query) ||
-      (conversation.specialistDisplayName ?? '').toLowerCase().includes(query)
+      (conversation.providerDisplayName ?? '').toLowerCase().includes(query)
     )
   })
 
   const getContactName = (conversation: ConversationResponse) =>
-    hasRole('CLIENT') ? (conversation.specialistDisplayName ?? 'Spécialiste') : conversation.clientFullName
+    hasRole('CLIENT') ? (conversation.providerDisplayName ?? 'Prestataire') : conversation.clientFullName
 
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Messages</h1>
-          <p className="text-muted text-sm mt-1">Discutez avec vos {hasRole('CLIENT') ? 'spécialistes' : 'patients'}</p>
+          <p className="text-muted text-sm mt-1">Discutez avec vos {hasRole('CLIENT') ? 'prestataires' : 'clients'}</p>
         </div>
       </div>
 

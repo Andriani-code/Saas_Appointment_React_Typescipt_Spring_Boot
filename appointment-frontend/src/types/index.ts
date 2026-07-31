@@ -1,7 +1,7 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
-export type Role = 'ADMIN' | 'CLIENT' | 'SPECIALIST'
-export type Provider = 'LOCAL' | 'GOOGLE'
+export type Role = 'ADMIN' | 'CLIENT' | 'PROVIDER'
+export type AuthProvider = 'LOCAL' | 'GOOGLE'
 
 export interface AuthResponse {
   email: string
@@ -17,7 +17,7 @@ export interface RegisterRequest {
   password: string
   role: Role
   clientProfile?: ClientRequest
-  specialistProfile?: SpecialistRequest
+  providerProfile?: ProviderRequest
 }
 
 export interface LoginRequest {
@@ -69,11 +69,11 @@ export interface ClientRequest {
   address?: AddressRequest
 }
 
-// ─── Specialist ──────────────────────────────────────────────────────────────
+// ─── Provider ──────────────────────────────────────────────────────────────
 
-export type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+export type VerificationStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'
 
-export interface SpecialistResponse {
+export interface ProviderResponse {
   id: string
   userId: string
   email: string
@@ -85,6 +85,7 @@ export interface SpecialistResponse {
   bio?: string
   profilePhoto?: string
   coverPhoto?: string
+  category?: string
   isActive: boolean
   isVerified: boolean
   verificationStatus: VerificationStatus
@@ -93,7 +94,7 @@ export interface SpecialistResponse {
   averageRating?: number
 }
 
-export interface SpecialistRequest {
+export interface ProviderRequest {
   firstName: string
   lastName: string
   phone?: string
@@ -102,16 +103,17 @@ export interface SpecialistRequest {
   bio?: string
   profilePhoto?: string
   coverPhoto?: string
+  category?: string
   personalAddress?: AddressRequest
   serviceAddress?: AddressRequest
 }
 
 // ─── Service ─────────────────────────────────────────────────────────────────
 
-export interface SpecialistServiceResponse {
+export interface ProviderServiceResponse {
   id: string
-  specialistId: string
-  specialistDisplayName?: string
+  providerId: string
+  providerDisplayName?: string
   name: string
   description?: string
   durationMinutes: number
@@ -121,7 +123,7 @@ export interface SpecialistServiceResponse {
   isActive: boolean
 }
 
-export interface SpecialistServiceRequest {
+export interface ProviderServiceRequest {
   name: string
   description?: string
   durationMinutes: number
@@ -136,7 +138,7 @@ export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDA
 
 export interface AvailabilityResponse {
   id: string
-  specialistId: string
+  providerId: string
   dayOfWeek: DayOfWeek
   startTime: string
   endTime: string
@@ -150,7 +152,7 @@ export type SlotStatus = 'AVAILABLE' | 'BOOKED' | 'BLOCKED'
 
 export interface SlotResponse {
   id: string
-  specialistId: string
+  providerId: string
   serviceId?: string
   date: string
   startTime: string
@@ -166,8 +168,8 @@ export interface ReservationResponse {
   id: string
   clientId: string
   clientFullName: string
-  specialistId: string
-  specialistDisplayName?: string
+  providerId: string
+  providerDisplayName?: string
   serviceId: string
   serviceName: string
   slot: SlotResponse
@@ -205,8 +207,8 @@ export interface ReviewResponse {
   id: string
   clientId: string
   clientFullName: string
-  specialistId: string
-  specialistDisplayName?: string
+  providerId: string
+  providerDisplayName?: string
   reservationId: string
   rating: number
   comment?: string
@@ -222,14 +224,14 @@ export interface ReviewRequest {
 
 // ─── Messaging ───────────────────────────────────────────────────────────────
 
-export type SenderType = 'CLIENT' | 'SPECIALIST'
+export type SenderType = 'CLIENT' | 'PROVIDER'
 
 export interface ConversationResponse {
   id: string
   clientId: string
   clientFullName: string
-  specialistId: string
-  specialistDisplayName?: string
+  providerId: string
+  providerDisplayName?: string
   lastMessageContent?: string
   reservationId?: string
   isActive: boolean

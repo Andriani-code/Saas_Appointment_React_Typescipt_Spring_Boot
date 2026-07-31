@@ -17,7 +17,7 @@ export const Navbar = () => {
         {/* Desktop menu */}
         <div className="hidden md:flex items-center gap-6">
           <a className="text-text hover:text-primary">Accueil</a>
-          <a className="text-text hover:text-primary">Spécialistes</a>
+          <a className="text-text hover:text-primary">Prestataires</a>
           <a className="text-text hover:text-primary">Contact</a>
 
           <Button variant="outline">Login</Button>
@@ -37,7 +37,7 @@ export const Navbar = () => {
       {open && (
         <div className="md:hidden px-6 pb-4 flex flex-col gap-4">
           <a>Accueil</a>
-          <a>Spécialistes</a>
+          <a>Prestataires</a>
           <a>Contact</a>
 
           <Button variant="outline">Login</Button>

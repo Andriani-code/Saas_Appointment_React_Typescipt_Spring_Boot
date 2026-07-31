@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Star, Search, MessageSquare, Filter } from "lucide-react";
-import { reviewApi, reservationApi, specialistApi } from "@/services/api";
+import { reviewApi, reservationApi, providerApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState, StarRating, Avatar } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
@@ -16,7 +16,7 @@ export function ReviewsPage() {
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [completedReservations, setCompletedReservations] = useState<ReservationResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>(hasRole("SPECIALIST") ? "received" : "given");
+  const [tab, setTab] = useState<Tab>(hasRole("PROVIDER") ? "received" : "given");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<string>("");
@@ -35,8 +35,8 @@ export function ReviewsPage() {
         setCompletedReservations(
           resData.content.filter((r) => r.status === "COMPLETED"),
         );
-      } else if (hasRole("SPECIALIST")) {
-        const exists = await specialistApi.existsProfile();
+      } else if (hasRole("PROVIDER")) {
+        const exists = await providerApi.existsProfile();
         if (!exists) {
           setReviews([]);
           setCompletedReservations([]);
@@ -44,8 +44,8 @@ export function ReviewsPage() {
           return;
         }
 
-        const specialist = await specialistApi.getMe();
-        const data = await reviewApi.getBySpecialist(specialist.id, 0, 50);
+        const provider = await providerApi.getMe();
+        const data = await reviewApi.getByProvider(provider.id, 0, 50);
         setReviews(data.content);
         setCompletedReservations([]);
         setTab("received");
@@ -94,7 +94,7 @@ export function ReviewsPage() {
     return (
       r.comment?.toLowerCase().includes(q) ||
       r.clientFullName.toLowerCase().includes(q) ||
-      (r.specialistDisplayName ?? "").toLowerCase().includes(q)
+      (r.providerDisplayName ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -114,7 +114,7 @@ export function ReviewsPage() {
             Avis & Notes
           </h1>
           <p className="text-muted mt-1 text-sm font-medium">
-            {hasRole("SPECIALIST")
+            {hasRole("PROVIDER")
               ? "Gérez votre réputation en ligne"
               : "Consultez et rédigez vos avis"}
           </p>
@@ -130,7 +130,7 @@ export function ReviewsPage() {
         )}
       </div>
 
-      {hasRole("SPECIALIST") && tab === "received" && reviews.length > 0 && (
+      {hasRole("PROVIDER") && tab === "received" && reviews.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-down">
           <div className="card p-6 flex flex-col items-center justify-center text-center border-none shadow-sm bg-white rounded-3xl">
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-2">
@@ -157,7 +157,7 @@ export function ReviewsPage() {
         </div>
       )}
 
-      {hasRole("SPECIALIST") && (
+      {hasRole("PROVIDER") && (
         <div className="flex gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
           <button
             onClick={() => setTab("received")}
@@ -203,13 +203,13 @@ export function ReviewsPage() {
                 <div className="flex items-center justify-between gap-4 mb-4">
                   <div className="flex items-center gap-3">
                     <Avatar
-                      name={tab === "received" ? review.clientFullName : review.specialistDisplayName || "S"}
+                      name={tab === "received" ? review.clientFullName : review.providerDisplayName || "S"}
                       size="md"
                       className="rounded-xl"
                     />
                     <div>
                       <p className="font-bold text-text text-sm leading-tight">
-                        {tab === "received" ? review.clientFullName : review.specialistDisplayName}
+                        {tab === "received" ? review.clientFullName : review.providerDisplayName}
                       </p>
                       <p className="text-[10px] text-muted font-bold uppercase tracking-tighter">
                         {formatDate(review.createdAt)}
@@ -248,7 +248,7 @@ export function ReviewsPage() {
               Laisser un avis
             </h2>
             <p className="text-muted text-sm mb-6 font-medium">
-              Partagez votre expérience avec le spécialiste.
+              Partagez votre expérience avec le prestataire.
             </p>
 
             <form onSubmit={handleSubmitReview} className="space-y-6">
@@ -262,10 +262,10 @@ export function ReviewsPage() {
                   className="w-full bg-[#F3F4F6] border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none font-bold text-text"
                   required
                 >
-                  <option value="">Sélectionnez une consultation...</option>
+                  <option value="">Sélectionnez un service...</option>
                   {completedReservations.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {r.serviceName} - {r.specialistDisplayName}
+                      {r.serviceName} - {r.providerDisplayName}
                     </option>
                   ))}
                 </select>
@@ -302,7 +302,7 @@ export function ReviewsPage() {
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Comment s'est passée votre consultation ?"
+                  placeholder="Comment s'est passée votre prestation ?"
                   rows={4}
                   className="w-full bg-[#F3F4F6] border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-muted/60"
                 />

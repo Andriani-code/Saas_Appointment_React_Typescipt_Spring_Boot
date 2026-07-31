@@ -13,26 +13,26 @@ import {
   MapPin,
   ExternalLink,
 } from "lucide-react";
-import { specialistApi } from "@/services/api";
+import { providerApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Avatar, Spinner, EmptyState, StarRating } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatDate, formatCurrency, getErrorMessage } from "@/utils";
 import type {
-  SpecialistResponse,
+  ProviderResponse,
   ReservationResponse,
   ReviewResponse,
 } from "@/types";
 import { cn } from "@/utils";
 import toast from "react-hot-toast";
 
-type Tab = "verification" | "specialists" | "reservations" | "reviews";
+type Tab = "verification" | "providers" | "reservations" | "reviews";
 
 export function AdminPage() {
   const { hasRole } = useAuthStore();
-  const [specialists, setSpecialists] = useState<SpecialistResponse[]>([]);
-  const [pending, setPending] = useState<SpecialistResponse[]>([]);
+  const [providers, setProviders] = useState<ProviderResponse[]>([]);
+  const [pending, setPending] = useState<ProviderResponse[]>([]);
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +48,10 @@ export function AdminPage() {
     setLoading(true);
     try {
       const [allSpecs, pendingSpecs] = await Promise.all([
-        specialistApi.getAllForAdmin(0, 100),
-        specialistApi.getPendingForAdmin(0, 100)
+        providerApi.getAllForAdmin(0, 100),
+        providerApi.getPendingForAdmin(0, 100)
       ]);
-      setSpecialists(allSpecs.content);
+      setProviders(allSpecs.content);
       setPending(pendingSpecs.content);
       setReservations([]);
       setReviews([]);
@@ -69,8 +69,8 @@ export function AdminPage() {
   async function handleApprove(id: string) {
     setActionLoading(id);
     try {
-      await specialistApi.approve(id);
-      toast.success("Spécialiste approuvé !");
+      await providerApi.approve(id);
+      toast.success("Prestataire approuvé !");
       loadData();
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -83,8 +83,8 @@ export function AdminPage() {
     if (!confirm("Rejeter cette demande de vérification ?")) return;
     setActionLoading(id);
     try {
-      await specialistApi.reject(id);
-      toast.success("Spécialiste rejeté");
+      await providerApi.reject(id);
+      toast.success("Prestataire rejeté");
       loadData();
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -123,7 +123,7 @@ export function AdminPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'En attente', val: pending.length, icon: <Clock className="text-amber-600" />, bg: 'bg-amber-50' },
-          { label: 'Spécialistes', val: specialists.length, icon: <Users className="text-primary" />, bg: 'bg-primary/5' },
+          { label: 'Prestataires', val: providers.length, icon: <Users className="text-primary" />, bg: 'bg-primary/5' },
           { label: 'Réservations', val: reservations.length, icon: <Calendar className="text-blue-600" />, bg: 'bg-blue-50' },
           { label: 'Note moyenne', val: '4.8', icon: <Star className="text-orange-500" />, bg: 'bg-orange-50' },
         ].map((s, i) => (
@@ -143,7 +143,7 @@ export function AdminPage() {
       <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
         {[
           { id: 'verification', label: 'Vérifications', count: pending.length, color: 'bg-amber-500' },
-          { id: 'specialists', label: 'Annuaire', count: specialists.length, color: 'bg-primary' },
+          { id: 'providers', label: 'Annuaire', count: providers.length, color: 'bg-primary' },
           { id: 'reservations', label: 'Flux Activité', count: null },
           { id: 'reviews', label: 'Modération Avis', count: null },
         ].map(t => (
@@ -220,7 +220,7 @@ export function AdminPage() {
           </div>
         )}
 
-        {!loading && tab === 'specialists' && (
+        {!loading && tab === 'providers' && (
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
@@ -234,7 +234,7 @@ export function AdminPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {specialists.filter(s => `${s.firstName} ${s.lastName} ${s.displayName} ${s.email}`.toLowerCase().includes(search.toLowerCase())).map(s => (
+              {providers.filter(s => `${s.firstName} ${s.lastName} ${s.displayName} ${s.email}`.toLowerCase().includes(search.toLowerCase())).map(s => (
                 <div key={s.id} className="card p-4 hover:shadow-md transition-all group">
                    <div className="flex items-center gap-3">
                       <Avatar name={s.displayName || `${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="lg" className="rounded-xl" />

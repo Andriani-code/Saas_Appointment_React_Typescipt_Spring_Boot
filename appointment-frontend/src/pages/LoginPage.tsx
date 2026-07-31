@@ -26,6 +26,7 @@ export function LoginPage() {
       login({
         email: data.email,
         role: data.role,
+        profileCompleted: data.profileCompleted,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       });
@@ -70,14 +71,14 @@ export function LoginPage() {
           </h1>
           <p className="text-white/75 text-base xl:text-lg leading-relaxed">
             Connectez-vous pour accéder à votre espace et gérer vos
-            consultations avec vos spécialistes.
+            rendez-vous avec vos prestataires.
           </p>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 xl:gap-4 pt-4">
             {[
-              { n: "2 400+", label: "Spécialistes" },
-              { n: "18 000+", label: "Patients" },
+              { n: "2 400+", label: "Prestataires" },
+              { n: "18 000+", label: "Clients" },
               { n: "4.9★", label: "Note moyenne" },
             ].map((s) => (
               <div
