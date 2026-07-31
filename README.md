@@ -4,18 +4,76 @@ A full-stack SaaS appointment booking platform built with **Spring Boot 3 (Java 
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 SPRING-APPOINTMENT/
-├── appointment-backend/   # Spring Boot 3 REST API
-├── appointment-frontend/  # React + Vite SPA
+├── appointment-backend/   # Spring Boot 3 REST API (+ Dockerfile)
+├── appointment-frontend/  # React + Vite SPA (+ Dockerfile + nginx.conf)
+├── docker-compose.yml     # postgres + backend + frontend (all-in-one)
+├── .env.example           # Documented Docker environment variables
 └── .github/               # GitHub Actions CI/CD
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Quick Start — Docker (recommended)
+
+The simplest way: the whole project (PostgreSQL + API + Frontend) starts with a single command.
+
+### Prerequisites
+
+- **Docker** with **Docker Compose** (Docker Desktop on Windows/Mac)
+
+### Start
+
+```bash
+docker compose up -d --build
+```
+
+The 3 services are then available at:
+
+| Service   | URL                          |
+| --------- | ---------------------------- |
+| Frontend  | http://localhost:5173        |
+| API       | http://localhost:8080        |
+| Swagger   | http://localhost:8080/swagger-ui.html |
+| Postgres  | localhost:5432 (postgres / password)  |
+
+> The initial build downloads the images and compiles both applications (Maven for the backend, npm for the frontend): allow a few minutes on first run.
+
+### Environment variables
+
+Copy the `.env.example` file to `.env` and fill in your values:
+
+```bash
+cp .env.example .env          # Linux / macOS
+copy .env.example .env        # Windows (cmd)
+```
+
+| Variable              | Role                              | Default |
+| --------------------- | --------------------------------- | ------- |
+| `JWT_SECRET`          | JWT signing key                   | dev key (change it!) |
+| `STRIPE_SECRET_KEY`   | Stripe key (payments)             | empty -> payments disabled |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret           | empty |
+| `MAIL_USERNAME`       | SMTP account (emails)             | empty -> emails disabled |
+| `MAIL_PASSWORD`       | SMTP password                     | empty |
+
+> Without a real Stripe / SMTP key, the application still starts normally — only payments and email notifications are inactive.
+
+### Useful commands
+
+```bash
+docker compose ps                 # service status
+docker compose logs -f backend    # API logs
+docker compose logs -f frontend   # frontend logs
+docker compose down               # stop (keeps the data)
+docker compose down -v            # stop + remove the Postgres volume (data loss!)
+```
+
+---
+
+## Tech Stack
 
 ### Backend
 
@@ -45,7 +103,7 @@ SPRING-APPOINTMENT/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start — Local development (without Docker)
 
 ### Prerequisites
 
@@ -94,7 +152,7 @@ npm run dev
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ### Backend (`appointment-backend/`)
 
@@ -127,9 +185,9 @@ src/
 
 ---
 
-## 🔑 Default Admin Account
+## Default Admin Account
 
-Automatically created by Flyway migration:
+Automatically created by Flyway migration (available with Docker and local setup):
 
 | Field    | Value             |
 | -------- | ----------------- |
@@ -138,7 +196,7 @@ Automatically created by Flyway migration:
 
 ---
 
-## 📝 API Documentation
+## API Documentation
 
 Once the backend is running, visit:
 
@@ -147,7 +205,7 @@ Once the backend is running, visit:
 
 ---
 
-## 🧪 Build Production
+## Build Production
 
 ### Frontend
 
@@ -159,6 +217,6 @@ npm run preview
 
 ---
 
-## 📄 License
+## License
 
 MIT
