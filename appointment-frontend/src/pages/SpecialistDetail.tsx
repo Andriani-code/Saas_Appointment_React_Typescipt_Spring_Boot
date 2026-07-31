@@ -185,7 +185,7 @@ export function SpecialistDetail() {
         <div className="px-6 pb-6">
           <div className="flex items-end gap-5 -mt-8 mb-4">
             <div className="ring-4 ring-surface rounded-2xl">
-              <Avatar name={name} src={specialist.profilePhoto} size="xl" />
+              <Avatar name={name} src={localSpecialist.profilePhoto} size="xl" />
             </div>
             <div className="pb-1 flex-1">
               <div className="flex items-start justify-between flex-wrap gap-3">

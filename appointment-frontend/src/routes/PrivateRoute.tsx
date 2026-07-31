@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui";
 
 export function PrivateRoute() {
   const { isAuthenticated, isLoading, user } = useAuthStore();

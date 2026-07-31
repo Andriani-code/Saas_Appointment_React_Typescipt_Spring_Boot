@@ -6,13 +6,14 @@ import { motion, HTMLMotionProps } from 'framer-motion'
 type Variant = 'primary' | 'outline' | 'ghost' | 'danger'
 type Size    = 'sm' | 'md' | 'lg'
 
-interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref" | "children"> {
   variant?:  Variant
   size?:     Size
   loading?:  boolean
   icon?:     ReactNode
   iconRight?: ReactNode
   fullWidth?: boolean
+  children?: ReactNode
 }
 
 const variantClasses: Record<Variant, string> = {
