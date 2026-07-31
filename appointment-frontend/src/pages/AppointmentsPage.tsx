@@ -20,6 +20,8 @@ const tabs: { value: Tab; label: string }[] = [
   { value: "CONFIRMED", label: "Confirmés" },
   { value: "COMPLETED", label: "Terminés" },
   { value: "CANCELED", label: "Annulés" },
+  { value: "REJECTED", label: "Rejetés" },
+  { value: "NO_SHOW", label: "Absents" },
 ];
 
 export function AppointmentsPage() {
@@ -27,9 +29,9 @@ export function AppointmentsPage() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   
-  const isSpecialist = hasRole("SPECIALIST");
+  const isProvider = hasRole("PROVIDER");
   const isClient = hasRole("CLIENT");
-  const isEnabled = isSpecialist || isClient;
+  const isEnabled = isProvider || isClient;
 
   const {
     items: reservations,
@@ -41,7 +43,7 @@ export function AppointmentsPage() {
     loadMore,
   } = usePaginatedFetch<ReservationResponse>(
     (page, size) => {
-      if (isSpecialist) return reservationApi.getMyAsSpecialist(page, size);
+      if (isProvider) return reservationApi.getMyAsProvider(page, size);
       if (isClient) return reservationApi.getMyAsClient(page, size);
       // Fallback for ADMIN or other roles who shouldn't be here but might be
       return Promise.resolve({
@@ -55,7 +57,7 @@ export function AppointmentsPage() {
     },
     {
       pageSize: 20,
-      deps: [isSpecialist, isClient],
+      deps: [isProvider, isClient],
       getItemKey: (reservation) => reservation.id,
       enabled: isEnabled
     },
@@ -80,7 +82,7 @@ export function AppointmentsPage() {
           return (
             reservation.serviceName.toLowerCase().includes(query) ||
             reservation.clientFullName.toLowerCase().includes(query) ||
-            (reservation.specialistDisplayName ?? "").toLowerCase().includes(query)
+            (reservation.providerDisplayName ?? "").toLowerCase().includes(query)
           );
         }),
     [reservations, search, tab],
@@ -112,11 +114,11 @@ export function AppointmentsPage() {
         <div>
           <h1 className="page-title">Mes rendez-vous</h1>
           <p className="text-muted mt-1 text-sm">
-            Gérez vos consultations en un seul endroit
+            Gérez vos rendez-vous en un seul endroit
           </p>
         </div>
         {hasRole("CLIENT") && (
-          <Link to="/specialists">
+          <Link to="/providers">
             <Button icon={<Calendar size={15} />}>
               <span className="hidden sm:inline">Nouveau rendez-vous</span>
               <span className="sm:hidden">Nouveau</span>
@@ -126,7 +128,7 @@ export function AppointmentsPage() {
       </div>
 
       <Input
-        placeholder="Rechercher par spécialiste, service…"
+        placeholder="Rechercher par prestataire, service…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         icon={<Search size={15} />}
@@ -189,8 +191,8 @@ export function AppointmentsPage() {
           }
           action={
             hasRole("CLIENT") ? (
-              <Link to="/specialists">
-                <Button size="sm">Trouver un spécialiste</Button>
+              <Link to="/providers">
+                <Button size="sm">Trouver un prestataire</Button>
               </Link>
             ) : undefined
           }

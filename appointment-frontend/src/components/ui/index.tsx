@@ -27,10 +27,10 @@ interface BadgeProps {
 
 const statusConfig: Record<ReservationStatus, { label: string; cls: string; dot: string }> = {
   PENDING: { label: 'En attente', cls: 'bg-amber-100 text-amber-900', dot: 'bg-amber-700' },
-  CONFIRMED: { label: 'Confirme', cls: 'bg-blue-100 text-blue-900', dot: 'bg-blue-700' },
-  COMPLETED: { label: 'Termine', cls: 'bg-primary-100 text-primary-800', dot: 'bg-primary-700' },
-  CANCELED: { label: 'Annule', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
-  REJECTED: { label: 'Rejete', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
+  CONFIRMED: { label: 'Confirmé', cls: 'bg-blue-100 text-blue-900', dot: 'bg-blue-700' },
+  COMPLETED: { label: 'Terminé', cls: 'bg-primary-100 text-primary-800', dot: 'bg-primary-700' },
+  CANCELED: { label: 'Annulé', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
+  REJECTED: { label: 'Rejeté', cls: 'bg-red-100 text-red-800', dot: 'bg-red-700' },
   NO_SHOW: { label: 'Absent', cls: 'bg-gray-200 text-gray-800', dot: 'bg-gray-700' },
 }
 

@@ -186,7 +186,7 @@ export function ClientsPage() {
                 </Link>
                 {client.upcomingReservation && (
                   <Link
-                    to={`/appointments/${client.upcomingReservation.id}`}
+                    to={`/appointments`}
                     className="flex-1"
                   >
                     <Button

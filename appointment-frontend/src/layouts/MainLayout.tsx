@@ -4,14 +4,15 @@ import { cn } from "@/utils";
 import { useAuthStore } from "@/store/authStore";
 import {
   LayoutDashboard,
+  Briefcase,
   Calendar,
   Users,
   MessageSquare,
+  DollarSign,
   Star,
   Settings,
   LogOut,
   ChevronRight,
-  Stethoscope,
   UserCog,
   Shield,
   Menu,
@@ -39,30 +40,31 @@ const navItems: NavItem[] = [
     label: "Mes rendez-vous",
   },
   {
-    to: "/specialists",
-    icon: <Stethoscope size={18} />,
-    label: "Spécialistes",
+    to: "/providers",
+    icon: <Briefcase size={18} />,
+    label: "Prestataires",
     roles: ["CLIENT"],
   },
   {
-    to: "/patients",
+    to: "/clients",
     icon: <Users size={18} />,
-    label: "Patients",
-    roles: ["SPECIALIST"],
+    label: "Clients",
+    roles: ["PROVIDER"],
   },
   {
     to: "/services",
     icon: <UserCog size={18} />,
     label: "Mes services",
-    roles: ["SPECIALIST"],
+    roles: ["PROVIDER"],
   },
   {
     to: "/availability",
     icon: <Calendar size={18} />,
     label: "Disponibilités",
-    roles: ["SPECIALIST"],
+    roles: ["PROVIDER"],
   },
   { to: "/messages", icon: <MessageSquare size={18} />, label: "Messages" },
+  { to: "/payments", icon: <DollarSign size={18} />, label: "Paiements" },
   { to: "/reviews", icon: <Star size={18} />, label: "Avis" },
   {
     to: "/admin",
@@ -86,14 +88,14 @@ export function MainLayout() {
   const visibleItems = navItems.filter(
     (item) =>
       !item.roles ||
-      item.roles.some((r) => hasRole(r as "ADMIN" | "CLIENT" | "SPECIALIST")),
+      item.roles.some((r) => hasRole(r as "ADMIN" | "CLIENT" | "PROVIDER")),
   );
 
   const displayName = user?.email?.split("@")[0] ?? "Utilisateur";
   const roleLabel = {
     ADMIN: "Administrateur",
-    CLIENT: "Patient",
-    SPECIALIST: "Spécialiste",
+    CLIENT: "Client",
+    PROVIDER: "Prestataire",
   }[user?.role ?? "CLIENT"];
 
   return (

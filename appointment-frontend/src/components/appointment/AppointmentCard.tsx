@@ -20,8 +20,8 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
   const [loading, setLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const isSpecialist = hasRole('SPECIALIST')
-  const name = isSpecialist ? reservation.clientFullName : (reservation.specialistDisplayName ?? 'Specialiste')
+  const isProvider = hasRole('PROVIDER')
+  const name = isProvider ? reservation.clientFullName : (reservation.providerDisplayName ?? 'Providere')
 
   async function doAction(action: () => Promise<ReservationResponse>) {
     setLoading(true)
@@ -81,7 +81,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
                 >
                   <MessageSquare size={14} />Message
                 </button>
-                {reservation.status !== 'CANCELED' && reservation.status !== 'COMPLETED' && reservation.status !== 'REJECTED' && (
+                {reservation.status !== 'CANCELED' && reservation.status !== 'COMPLETED' && reservation.status !== 'REJECTED' && reservation.status !== 'NO_SHOW' && (
                   <button
                     type="button"
                     onClick={() => doAction(() => reservationApi.cancel(reservation.id))}
@@ -122,7 +122,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
         </div>
       )}
 
-      {isSpecialist && reservation.status === 'PENDING' && (
+      {isProvider && reservation.status === 'PENDING' && (
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -146,7 +146,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
         </div>
       )}
 
-      {isSpecialist && reservation.status === 'CONFIRMED' && (
+      {isProvider && reservation.status === 'CONFIRMED' && (
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -169,13 +169,13 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
         </div>
       )}
 
-      {!isSpecialist && (reservation.status === 'CANCELED' || reservation.status === 'REJECTED') && (
+      {!isProvider && (reservation.status === 'CANCELED' || reservation.status === 'REJECTED') && (
         <Button
           size="sm"
           variant="outline"
           fullWidth
           icon={<RotateCcw size={13} />}
-          onClick={() => navigate(`/appointments/${reservation.id}`)}
+          onClick={() => navigate(`/appointments`)}
         >
           Reprendre rendez-vous
         </Button>

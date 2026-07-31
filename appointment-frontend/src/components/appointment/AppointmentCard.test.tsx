@@ -30,13 +30,13 @@ const baseReservation: ReservationResponse = {
   id: 'reservation-1',
   clientId: 'client-1',
   clientFullName: 'Jane Client',
-  specialistId: 'specialist-1',
-  specialistDisplayName: 'Dr Martin',
+  providerId: 'provider-1',
+  providerDisplayName: 'Dr Martin',
   serviceId: 'service-1',
   serviceName: 'Consultation',
   slot: {
     id: 'slot-1',
-    specialistId: 'specialist-1',
+    providerId: 'provider-1',
     date: '2026-04-23',
     startTime: '09:00:00',
     endTime: '09:30:00',
@@ -62,10 +62,10 @@ describe('AppointmentCard', () => {
 
     await user.click(screen.getByRole('button', { name: /reprendre rendez-vous/i }))
 
-    expect(navigateMock).toHaveBeenCalledWith('/appointments/reservation-1')
+    expect(navigateMock).toHaveBeenCalledWith('/appointments')
   })
 
-  it('confirms a pending appointment for a specialist', async () => {
+  it('confirms a pending appointment for a provider', async () => {
     const user = userEvent.setup()
     const onUpdate = vi.fn()
     const updatedReservation = { ...baseReservation, status: 'CONFIRMED' as const }
@@ -76,7 +76,7 @@ describe('AppointmentCard', () => {
         reservation={{ ...baseReservation, status: 'PENDING' }}
         onUpdate={onUpdate}
       />,
-      { role: 'SPECIALIST' },
+      { role: 'PROVIDER' },
     )
 
     await user.click(screen.getByRole('button', { name: /confirmer/i }))
