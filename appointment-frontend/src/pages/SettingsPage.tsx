@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { User, MapPin, Phone, Save, Briefcase, AlertCircle, ShieldCheck, Clock as ClockIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { clientApi, specialistApi } from '@/services/api'
+import { clientApi, providerApi } from '@/services/api'
 import { useAuthStore } from '@/store/authStore'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -11,7 +11,7 @@ import { cn } from '@/utils'
 type Tab = 'profile' | 'address' | 'security'
 
 export function SettingsPage() {
-  const { user, hasRole } = useAuthStore()
+  const { user, hasRole, setProfileCompleted } = useAuthStore()
   const [tab, setTab]         = useState<Tab>('profile')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -22,6 +22,7 @@ export function SettingsPage() {
   const [phone,     setPhone]     = useState('')
   const [bio,       setBio]       = useState('')
   const [title,     setTitle]     = useState('')
+  const [category,  setCategory]  = useState('')
   const [displayName, setDisplayName] = useState('')
 
   // Address fields
@@ -57,14 +58,14 @@ export function SettingsPage() {
           setLine(c.address?.addressLine ?? '')
           setLatitude(c.address?.latitude ?? null)
           setLongitude(c.address?.longitude ?? null)
-        } else if (hasRole('SPECIALIST')) {
-          const exists = await specialistApi.existsProfile()
+        } else if (hasRole('PROVIDER')) {
+          const exists = await providerApi.existsProfile()
           if (!exists) {
             setProfileExists(false)
             return
           }
 
-          const s = await specialistApi.getMe()
+          const s = await providerApi.getMe()
           setProfileExists(true)
           setVerificationStatus(s.verificationStatus)
           setFirstName(s.firstName)
@@ -72,6 +73,7 @@ export function SettingsPage() {
           setPhone(s.phone ?? '')
           setBio(s.bio ?? '')
           setTitle(s.profileTitle ?? '')
+          setCategory(s.category ?? '')
           setDisplayName(s.displayName ?? '')
           setCountry(s.serviceAddress?.country ?? '')
           setCity(s.serviceAddress?.city ?? '')
@@ -96,7 +98,7 @@ export function SettingsPage() {
     }
     const toastId = toast.loading("Envoi de la demande de vérification...")
     try {
-      await specialistApi.requestVerification()
+      await providerApi.requestVerification()
       setVerificationStatus('PENDING')
       toast.success("Demande envoyée avec succès !", { id: toastId })
     } catch (err) {
@@ -169,13 +171,15 @@ export function SettingsPage() {
         profileExists ? await clientApi.updateProfile(data) : await clientApi.createProfile(data)
       } else {
         const data = {
-          firstName, lastName, phone, bio, profileTitle: title, displayName,
+          firstName, lastName, phone, bio, profileTitle: title, category,
+          displayName,
           serviceAddress: address,
         }
-        profileExists ? await specialistApi.updateProfile(data) : await specialistApi.createProfile(data)
+        profileExists ? await providerApi.updateProfile(data) : await providerApi.createProfile(data)
       }
       
       setProfileExists(true)
+      setProfileCompleted(true)
       toast.success("Enregistré avec succès !", { id: toastId })
     } catch (err) {
       toast.error("Erreur lors de l'enregistrement", { id: toastId })
@@ -205,7 +209,7 @@ export function SettingsPage() {
         <p className="text-muted mt-1 text-sm">Gérez vos informations personnelles</p>
       </div>
 
-      {hasRole('SPECIALIST') && profileExists && (
+      {hasRole('PROVIDER') && profileExists && (
         <div className={cn(
           "rounded-2xl p-4 flex items-center justify-between gap-4 border shadow-sm animate-slide-down",
           verificationStatus === 'APPROVED' ? "bg-green-50 border-green-100" :
@@ -263,7 +267,7 @@ export function SettingsPage() {
           <p className="text-sm text-primary font-medium">{user?.email}</p>
           <div className="flex gap-2 mt-1">
              <span className="text-[10px] bg-soft px-2 py-0.5 rounded-full text-muted uppercase font-bold tracking-wider">
-               {user?.role === 'CLIENT' ? 'Patient' : user?.role === 'SPECIALIST' ? 'Spécialiste' : 'Admin'}
+               {user?.role === 'CLIENT' ? 'Client' : user?.role === 'PROVIDER' ? 'Prestataire' : 'Admin'}
              </span>
              {!profileExists && (
                <span className="text-[10px] bg-amber-100 px-2 py-0.5 rounded-full text-amber-700 uppercase font-bold tracking-wider">
@@ -297,12 +301,14 @@ export function SettingsPage() {
             </div>
             <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)}
               icon={<Phone size={15} />} placeholder="+33 6 00 00 00 00" />
-            {hasRole('SPECIALIST') && (
+            {hasRole('PROVIDER') && (
               <>
                 <Input label="Nom affiché (Public)" value={displayName} onChange={e => setDisplayName(e.target.value)}
-                  placeholder="Ex: Dr. Jean Martin" />
+                  placeholder="Ex: Jean Martin" />
                 <Input label="Titre professionnel" value={title} onChange={e => setTitle(e.target.value)}
-                  placeholder="Ex: Cardiologue, Médecin généraliste…" />
+                  placeholder="Ex: Coiffeur, Esthéticienne, Réparateur…" />
+                <Input label="Catégorie" value={category} onChange={e => setCategory(e.target.value)}
+                  placeholder="Ex: Coiffure, Esthétique, Réparation…" />
                 <div>
                   <label className="text-sm font-medium text-text block mb-1.5">Biographie</label>
                   <textarea
