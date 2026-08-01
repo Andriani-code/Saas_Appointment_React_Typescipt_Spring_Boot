@@ -110,7 +110,7 @@ export function ReviewsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title text-3xl font-black italic uppercase tracking-tighter">
+          <h1 className="page-title text-3xl font-black uppercase tracking-tighter">
             Avis & Notes
           </h1>
           <p className="text-muted mt-1 text-sm font-medium">
@@ -225,7 +225,7 @@ export function ReviewsPage() {
                   <span className="absolute -left-2 -top-2 text-4xl text-primary/10 font-serif font-black">
                     "
                   </span>
-                  <p className="text-sm text-text/80 leading-relaxed italic relative z-10 pl-2">
+                  <p className="text-sm text-text/80 leading-relaxed relative z-10 pl-2">
                     {review.comment || "Aucun commentaire laissé."}
                   </p>
                 </div>
