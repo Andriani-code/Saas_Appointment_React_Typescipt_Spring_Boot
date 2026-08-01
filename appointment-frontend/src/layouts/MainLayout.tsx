@@ -117,13 +117,8 @@ export function MainLayout() {
       >
         {/* Logo */}
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-              <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-8 h-8 rounded-xl object-contain" />
-            </div>
-            <span className="font-display font-bold text-lg text-text">
-              HILA
-            </span>
+          <div className="flex items-center justify-center">
+            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
@@ -190,6 +185,11 @@ export function MainLayout() {
           style={{ backgroundColor: "#0F172A" }}
         >
           <div className="flex items-center gap-4 flex-1">
+            {/* Logo (top-left) */}
+            <div className="flex items-center justify-center shrink-0">
+              <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
+            </div>
+
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(true)}
