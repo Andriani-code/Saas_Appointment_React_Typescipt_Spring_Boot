@@ -61,7 +61,7 @@ public class AddressControllerTest {
 
         mockMvc.perform(post("/api/v1/addresses")
                         .with(csrf())
-                        .with(authentication(new UsernamePasswordAuthenticationToken("user-123", null, List.of(new SimpleGrantedAuthority("ROLE_USER")))))
+                        .with(authentication(new UsernamePasswordAuthenticationToken("user-123", null, List.of(new SimpleGrantedAuthority("ROLE_CLIENT")))))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -70,7 +70,7 @@ public class AddressControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user-123")
+    @WithMockUser(username = "user-123", roles = {"CLIENT"})
     void getByUser_returnsList() throws Exception {
         AddressResponse resp1 = new AddressResponse();
         resp1.setId(UUID.randomUUID().toString());
@@ -98,7 +98,7 @@ public class AddressControllerTest {
 
         mockMvc.perform(put("/api/v1/addresses/addr-1")
                         .with(csrf())
-                        .with(authentication(new UsernamePasswordAuthenticationToken("user-123", null, List.of(new SimpleGrantedAuthority("ROLE_USER")))))
+                        .with(authentication(new UsernamePasswordAuthenticationToken("user-123", null, List.of(new SimpleGrantedAuthority("ROLE_CLIENT")))))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isOk())

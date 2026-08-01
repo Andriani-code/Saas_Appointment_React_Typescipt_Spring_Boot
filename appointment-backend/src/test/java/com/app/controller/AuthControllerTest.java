@@ -37,7 +37,7 @@ class AuthControllerTest {
     @Test
     void registerReturnsCreatedResponse() throws Exception {
         when(authService.register(any())).thenReturn(
-                AuthResponse.of("access-token", "refresh-token", "user@example.com", "CLIENT"));
+                AuthResponse.of("access-token", "refresh-token", "user@example.com", "CLIENT", "user-123"));
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +61,7 @@ class AuthControllerTest {
     @Test
     void loginReturnsTokens() throws Exception {
         when(authService.login(any())).thenReturn(
-                AuthResponse.of("access-token", "refresh-token", "user@example.com", "CLIENT"));
+                AuthResponse.of("access-token", "refresh-token", "user@example.com", "CLIENT", "user-123"));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +79,7 @@ class AuthControllerTest {
     @Test
     void refreshReturnsNewTokens() throws Exception {
         when(authService.refreshToken(any())).thenReturn(
-                AuthResponse.of("new-access", "new-refresh", "user@example.com", "CLIENT"));
+                AuthResponse.of("new-access", "new-refresh", "user@example.com", "CLIENT", "user-123"));
 
         mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
