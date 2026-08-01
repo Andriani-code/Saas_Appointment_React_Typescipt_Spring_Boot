@@ -128,22 +128,6 @@ export function MainLayout() {
           </button>
         </div>
 
-        {/* Profile */}
-        <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-soft transition-colors cursor-pointer">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary font-semibold text-sm">
-              {displayName[0]?.toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-text truncate capitalize">
-                {displayName}
-              </p>
-              <p className="text-xs text-muted">{roleLabel}</p>
-            </div>
-            <ChevronRight size={14} className="text-muted shrink-0" />
-          </div>
-        </div>
-
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
           {visibleItems.map((item) => (
