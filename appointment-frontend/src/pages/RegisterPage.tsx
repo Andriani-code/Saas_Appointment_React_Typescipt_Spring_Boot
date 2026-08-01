@@ -12,11 +12,14 @@ import {
   ChevronRight,
   MapPin,
   Phone,
+  Sparkles,
+  LogIn,
 } from "lucide-react";
 import { authApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { cn, getErrorMessage } from "@/utils";
 import type { RegisterRequest, Role } from "@/types";
 
@@ -41,6 +44,12 @@ const roles: {
     desc: "Je propose des prestations",
     icon: <Briefcase size={18} />,
   },
+];
+
+const stepList = [
+  "Choisissez votre rôle",
+  "Complétez votre profil",
+  "Créez votre compte",
 ];
 
 export function RegisterPage() {
@@ -161,324 +170,403 @@ export function RegisterPage() {
 
     return payload;
   }
-async function handleSubmit(e: FormEvent) {
-  e.preventDefault();
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
 
-  if (password.length < 8) {
-    setError("Le mot de passe doit contenir au moins 8 caractères.");
-    return;
+    if (password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    if (!validateProfileStep()) {
+      setStep("profile");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await authApi.register(buildRegisterPayload());
+
+      login({
+        email: data.email,
+        role: data.role,
+        profileCompleted: data.profileCompleted,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
+
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    }
   }
-
-  if (!validateProfileStep()) {
-    setStep("profile");
-    return;
-  }
-
-  setError("");
-  setLoading(true);
-
-  try {
-    const data = await authApi.register(buildRegisterPayload());
-
-    login({
-      email: data.email,
-      role: data.role,
-      profileCompleted: data.profileCompleted,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    });
-
-    navigate("/dashboard");
-  } catch (err: unknown) {
-    setError(getErrorMessage(err));
-  }
-}
   const stepIndex = step === "role" ? 0 : step === "profile" ? 1 : 2;
 
   return (
-    <div className="min-h-[90vh] bg-background flex mr-20 ml-20 mt-6 ">
-      <div className="hidden lg:flex rounded-tl-xl rounded-bl-xl lg:w-1/2 bg-gradient-to-br from-primary-700 via-primary to-primary-400 relative overflow-hidden flex-col justify-between p-8 xl:p-12">
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10" />
-        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
+    <AuthLayout
+      cardClassName="max-w-6xl"
+      rightAction={
+        <Link to="/login">
+          <Button variant="outline" size="sm" icon={<LogIn size={14} />}>
+            Se connecter
+          </Button>
+        </Link>
+      }
+      leftPanel={
+        <div className="bg-gradient-to-br from-primary via-primary to-primary/90 h-full relative overflow-hidden flex flex-col justify-between p-8 xl:p-12">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
+          <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
 
-        <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 rounded-2xl object-contain" />
-          <span className="font-display text-2xl font-bold text-white">HILA</span>
+          <div className="relative z-10 space-y-6">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 text-white/90 px-3 py-1 rounded-full text-xs font-semibold w-fit">
+              <Sparkles size={13} />
+              Inscription en 3 étapes
+            </span>
+
+            <h1 className="font-display text-3xl xl:text-4xl font-bold text-white leading-tight">
+              Rejoignez HILA
+              <br />
+              en quelques minutes
+            </h1>
+            <p className="text-white/75 text-base xl:text-lg leading-relaxed">
+              Choisissez votre rôle, complétez votre profil puis créez votre
+              compte.
+            </p>
+
+            <div className="space-y-3 pt-2">
+              {stepList.map((label, index) => (
+                <div
+                  key={label}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-4 py-3 transition-colors",
+                    index <= stepIndex
+                      ? "bg-white/15 text-white"
+                      : "bg-white/5 text-white/60",
+                  )}
+                >
+                  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm font-medium">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="relative z-10 text-white/40 text-sm">
+            © 2026 HILA. Tous droits réservés.
+          </p>
+        </div>
+      }
+    >
+      <div className="w-full max-w-xl mx-auto space-y-7 px-6 sm:px-10 py-10 xl:py-12">
+        <div className="grid grid-cols-3 gap-3">
+          {["Rôle", "Profil", "Compte"].map((label, index) => (
+            <div key={label} className="space-y-2">
+              <div
+                className={cn(
+                  "h-2 rounded-full",
+                  index <= stepIndex ? "bg-primary" : "bg-primary/20",
+                )}
+              />
+              <p
+                className={cn(
+                  "text-xs font-semibold",
+                  index <= stepIndex ? "text-text" : "text-muted",
+                )}
+              >
+                {label}
+              </p>
+            </div>
+          ))}
         </div>
 
-        <div className="relative z-10 space-y-5">
-          <h1 className="font-display text-3xl xl:text-4xl font-bold text-white leading-tight">
-            Inscription en 3 étapes
-          </h1>
-          <p className="text-white/75 text-base xl:text-lg">
-            Choisissez d'abord votre rôle, complétez votre profil, puis créez votre compte.
+        <div>
+          <h2 className="font-display text-3xl font-bold text-text">
+            {step === "role"
+              ? "Choisissez votre rôle"
+              : step === "profile"
+                ? "Complétez votre profil"
+                : "Créez votre compte"}
+          </h2>
+          <p className="mt-2 text-muted">
+            {step === "role"
+              ? "Sélectionnez le type de compte à créer."
+              : step === "profile"
+                ? "Renseignez les informations du profil avant de continuer."
+                : "Ajoutez maintenant l'email et le mot de passe."}
           </p>
         </div>
 
-        <p className="relative z-10 text-white/40 text-sm">© 2026 HILA. Tous droits réservés.</p>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center bg-surface px-4 py-8 sm:px-6 lg:px-8">
-        <div className="w-full max-w-2xl space-y-7">
-          <div className="lg:hidden flex items-center gap-2 mb-2">
-            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-8 h-8 rounded-xl object-contain" />
-            <span className="font-display text-xl font-bold text-text">HILA</span>
+        {error && (
+          <div className="bg-accent/10 border border-accent/30 rounded-xl px-4 py-3 text-sm text-accent animate-slide-down whitespace-pre-line">
+            {error}
           </div>
+        )}
 
-          <div className="grid grid-cols-3 gap-3">
-            {["Rôle", "Profil", "Compte"].map((label, index) => (
-              <div key={label} className="space-y-2">
-                <div className={cn("h-2 rounded-full", index <= stepIndex ? "bg-primary" : "bg-primary/20")} />
-                <p className={cn("text-xs font-semibold", index <= stepIndex ? "text-text" : "text-muted")}>
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <h2 className="font-display text-3xl font-bold text-text">
-              {step === "role" ? "Choisissez votre rôle" : step === "profile" ? "Complétez votre profil" : "Créez votre compte"}
-            </h2>
-            <p className="mt-2 text-muted">
-              {step === "role"
-                ? "Sélectionnez le type de compte à créer."
-                : step === "profile"
-                  ? "Renseignez les informations du profil avant de continuer."
-                  : "Ajoutez maintenant l'email et le mot de passe."}
-            </p>
-          </div>
-
-          {error && (
-            <div className="bg-accent/10 border border-accent/30 rounded-xl px-4 py-3 text-sm text-accent animate-slide-down whitespace-pre-line">
-              {error}
-            </div>
-          )}
-
-          {step === "role" && (
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {roles.map((r) => (
-                  <button
-                    key={r.value}
-                    type="button"
-                    onClick={() => setRole(r.value)}
+        {step === "role" && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {roles.map((r) => (
+                <button
+                  key={r.value}
+                  type="button"
+                  onClick={() => setRole(r.value)}
+                  className={cn(
+                    "border-2 rounded-2xl p-5 text-left transition-all duration-200",
+                    role === r.value
+                      ? "border-primary bg-primary/5 shadow-card-hover"
+                      : "border-border bg-surface hover:border-primary/40",
+                  )}
+                >
+                  <span className="text-2xl">{r.icon}</span>
+                  <p
                     className={cn(
-                      "border-2 rounded-2xl p-5 text-left transition-all duration-200",
-                      role === r.value
-                        ? "border-primary bg-primary/5 shadow-card-hover"
-                        : "border-border bg-surface hover:border-primary/40",
+                      "font-semibold text-sm mt-2",
+                      role === r.value ? "text-primary" : "text-text",
                     )}
                   >
-                    <span className="text-2xl">{r.icon}</span>
-                    <p className={cn("font-semibold text-sm mt-2", role === r.value ? "text-primary" : "text-text")}>
-                      {r.label}
-                    </p>
-                    <p className="text-xs text-muted mt-0.5">{r.desc}</p>
-                  </button>
-                ))}
-              </div>
-
-              <Button type="button" fullWidth size="lg" iconRight={<ChevronRight size={16} />} onClick={goToProfileStep}>
-                Continuer
-              </Button>
+                    {r.label}
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">{r.desc}</p>
+                </button>
+              ))}
             </div>
-          )}
 
-          {step === "profile" && (
-            <div className="space-y-5">
+            <Button
+              type="button"
+              fullWidth
+              size="lg"
+              iconRight={<ChevronRight size={16} />}
+              onClick={goToProfileStep}
+            >
+              Continuer
+            </Button>
+          </div>
+        )}
+
+        {step === "profile" && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Prénom"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Ex: Andry"
+                required
+              />
+              <Input
+                label="Nom"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Ex: Rakoto"
+                required
+              />
+            </div>
+
+            <Input
+              label="Téléphone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+261 34 00 000 00"
+              icon={<Phone size={16} />}
+            />
+
+            {role === "PROVIDER" && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Nom affiché"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Ex: Rakoto"
+                  />
+                  <Input
+                    label="Titre professionnel"
+                    value={profileTitle}
+                    onChange={(e) => setProfileTitle(e.target.value)}
+                    placeholder="Ex: Dermatologue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Bio
+                  </label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={4}
+                    placeholder="Décrivez votre activité..."
+                    className="w-full bg-soft border border-border rounded-xl px-4 py-3 text-sm text-text focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none resize-none"
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="rounded-2xl border border-border p-4 space-y-4">
+              <p className="font-semibold text-sm text-text flex items-center gap-2">
+                <MapPin size={16} />
+                {role === "CLIENT"
+                  ? "Adresse personnelle"
+                  : "Adresse personnelle (optionnelle)"}
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="Prénom"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Ex: Andry"
-                  required
+                  label="Pays"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="Ex: Madagascar"
                 />
                 <Input
-                  label="Nom"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Ex: Rakoto"
-                  required
+                  label="Ville"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Ex: Antananarivo"
                 />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Région"
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  placeholder="Ex: Analamanga"
+                />
+                <Input
+                  label="Adresse"
+                  value={addressLine}
+                  onChange={(e) => setAddressLine(e.target.value)}
+                  placeholder="Ex: Lot II A 123"
+                />
+              </div>
+            </div>
 
-              <Input
-                label="Téléphone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+261 34 00 000 00"
-                icon={<Phone size={16} />}
-              />
-
-              {role === "PROVIDER" && (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      label="Nom affiché"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Ex: Rakoto"
-                    />
-                    <Input
-                      label="Titre professionnel"
-                      value={profileTitle}
-                      onChange={(e) => setProfileTitle(e.target.value)}
-                      placeholder="Ex: Dermatologue"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-text mb-2">Bio</label>
-                    <textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      rows={4}
-                      placeholder="Décrivez votre activité..."
-                      className="w-full bg-soft border border-border rounded-xl px-4 py-3 text-sm text-text focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none resize-none"
-                    />
-                  </div>
-                </>
-              )}
-
+            {role === "PROVIDER" && (
               <div className="rounded-2xl border border-border p-4 space-y-4">
                 <p className="font-semibold text-sm text-text flex items-center gap-2">
                   <MapPin size={16} />
-                  {role === "CLIENT" ? "Adresse personnelle" : "Adresse personnelle (optionnelle)"}
+                  Adresse de service
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Pays"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    value={serviceCountry}
+                    onChange={(e) => setServiceCountry(e.target.value)}
                     placeholder="Ex: Madagascar"
                   />
                   <Input
                     label="Ville"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    value={serviceCity}
+                    onChange={(e) => setServiceCity(e.target.value)}
                     placeholder="Ex: Antananarivo"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Région"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
+                    value={serviceRegion}
+                    onChange={(e) => setServiceRegion(e.target.value)}
                     placeholder="Ex: Analamanga"
                   />
                   <Input
                     label="Adresse"
-                    value={addressLine}
-                    onChange={(e) => setAddressLine(e.target.value)}
-                    placeholder="Ex: Lot II A 123"
+                    value={serviceAddressLine}
+                    onChange={(e) => setServiceAddressLine(e.target.value)}
+                    placeholder="Ex: Cabinet 12"
                   />
                 </div>
               </div>
+            )}
 
-              {role === "PROVIDER" && (
-                <div className="rounded-2xl border border-border p-4 space-y-4">
-                  <p className="font-semibold text-sm text-text flex items-center gap-2">
-                    <MapPin size={16} />
-                    Adresse de service
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      label="Pays"
-                      value={serviceCountry}
-                      onChange={(e) => setServiceCountry(e.target.value)}
-                      placeholder="Ex: Madagascar"
-                    />
-                    <Input
-                      label="Ville"
-                      value={serviceCity}
-                      onChange={(e) => setServiceCity(e.target.value)}
-                      placeholder="Ex: Antananarivo"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      label="Région"
-                      value={serviceRegion}
-                      onChange={(e) => setServiceRegion(e.target.value)}
-                      placeholder="Ex: Analamanga"
-                    />
-                    <Input
-                      label="Adresse"
-                      value={serviceAddressLine}
-                      onChange={(e) => setServiceAddressLine(e.target.value)}
-                      placeholder="Ex: Cabinet 12"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" fullWidth icon={<ChevronLeft size={16} />} onClick={() => setStep("role")}>
-                  Retour
-                </Button>
-                <Button type="button" fullWidth iconRight={<ChevronRight size={16} />} onClick={goToAccountStep}>
-                  Continuer
-                </Button>
-              </div>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                fullWidth
+                icon={<ChevronLeft size={16} />}
+                onClick={() => setStep("role")}
+              >
+                Retour
+              </Button>
+              <Button
+                type="button"
+                fullWidth
+                iconRight={<ChevronRight size={16} />}
+                onClick={goToAccountStep}
+              >
+                Continuer
+              </Button>
             </div>
-          )}
+          </div>
+        )}
 
-          {step === "account" && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Adresse e-mail"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="vous@exemple.com"
-                icon={<Mail size={16} />}
-                required
-              />
+        {step === "account" && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Adresse e-mail"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="vous@exemple.com"
+              icon={<Mail size={16} />}
+              required
+            />
 
-              <Input
-                label="Mot de passe"
-                type={showPwd ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="8 caractères minimum"
-                icon={<Lock size={16} />}
-                hint="Au moins 8 caractères"
-                iconRight={
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd((p) => !p)}
-                    className="text-muted hover:text-text transition-colors"
-                  >
-                    {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                }
-                required
-              />
+            <Input
+              label="Mot de passe"
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="8 caractères minimum"
+              icon={<Lock size={16} />}
+              hint="Au moins 8 caractères"
+              iconRight={
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((p) => !p)}
+                  className="text-muted hover:text-text transition-colors"
+                >
+                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+              required
+            />
 
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" fullWidth icon={<ChevronLeft size={16} />} onClick={() => setStep("profile")}>
-                  Retour
-                </Button>
-                <Button type="submit" fullWidth loading={loading} size="lg" icon={<UserCheck size={16} />}>
-                  Créer mon compte
-                </Button>
-              </div>
-            </form>
-          )}
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                fullWidth
+                icon={<ChevronLeft size={16} />}
+                onClick={() => setStep("profile")}
+              >
+                Retour
+              </Button>
+              <Button
+                type="submit"
+                fullWidth
+                loading={loading}
+                size="lg"
+                icon={<UserCheck size={16} />}
+              >
+                Créer mon compte
+              </Button>
+            </div>
+          </form>
+        )}
 
-          <p className="text-center text-sm text-muted">
-            Déjà un compte ?{" "}
-            <Link
-              to="/login"
-              className="text-primary font-semibold hover:text-primary-600 transition-colors"
-            >
-              Se connecter
-            </Link>
-          </p>
-        </div>
+        <p className="text-center text-sm text-muted">
+          Déjà un compte ?{" "}
+          <Link
+            to="/login"
+            className="text-primary font-semibold hover:text-primary-600 transition-colors"
+          >
+            Se connecter
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }
