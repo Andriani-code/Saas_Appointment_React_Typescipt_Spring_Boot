@@ -20,11 +20,20 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
       className="card-hover p-0 animate-slide-up flex flex-col overflow-hidden border-none shadow-sm bg-white"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
-      {/* Service Image/Cover Placeholder */}
-      <div className="h-32 bg-gradient-to-br from-primary/80 to-primary relative overflow-hidden shrink-0">
-        <div className="absolute inset-0 opacity-10" 
-          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} 
-        />
+      {/* Service Image/Cover */}
+      <div className="h-32 relative overflow-hidden shrink-0">
+        {service.photoUrl ? (
+          <>
+            <img src={service.photoUrl} alt={service.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary">
+            <div className="absolute inset-0 opacity-10"
+              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}
+            />
+          </div>
+        )}
         <div className="absolute bottom-3 left-4 right-4">
            <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 drop-shadow-sm">
              {service.name}

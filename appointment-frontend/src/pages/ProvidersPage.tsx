@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
-import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
+import { MapPin, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ServiceCard } from '@/components/provider/ServiceCard'
 import { Button } from '@/components/ui/Button'
@@ -25,15 +25,27 @@ export function ProvidersPage() {
   const [nearbyError, setNearbyError] = useState<string | null>(null)
   const initialErrorShown = useRef(false)
 
+  // While the browser is still asking for geolocation, we keep showing a
+  // spinner instead of flashing an error.
+  const geolocationPending = filter === 'nearby' && !nearbyCoords && !nearbyError
+
   const fetchProviders = useCallback((page: number, size: number) => {
     if (filter === 'nearby') {
       if (!nearbyCoords) {
-        throw new Error(nearbyError ?? 'Location unavailable')
+        // Geolocation not resolved yet — nothing to fetch.
+        return Promise.resolve({
+          content: [],
+          page,
+          size,
+          totalElements: 0,
+          totalPages: 0,
+          last: true,
+        })
       }
       return providerApi.getNearby(nearbyCoords.lat, nearbyCoords.lng, 25, page, size)
     }
     return providerApi.getAll(page, size)
-  }, [filter, nearbyCoords, nearbyError])
+  }, [filter, nearbyCoords])
 
   const {
     items: providers,
@@ -48,6 +60,7 @@ export function ProvidersPage() {
       pageSize: 12,
       deps: [filter, nearbyCoords?.lat, nearbyCoords?.lng, nearbyError],
       getItemKey: (provider) => provider.id,
+      enabled: !geolocationPending,
     },
   )
 
@@ -172,9 +185,6 @@ export function ProvidersPage() {
             ) : undefined}
           />
         </div>
-        <Button variant="outline" icon={<SlidersHorizontal size={15} />}>
-          Filtres
-        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -186,7 +196,7 @@ export function ProvidersPage() {
               inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium
               transition-all duration-200
               ${filter === currentFilter
-                ? 'bg-text text-white shadow-sm'
+                ? 'bg-primary text-white shadow-sm shadow-primary/20'
                 : 'bg-surface border border-border text-muted hover:border-primary/40 hover:text-primary'
               }
             `}
@@ -203,7 +213,12 @@ export function ProvidersPage() {
         </p>
       )}
 
-      {loading && !nearbyError ? (
+      {geolocationPending ? (
+        <div className="flex items-center justify-center gap-3 py-24">
+          <Spinner size={28} />
+          <span className="text-sm text-muted">Récupération de votre position…</span>
+        </div>
+      ) : loading && !nearbyError ? (
         <div className="flex items-center justify-center py-24">
           <Spinner size={32} />
         </div>

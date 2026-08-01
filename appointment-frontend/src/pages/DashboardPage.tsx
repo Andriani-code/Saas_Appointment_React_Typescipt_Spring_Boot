@@ -198,7 +198,7 @@ export function DashboardPage() {
                     >
                        <div className="w-2/3 bg-primary rounded-t-md mb-0 shadow-lg shadow-primary/20" style={{ height: '70%' }} />
                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-text text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none font-bold">
-                         {hasRole("PROVIDER") ? `${d.val}€` : d.val}
+                         {hasRole("PROVIDER") ? `${d.val} Ar` : d.val}
                        </div>
                     </div>
                     <span className="text-[10px] font-bold text-muted uppercase">{d.day}</span>

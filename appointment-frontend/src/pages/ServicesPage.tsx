@@ -10,8 +10,10 @@ import {
   Search,
   AlertTriangle,
   ShieldCheck,
+  Image,
+  Upload,
 } from "lucide-react";
-import { serviceApi, providerApi } from "@/services/api";
+import { serviceApi, providerApi, uploadApi } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 import { Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +44,9 @@ export function ServicesPage() {
   const [price, setPrice] = useState(0);
   const [depositEnabled, setDepositEnabled] = useState(false);
   const [depositAmount, setDepositAmount] = useState(0);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+  const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined);
 
   const loadData = useCallback(async () => {
     if (!hasRole("PROVIDER")) return;
@@ -72,10 +77,13 @@ export function ServicesPage() {
   }, [loadData]);
 
   function openModal(service?: ProviderServiceResponse) {
+    setPhotoFile(null);
+    setPhotoPreview(undefined);
     if (service) {
       setEditingService(service);
       setName(service.name);
       setDescription(service.description || "");
+      setPhotoUrl(service.photoUrl);
       setDurationMinutes(service.durationMinutes);
       setPrice(service.price);
       setDepositEnabled(service.depositEnabled);
@@ -84,6 +92,7 @@ export function ServicesPage() {
       setEditingService(null);
       setName("");
       setDescription("");
+      setPhotoUrl(undefined);
       setDurationMinutes(30);
       setPrice(0);
       setDepositEnabled(false);
@@ -92,13 +101,28 @@ export function ServicesPage() {
     setShowModal(true);
   }
 
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     try {
+      let finalPhotoUrl = photoUrl;
+      if (photoFile) {
+        finalPhotoUrl = await uploadApi.uploadImage(photoFile, "services");
+      }
+
       const data: ProviderServiceRequest = {
         name,
         description: description || undefined,
+        photoUrl: finalPhotoUrl,
         durationMinutes,
         price,
         depositEnabled,
@@ -234,6 +258,15 @@ export function ServicesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((service) => (
             <div key={service.id} className="card p-5 hover:shadow-card-hover transition-shadow">
+              {service.photoUrl && (
+                <div className="w-full h-36 rounded-xl overflow-hidden mb-4">
+                  <img
+                    src={service.photoUrl}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-text truncate">{service.name}</h3>
@@ -263,19 +296,12 @@ export function ServicesPage() {
                     <Clock size={14} className="text-primary" />
                     {formatDuration(service.durationMinutes)}
                   </span>
-                  <span className="flex items-center gap-1.5 text-muted">
-                    <DollarSign size={14} className="text-primary" />
-                    {formatCurrency(service.price)}
-                  </span>
+                  {service.depositEnabled && service.depositAmount && (
+                    <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
+                      Dépôt: {formatCurrency(service.depositAmount)}
+                    </span>
+                  )}
                 </div>
-                {service.depositEnabled && service.depositAmount && (
-                  <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
-                    Dépôt: {formatCurrency(service.depositAmount)}
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-3 flex items-center gap-2">
                 <span
                   className={cn(
                     "inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium",
@@ -284,6 +310,13 @@ export function ServicesPage() {
                 >
                   {service.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   {service.isActive ? "Actif" : "Inactif"}
+                </span>
+              </div>
+
+              <div className="mt-3 flex items-center justify-end text-sm">
+                <span className="flex items-center gap-1.5 font-bold text-primary">
+                  <DollarSign size={14} />
+                  {formatCurrency(service.price)}
                 </span>
               </div>
             </div>
@@ -315,13 +348,55 @@ export function ServicesPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-muted mb-2">Photo du service</label>
+                <div className="flex items-start gap-4">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-soft border border-border flex items-center justify-center shrink-0">
+                    {photoPreview || photoUrl ? (
+                      <img
+                        src={photoPreview || photoUrl}
+                        alt="Aperçu"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Image size={24} className="text-muted" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center gap-2 w-full cursor-pointer border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 rounded-xl px-4 py-3 text-sm text-muted hover:text-text transition-colors">
+                      <Upload size={15} />
+                      {photoFile ? photoFile.name : "Choisir une image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoChange}
+                      />
+                    </label>
+                    {(photoFile || photoUrl) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhotoFile(null);
+                          setPhotoPreview(undefined);
+                          setPhotoUrl("");
+                        }}
+                        className="mt-2 text-xs text-muted hover:text-danger transition-colors"
+                      >
+                        Retirer la photo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-muted mb-2">Durée (min) *</label>
                   <Input type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(parseInt(e.target.value) || 0)} min={15} step={15} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted mb-2">Prix (€) *</label>
+                  <label className="block text-sm font-medium text-muted mb-2">Prix (Ar) *</label>
                   <Input type="number" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} min={0} step={0.01} required />
                 </div>
               </div>
@@ -342,7 +417,7 @@ export function ServicesPage() {
 
               {depositEnabled && (
                 <div>
-                  <label className="block text-sm font-medium text-muted mb-2">Montant du dépôt (€)</label>
+                  <label className="block text-sm font-medium text-muted mb-2">Montant du dépôt (Ar)</label>
                   <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(parseFloat(e.target.value) || 0)} min={0} step={0.01} />
                 </div>
               )}

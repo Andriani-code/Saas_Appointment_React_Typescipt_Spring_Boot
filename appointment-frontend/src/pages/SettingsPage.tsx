@@ -1,12 +1,21 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { User, MapPin, Phone, Save, Briefcase, AlertCircle, ShieldCheck, Clock as ClockIcon } from 'lucide-react'
+import { User, MapPin, Phone, Save, Briefcase, AlertCircle, ShieldCheck, Clock as ClockIcon, Camera, ImagePlus } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { clientApi, providerApi } from '@/services/api'
+import { clientApi, providerApi, uploadApi } from '@/services/api'
 import { useAuthStore } from '@/store/authStore'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui'
 import { cn } from '@/utils'
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
 
 type Tab = 'profile' | 'address' | 'security'
 
@@ -36,6 +45,14 @@ export function SettingsPage() {
   const [profileExists, setProfileExists] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<string>('NONE')
 
+  // Photo fields
+  const [profilePhoto, setProfilePhoto] = useState<string | undefined>(undefined)
+  const [coverPhoto, setCoverPhoto] = useState<string | undefined>(undefined)
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null)
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null)
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | undefined>(undefined)
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | undefined>(undefined)
+
   useEffect(() => {
     const loadProfile = async () => {
       setFetching(true)
@@ -52,6 +69,7 @@ export function SettingsPage() {
           setFirstName(c.firstName)
           setLastName(c.lastName)
           setPhone(c.phone ?? '')
+          setProfilePhoto(c.profilePhoto)
           setCountry(c.address?.country ?? '')
           setCity(c.address?.city ?? '')
           setRegion(c.address?.region ?? '')
@@ -75,6 +93,8 @@ export function SettingsPage() {
           setTitle(s.profileTitle ?? '')
           setCategory(s.category ?? '')
           setDisplayName(s.displayName ?? '')
+          setProfilePhoto(s.profilePhoto)
+          setCoverPhoto(s.coverPhoto)
           setCountry(s.serviceAddress?.country ?? '')
           setCity(s.serviceAddress?.city ?? '')
           setRegion(s.serviceAddress?.region ?? '')
@@ -165,14 +185,26 @@ export function SettingsPage() {
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined
       }
+
+      const folder = hasRole('PROVIDER') ? 'providers' : 'clients'
+      let finalProfilePhoto = profilePhoto
+      if (profilePhotoFile) {
+        finalProfilePhoto = await uploadApi.uploadImage(profilePhotoFile, folder)
+      }
+      let finalCoverPhoto = coverPhoto
+      if (coverPhotoFile) {
+        finalCoverPhoto = await uploadApi.uploadImage(coverPhotoFile, 'providers')
+      }
       
       if (hasRole('CLIENT')) {
-        const data = { firstName, lastName, phone, address }
+        const data = { firstName, lastName, phone, profilePhoto: finalProfilePhoto, address }
         profileExists ? await clientApi.updateProfile(data) : await clientApi.createProfile(data)
       } else {
         const data = {
           firstName, lastName, phone, bio, profileTitle: title, category,
           displayName,
+          profilePhoto: finalProfilePhoto,
+          coverPhoto: finalCoverPhoto,
           serviceAddress: address,
         }
         profileExists ? await providerApi.updateProfile(data) : await providerApi.createProfile(data)
@@ -259,7 +291,7 @@ export function SettingsPage() {
 
       {/* Profile preview */}
       <div className="card p-5 flex items-center gap-4">
-        <Avatar name={`${firstName} ${lastName}`.trim() || 'Utilisateur'} size="xl" />
+        <Avatar name={`${firstName} ${lastName}`.trim() || 'Utilisateur'} src={profilePhotoPreview || profilePhoto} size="xl" />
         <div>
           <p className="font-semibold text-text text-lg">
             {firstName || lastName ? `${firstName} ${lastName}` : 'Nouveau Profil'}
@@ -295,6 +327,91 @@ export function SettingsPage() {
       <form onSubmit={handleSave} className="card p-6 space-y-5">
         {tab === 'profile' && (
           <>
+            {/* Photo de profil */}
+            <div className="flex items-center gap-5">
+              <div className="relative shrink-0">
+                <Avatar
+                  name={`${firstName} ${lastName}`.trim() || 'Utilisateur'}
+                  src={profilePhotoPreview || profilePhoto}
+                  size="xl"
+                />
+                <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                  <Camera size={14} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setProfilePhotoFile(file)
+                      setProfilePhotoPreview(await readFileAsDataUrl(file))
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-text text-sm">Photo de profil</p>
+                <p className="text-xs text-muted mt-0.5">JPG, PNG, WebP — 5 Mo max</p>
+                {(profilePhotoFile || profilePhoto) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfilePhotoFile(null)
+                      setProfilePhotoPreview(undefined)
+                      setProfilePhoto('')
+                    }}
+                    className="text-xs text-muted hover:text-primary transition-colors mt-1"
+                  >
+                    Retirer la photo
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {hasRole('PROVIDER') && (
+              <div>
+                <label className="block text-sm font-medium text-muted mb-2">Photo de couverture</label>
+                <label className="flex items-center justify-center gap-2 w-full cursor-pointer border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 rounded-xl px-4 py-3 text-sm text-muted hover:text-text transition-colors">
+                  <ImagePlus size={15} />
+                  {coverPhotoFile ? coverPhotoFile.name : 'Choisir une image de couverture'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setCoverPhotoFile(file)
+                      setCoverPhotoPreview(await readFileAsDataUrl(file))
+                    }}
+                  />
+                </label>
+                {(coverPhotoFile || coverPhoto) && (
+                  <div className="mt-3">
+                    <div className="h-24 rounded-xl overflow-hidden border border-border">
+                      <img
+                        src={coverPhotoPreview || coverPhoto}
+                        alt="Aperçu couverture"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoverPhotoFile(null)
+                        setCoverPhotoPreview(undefined)
+                        setCoverPhoto('')
+                      }}
+                      className="text-xs text-muted hover:text-primary transition-colors mt-2"
+                    >
+                      Retirer la photo
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <Input label="Prénom" value={firstName} onChange={e => setFirstName(e.target.value)} required placeholder="Ex: Jean" />
               <Input label="Nom"    value={lastName}  onChange={e => setLastName(e.target.value)}  required placeholder="Ex: Martin" />

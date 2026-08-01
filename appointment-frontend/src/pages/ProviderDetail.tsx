@@ -2,19 +2,19 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   MapPin, Star, Clock, ChevronLeft, CheckCircle,
-  Calendar, MessageSquare, Shield
+  Calendar, MessageSquare, Shield, Heart
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { providerApi, serviceApi, slotApi, reviewApi, reservationApi, paymentApi } from '@/services/api'
+import { providerApi, serviceApi, slotApi, reviewApi, reservationApi, paymentApi, favoriteApi, messagingApi } from '@/services/api'
 import { useAuthStore } from '@/store/authStore'
 import { useBookingStore } from '@/store/bookingStore'
 import { Avatar, StarRating, StatusBadge, Spinner, EmptyState } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { ServiceCard } from '@/components/provider/ServiceCard'
-import { formatCurrency, formatTime, formatDuration } from '@/utils'
+import { formatCurrency, formatTime, formatDuration, getErrorMessage } from '@/utils'
 import type {
   ProviderResponse, ProviderServiceResponse,
-  SlotResponse, ReviewResponse,
+  SlotResponse, ReviewResponse, ReservationResponse,
 } from '@/types'
 import { cn } from '@/utils'
 
@@ -67,6 +67,18 @@ export function ProviderDetail() {
   const [showPayment,     setShowPayment]     = useState(false)
   const [reservationId,   setReservationId]   = useState<string | null>(null)
   const [paying,          setPaying]          = useState(false)
+  const [isFavorite,      setIsFavorite]      = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [reviewRating,    setReviewRating]    = useState(5)
+  const [reviewComment,   setReviewComment]   = useState('')
+  const [reviewReservation, setReviewReservation] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviewableReservations, setReviewableReservations] = useState<ReservationResponse[]>([])
+  const [loadingReservations, setLoadingReservations] = useState(false)
+  const [startingConversation, setStartingConversation] = useState(false)
+  const [reviewsError, setReviewsError] = useState<string | null>(null)
+  const isClient = isAuthenticated && hasRole('CLIENT')
 
   // Generate next 7 days
   const dates = Array.from({ length: 7 }, (_, i) => {
@@ -76,32 +88,158 @@ export function ProviderDetail() {
   })
 
   useEffect(() => {
-    if (!id) return
+    if (!id) {
+      setLoading(false)
+      return
+    }
     resetBooking() // clear previous booking state
-    Promise.all([
+
+    let cancelled = false
+    // allSettled: one failing sub-request (ex: services) must not blank the
+    // whole page — the provider details still render.
+    Promise.allSettled([
       providerApi.getById(id),
       serviceApi.getActiveByProvider(id),
       reviewApi.getByProvider(id),
     ]).then(([spec, svc, rev]) => {
-      setLocalProvider(spec)
-      setProvider(spec)
-      setServices(svc)
-      setReviews(rev.content)
-      
-      // If no service pre-selected, select the first one
-      if (!initialServiceId && svc.length > 0) {
-        setSelectedService(svc[0].id)
+      if (cancelled) return
+
+      if (spec.status === 'fulfilled') {
+        setLocalProvider(spec.value)
+        setProvider(spec.value)
       }
-    }).finally(() => setLoading(false))
+      if (svc.status === 'fulfilled') {
+        setServices(svc.value)
+        // If no service pre-selected, select the first one
+        if (!initialServiceId && svc.value.length > 0) {
+          setSelectedService(svc.value[0].id)
+        }
+      } else if (svc.status === 'rejected') {
+        setServices([])
+      }
+      if (rev.status === 'fulfilled') {
+        setReviews(rev.value.content)
+        setReviewsError(null)
+      } else {
+        setReviews([])
+        setReviewsError('Impossible de charger les avis pour le moment.')
+      }
+    }).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+
+    return () => { cancelled = true }
   }, [id, initialServiceId])
+
+  useEffect(() => {
+    if (id && isClient) {
+      favoriteApi.isFavorite(id)
+        .then(setIsFavorite)
+        .catch(() => setIsFavorite(false))
+    } else {
+      setIsFavorite(false)
+    }
+  }, [id, isClient])
 
   useEffect(() => {
     if (!id || !selectedDate) {
        setSlots([])
        return
     }
-    slotApi.getByProviderAndDate(id, selectedDate).then(setSlots)
+    let cancelled = false
+    slotApi.getByProviderAndDate(id, selectedDate)
+      .then((slots) => { if (!cancelled) setSlots(slots) })
+      .catch(() => { if (!cancelled) setSlots([]) })
+    return () => { cancelled = true }
   }, [id, selectedDate])
+
+  async function handleToggleFavorite() {
+    if (!isClient || !id) return
+    setFavoriteLoading(true)
+    try {
+      if (isFavorite) {
+        await favoriteApi.remove(id)
+        setIsFavorite(false)
+        toast.success('Retiré de vos favoris')
+      } else {
+        await favoriteApi.add(id)
+        setIsFavorite(true)
+        toast.success('Ajouté à vos favoris')
+      }
+    } catch {
+      toast.error("Erreur lors de la mise à jour des favoris")
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
+
+  async function handleSubmitReview(e: React.FormEvent) {
+    e.preventDefault()
+    if (!reviewReservation) return
+    setSubmittingReview(true)
+    const toastId = toast.loading("Publication de votre avis...")
+    try {
+      await reviewApi.create({
+        reservationId: reviewReservation,
+        rating: reviewRating,
+        comment: reviewComment,
+      })
+      toast.success("Merci ! Votre avis a été publié.", { id: toastId })
+      setShowReviewModal(false)
+      setReviewReservation('')
+      setReviewRating(5)
+      setReviewComment('')
+      if (id) {
+        reviewApi.getByProvider(id).then((res) => setReviews(res.content)).catch(() => undefined)
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err) || "Erreur lors de la publication", { id: toastId })
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
+  async function openReviewModal() {
+    setShowReviewModal(true)
+    setReviewReservation('')
+    if (!isClient) return
+    setLoadingReservations(true)
+    try {
+      const res = await reservationApi.getMyAsClient(0, 100)
+      setReviewableReservations(
+        res.content.filter((r) => r.status === 'COMPLETED' && r.providerId === id),
+      )
+    } catch {
+      setReviewableReservations([])
+    } finally {
+      setLoadingReservations(false)
+    }
+  }
+
+  async function handleStartConversation() {
+    if (!isAuthenticated) {
+      toast.error("Veuillez vous connecter pour envoyer un message")
+      navigate('/login', { state: { from: location.pathname + location.search } })
+      return
+    }
+
+    if (!hasRole('CLIENT')) {
+      toast.error("Seuls les clients peuvent démarrer une conversation")
+      return
+    }
+
+    if (!id) return
+
+    setStartingConversation(true)
+    try {
+      const conversation = await messagingApi.getOrCreateConversation(id)
+      navigate('/messages', { state: { conversationId: conversation.id } })
+    } catch {
+      toast.error("Impossible d'ouvrir la conversation")
+    } finally {
+      setStartingConversation(false)
+    }
+  }
 
   async function handleBook() {
     if (!isAuthenticated) {
@@ -162,7 +300,16 @@ export function ProviderDetail() {
   )
 
   if (!localProvider) return (
-    <EmptyState icon={<Star size={28} />} title="Prestataire introuvable" />
+    <EmptyState
+      icon={<Star size={28} />}
+      title="Prestataire introuvable"
+      description="Ce prestataire n'est pas disponible (profil en attente de vérification ou supprimé)."
+      action={
+        <Button variant="outline" onClick={() => navigate('/providers')}>
+          Retour à l'annuaire
+        </Button>
+      }
+    />
   )
 
   const name = localProvider.displayName ?? `${localProvider.firstName} ${localProvider.lastName}`
@@ -177,19 +324,24 @@ export function ProviderDetail() {
 
       {/* Provider Header */}
       <div className="card overflow-hidden p-0">
-        <div className="h-32 bg-gradient-to-r from-primary-800 via-primary to-primary-400 relative">
-          <div className="absolute inset-0 opacity-20"
-            style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }}
-          />
+        <div className="h-40 sm:h-48 lg:h-56 bg-gradient-to-r from-primary-800 via-primary to-primary-400 relative">
+          {localProvider.coverPhoto ? (
+            <img src={localProvider.coverPhoto} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 opacity-20"
+              style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
         </div>
-        <div className="px-6 pb-6">
-          <div className="flex items-end gap-5 -mt-8 mb-4">
-            <div className="ring-4 ring-surface rounded-2xl">
+        <div className="px-6 pb-6 pt-6 sm:pt-8">
+          <div className="flex items-end gap-5 mb-4 mt-2 sm:mt-3">
+            <div className="ring-4 ring-surface rounded-2xl -mt-12 sm:-mt-14 shadow-xl">
               <Avatar name={name} src={localProvider.profilePhoto} size="xl" />
             </div>
-            <div className="pb-1 flex-1">
+            <div className="pb-1 flex-1 pt-2 sm:pt-4">
               <div className="flex items-start justify-between flex-wrap gap-3">
-                <div>
+                <div className="space-y-2">
                   <h1 className="font-display text-2xl font-bold text-text">{name}</h1>
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-primary font-medium">{localProvider.profileTitle ?? 'Prestataire'}</p>
@@ -200,10 +352,36 @@ export function ProviderDetail() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" icon={<MessageSquare size={14} />}>
+                <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                  {isClient && (
+                    <button
+                      onClick={handleToggleFavorite}
+                      disabled={favoriteLoading}
+                      title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                      className={cn(
+                        'flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200',
+                        isFavorite
+                          ? 'bg-accent text-white border-accent shadow-accent/30 shadow-md'
+                          : 'bg-white text-muted border-border hover:text-accent hover:border-accent/50'
+                      )}
+                    >
+                      <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+                    </button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<MessageSquare size={14} />}
+                    loading={startingConversation}
+                    onClick={handleStartConversation}
+                  >
                     Message
                   </Button>
+                  {isClient && (
+                    <Button variant="outline" size="sm" icon={<Star size={14} />} onClick={openReviewModal}>
+                      Noter
+                    </Button>
+                  )}
                   {localProvider.isVerified && (
                     <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2.5 py-1.5 rounded-full font-semibold">
                       <Shield size={12} />Vérifié
@@ -213,7 +391,7 @@ export function ProviderDetail() {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-4 text-sm text-muted">
+          <div className="flex flex-wrap gap-4 text-sm text-muted mt-3">
              {localProvider.averageRating && (
                <div className="flex items-center gap-1.5">
                  <StarRating rating={localProvider.averageRating} size={14} />
@@ -235,6 +413,11 @@ export function ProviderDetail() {
         <div className="lg:col-span-3 space-y-6">
           {/* Focused Service Detail */}
           <div className="card p-6 border-l-4 border-primary">
+            {focusedService?.photoUrl && (
+              <div className="mb-5 h-44 rounded-xl overflow-hidden">
+                <img src={focusedService.photoUrl} alt={focusedService.name} className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="flex justify-between items-start mb-4">
                <div>
                   <h2 className="text-xl font-bold text-text mb-1">{focusedService?.name || 'Service sélectionné'}</h2>
@@ -271,7 +454,9 @@ export function ProviderDetail() {
                 </div>
               )}
             </div>
-            {reviews.length === 0 ? (
+            {reviewsError ? (
+              <div className="py-10 text-center text-muted text-sm">{reviewsError}</div>
+            ) : reviews.length === 0 ? (
               <div className="py-10 text-center text-muted text-sm">Aucun avis pour l'instant.</div>
             ) : (
               <div className="divide-y divide-border">
@@ -457,6 +642,106 @@ export function ProviderDetail() {
           </div>
         </div>
       </div>
+
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-display font-black text-text mb-2">
+              Laisser un avis
+            </h2>
+            <p className="text-muted text-sm mb-6 font-medium">
+              Partagez votre expérience avec {name}.
+            </p>
+
+            <form onSubmit={handleSubmitReview} className="space-y-6">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-muted mb-2">
+                  Le rendez-vous
+                </label>
+                {loadingReservations ? (
+                  <div className="flex items-center justify-center py-4"><Spinner size={20} /></div>
+                ) : reviewableReservations.length === 0 ? (
+                  <p className="text-sm text-muted bg-soft rounded-2xl px-4 py-3 font-medium">
+                    Aucun rendez-vous terminé avec ce prestataire. Votre avis ne peut être publié qu'après un rendez-vous terminé.
+                  </p>
+                ) : (
+                  <select
+                    value={reviewReservation}
+                    onChange={(e) => setReviewReservation(e.target.value)}
+                    className="w-full bg-surface border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none font-bold text-text"
+                    required
+                  >
+                    <option value="">Sélectionnez un rendez-vous...</option>
+                    {reviewableReservations.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.serviceName} - {new Date(r.createdAt).toLocaleDateString('fr-FR')}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="text-center">
+                <label className="block text-xs font-black uppercase tracking-widest text-muted mb-3">
+                  Votre note
+                </label>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 transition-all hover:scale-125"
+                    >
+                      <Star
+                        size={36}
+                        className={cn(
+                          "transition-colors",
+                          star <= reviewRating ? "text-accent fill-accent" : "text-border"
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-muted mb-2">
+                  Commentaire
+                </label>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Comment s'est passée votre prestation ?"
+                  rows={4}
+                  className="w-full bg-surface border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-muted/60"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  fullWidth
+                  onClick={() => setShowReviewModal(false)}
+                  className="rounded-2xl py-3 font-bold border-surface"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  fullWidth
+                  loading={submittingReview}
+                  disabled={!reviewReservation || reviewableReservations.length === 0}
+                  className="rounded-2xl py-3 font-bold shadow-lg shadow-primary/20"
+                >
+                  Publier l'avis
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Calendar, ChevronLeft, Info, MessageSquare, Search, Send } from 'lucide-react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
@@ -14,6 +15,7 @@ import { cn } from '@/utils'
 import type { ConversationResponse, MessageResponse } from '@/types'
 
 export function MessagesPage() {
+  const location = useLocation()
   const { user, hasRole } = useAuthStore()
   const isProvider = hasRole('PROVIDER')
   const isClient = hasRole('CLIENT')
@@ -39,6 +41,7 @@ export function MessagesPage() {
 
   const [activeConv, setActiveConv] = useState<ConversationResponse | null>(null)
   const [messages, setMessages] = useState<MessageResponse[]>([])
+  const [messagesError, setMessagesError] = useState<string | null>(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [search, setSearch] = useState('')
@@ -107,11 +110,37 @@ export function MessagesPage() {
   }, [user, isEnabled])
 
   useEffect(() => {
+    const requestedConversationId = (location.state as { conversationId?: string } | null)?.conversationId
+
+    if (requestedConversationId) {
+      const existingConversation = conversations.find((conversation) => conversation.id === requestedConversationId)
+      if (existingConversation) {
+        setActiveConv(existingConversation)
+        return
+      }
+
+      setMessagesError(null)
+      void messagingApi.getConversation(requestedConversationId)
+        .then((conversation) => {
+          setActiveConv(conversation)
+          setConversations((prev) => prev.some((item) => item.id === conversation.id) ? prev : [conversation, ...prev])
+        })
+        .catch(() => {
+          setMessagesError("Impossible d’ouvrir cette conversation pour le moment.")
+          setActiveConv(null)
+        })
+      return
+    }
+
     if (!activeConv) return
 
+    setMessagesError(null)
     messagingApi.getMessages(activeConv.id)
       .then((response) => setMessages(response.content))
-      .catch(() => toast.error("Erreur lors du chargement des messages"))
+      .catch(() => {
+        setMessagesError("Impossible de charger les messages pour le moment.")
+        setMessages([])
+      })
 
     messagingApi.markAsRead(activeConv.id).catch(() => undefined)
     setConversations((prev) =>
@@ -123,7 +152,7 @@ export function MessagesPage() {
     if (window.innerWidth < 1024) {
       setShowSidebar(false)
     }
-  }, [activeConv, setConversations])
+  }, [activeConv, conversations, location.state, setConversations])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -329,15 +358,21 @@ export function MessagesPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-surface/30 custom-scrollbar">
-                  {messages.length === 0 && (
+                  {messagesError ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <MessageSquare size={32} className="mb-3 text-primary" />
+                      <p className="text-sm font-semibold text-text">Chargement impossible</p>
+                      <p className="text-sm text-muted mt-1">{messagesError}</p>
+                    </div>
+                  ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 opacity-40">
                       <Calendar size={32} className="mb-2" />
                       <p className="text-xs font-medium uppercase tracking-widest">Début de la conversation</p>
                     </div>
-                  )}
+                  ) : null}
 
                   {messages.map((message, index) => {
-                    const isMine = message.senderUserId === user?.email
+                    const isMine = message.senderUserId === user?.userId || message.senderUserId === user?.email
                     const previousMessage = messages[index - 1]
                     const isSameSender = previousMessage?.senderUserId === message.senderUserId
 

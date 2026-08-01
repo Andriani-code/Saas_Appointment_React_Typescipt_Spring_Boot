@@ -34,6 +34,7 @@ export function LoginPage() {
         email: data.email,
         role: data.role,
         profileCompleted: data.profileCompleted,
+        userId: data.userId,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       });

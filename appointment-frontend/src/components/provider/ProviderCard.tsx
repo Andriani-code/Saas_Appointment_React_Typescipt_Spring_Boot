@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { MapPin, Clock, Star, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar, StarRating } from '@/components/ui'
@@ -13,16 +13,27 @@ interface ProviderCardProps {
 }
 
 export function ProviderCard({ provider, services = [], distance, delay = 0 }: ProviderCardProps) {
-  const minPrice = services.length > 0
-    ? Math.min(...services.map(s => s.price))
-    : null
+  const navigate = useNavigate()
 
   const name = provider.displayName
     ?? `${provider.firstName} ${provider.lastName}`
 
+  const handleOpenProfile = () => {
+    navigate(`/providers/${provider.id}`)
+  }
+
   return (
     <div
-      className="card-hover p-5 animate-slide-up flex flex-col gap-4"
+      role="button"
+      tabIndex={0}
+      onClick={handleOpenProfile}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          handleOpenProfile()
+        }
+      }}
+      className="card-hover p-6 animate-slide-up flex flex-col gap-4 rounded-[24px] min-h-[320px] shadow-[0_18px_45px_-20px_rgba(2,6,23,0.75)] hover:shadow-[0_24px_55px_-18px_rgba(2,6,23,0.9)] hover:-translate-y-1 hover:scale-[1.01] transition-all duration-200 cursor-pointer"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
       {/* Header */}
@@ -73,6 +84,7 @@ export function ProviderCard({ provider, services = [], distance, delay = 0 }: P
               <Link 
                 key={s.id} 
                 to={`/providers/${provider.id}?serviceId=${s.id}`}
+                onClick={(event) => event.stopPropagation()}
                 className="flex items-center justify-between p-2 rounded-xl bg-soft hover:bg-primary/5 group/service transition-all border border-transparent hover:border-primary/10"
               >
                 <div className="min-w-0">
