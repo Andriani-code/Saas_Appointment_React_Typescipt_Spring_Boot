@@ -24,6 +24,9 @@
         <jjwt.version>0.12.5</jjwt.version>
         <stripe.version>25.3.0</stripe.version>
         <flyway.version>10.13.0</flyway.version>
+        <!-- Upgraded for JDK 26 compatibility (Mockito/Byte Buddy 1.14.x cannot instrument Java 26 classes) -->
+        <mockito.version>5.20.0</mockito.version>
+        <byte-buddy.version>1.17.8</byte-buddy.version>
     </properties>
 
     <dependencies>
@@ -156,6 +159,15 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 21+ disables dynamic agent loading by default (JEP 451);
+                         Mockito's inline mock maker self-attaches an agent. -->
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>
             <plugin>
