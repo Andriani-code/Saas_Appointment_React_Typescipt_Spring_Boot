@@ -48,10 +48,11 @@ services:
     working_dir: /app
     command: sh ./mvnw spring-boot:run
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v3/api-docs"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v3/api-docs >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
+      start_period: 180s
 
   frontend:
     build:
