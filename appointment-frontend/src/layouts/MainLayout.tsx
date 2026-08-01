@@ -183,9 +183,12 @@ export function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background" style={{ backgroundColor: "#0F172A" }}>
         {/* Unified Header */}
-        <header className="h-20 bg-white border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0">
+        <header
+          className="h-20 border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
+          style={{ backgroundColor: "#0F172A" }}
+        >
           <div className="flex items-center gap-4 flex-1">
             {/* Mobile Menu Toggle */}
             <button

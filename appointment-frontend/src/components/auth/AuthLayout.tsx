@@ -48,12 +48,12 @@ export function AuthLayout({
         <div className="flex items-center justify-center min-h-full px-4 sm:px-6 py-10 lg:py-12">
           <div
             className={cn(
-              'w-full rounded-3xl overflow-hidden shadow-card border border-border/60 bg-white flex',
+              'w-full rounded-3xl overflow-hidden shadow-card border border-border/60 bg-surface flex',
               cardClassName ?? 'max-w-5xl',
             )}
           >
             <div className="hidden lg:block lg:w-[45%] shrink-0">{leftPanel}</div>
-            <div className="flex-1 min-w-0 bg-white">{children}</div>
+            <div className="flex-1 min-w-0 bg-background">{children}</div>
           </div>
         </div>
       </main>

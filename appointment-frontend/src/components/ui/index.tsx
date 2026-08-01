@@ -26,12 +26,12 @@ interface BadgeProps {
 }
 
 const statusConfig: Record<ReservationStatus, { label: string; cls: string; dot: string }> = {
-  PENDING: { label: 'En attente', cls: 'bg-accent/10 text-accent', dot: 'bg-accent' },
-  CONFIRMED: { label: 'Confirmé', cls: 'bg-primary/10 text-primary', dot: 'bg-primary' },
-  COMPLETED: { label: 'Terminé', cls: 'bg-primary-100 text-primary-800', dot: 'bg-primary-700' },
-  CANCELED: { label: 'Annulé', cls: 'bg-accent/10 text-accent', dot: 'bg-accent' },
-  REJECTED: { label: 'Rejeté', cls: 'bg-accent/10 text-accent', dot: 'bg-accent' },
-  NO_SHOW: { label: 'Absent', cls: 'bg-surface text-text', dot: 'bg-muted' },
+  PENDING: { label: 'En attente', cls: 'bg-warning/15 text-warning-300', dot: 'bg-warning' },
+  CONFIRMED: { label: 'Confirmé', cls: 'bg-primary/15 text-primary-300', dot: 'bg-primary' },
+  COMPLETED: { label: 'Terminé', cls: 'bg-success/15 text-success-300', dot: 'bg-success' },
+  CANCELED: { label: 'Annulé', cls: 'bg-muted/10 text-muted', dot: 'bg-muted' },
+  REJECTED: { label: 'Rejeté', cls: 'bg-danger/15 text-danger-300', dot: 'bg-danger' },
+  NO_SHOW: { label: 'Absent', cls: 'bg-muted/10 text-muted', dot: 'bg-muted' },
 }
 
 export function StatusBadge({ status, label, dot = true }: BadgeProps) {

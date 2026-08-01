@@ -1,30 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  /* Typographie — Outfit partout, poids 400 à 700 uniquement */
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
-  --font-mono: "Poppins", ui-monospace, monospace;
+  --font-mono: "Outfit", ui-monospace, monospace;
 
-  --color-primary: #0F172A;
-  --color-primary-hover: #1e293b;
-  --color-accent: #E27022;
-  --color-accent-hover: #D35400;
-  --color-cta-secondary: #0F172A;
+  /* Couleurs — fond ardoise sombre, brand cuivre/or, sémantique colorée */
+  --color-primary: #A97147;
+  --color-primary-hover: #8A5A38;
+  --color-secondary: #A97147;
+  --color-accent: #E8C083;
+  --color-accent-hover: #D9A95F;
+  --color-cta-secondary: #A97147;
 
-  --color-bg-light: #FBFDFF;
-  --color-background: #FBFDFF;
-  --color-surface: #f1f5f9;
-  --color-soft: #f1f5f9;
-  --color-border: #E5E7EB;
-  --color-text-dark: #0f172a;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-muted: #64748b;
+  /* Échelle complète du primary (utilisée par les classes primary-100..900) */
+  --color-primary-50: #FBF6EF;
+  --color-primary-100: #F5EBDD;
+  --color-primary-200: #EBD8BC;
+  --color-primary-300: #DFC096;
+  --color-primary-400: #D0A371;
+  --color-primary-500: #C08B5C;
+  --color-primary-600: #A97147;
+  --color-primary-700: #8A5A38;
+  --color-primary-800: #6E462C;
+  --color-primary-900: #573824;
 
-  --color-danger: #E27022;
-  --color-success: #E27022;
-  --color-warning: #E27022;
+  --color-bg-light: #0F172A;
+  --color-background: #0F172A;
+  --color-card: #1E293B;
+  --color-surface: #1e293b;
+  --color-soft: #283548;
+  --color-border: #334155;
+  --color-text-dark: #F8FAFC;
+  --color-text: #F8FAFC;
+  --color-text-muted: #94A3B8;
+  --color-muted: #94A3B8;
+
+  /* Sémantique — vraies couleurs pour les statuts et alertes */
+  --color-danger: #E5484D;
+  --color-danger-300: #F87171;
+  --color-success: #46A758;
+  --color-success-300: #6EE7A0;
+  --color-warning: #F5A623;
+  --color-warning-300: #F7C873;
+
+  /* Rayons — échelle Zarao, plafonnée à 12px */
+  --radius-btn: 4px;
+  --radius-input: 6px;
+  --radius-card: 12px;
+  --radius-dialog: 12px;
+  --radius-dropdown: 8px;
+  --radius-xl: 0px;
+  --radius-2xl: 8px;
+  --radius-3xl: 12px;
+
+  /* Ombres — subtiles sur fond sombre */
+  --shadow-card: 0 1px 2px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(0,0,0,0.2);
+  --shadow-card-hover: 0 2px 4px 0 rgba(0,0,0,0.3), 0 12px 32px -8px rgba(0,0,0,0.4);
+  --shadow-primary: 0 2px 6px 0 rgba(0,0,0,0.4), 0 8px 24px -4px rgba(0,0,0,0.4);
 
   --animate-bounce-slow: bounce-slow 3s infinite;
   --animate-fade-in: fade-in 0.4s ease both;
@@ -56,14 +91,6 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
-  --radius-xl: 12px;
-  --radius-2xl: 20px;
-  --radius-3xl: 32px;
-
-  --shadow-card: 0 2px 16px 0 rgba(9,10,15,0.07);
-  --shadow-card-hover: 0 8px 32px 0 rgba(226,112,34,0.13);
-  --shadow-primary: 0 4px 20px 0 rgba(15,23,42,0.35);
 }
 
 @layer base {
@@ -72,45 +99,66 @@
   }
   body {
     @apply font-sans bg-bg-light text-text-dark antialiased;
+    background-color: var(--color-background);
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+    background-color: var(--color-background);
   }
 
   h1, h2, h3, h4 {
-    @apply font-display tracking-tight text-text-dark font-extrabold;
+    @apply font-display tracking-tight text-text-dark font-bold;
   }
 }
 
 @layer components {
+  /* Cartes — rayons 12px */
   .card {
-    @apply bg-surface rounded-2xl shadow-card border border-border/60;
+    @apply bg-card rounded-card shadow-card border border-border/60;
   }
 
   .card-hover {
-    @apply bg-surface rounded-2xl shadow-card border border-border/60
-           transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5;
+    @apply bg-card rounded-card shadow-card border border-border/60
+           transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5;
   }
 
+  /* Boutons — rayons 4px + focus clavier systématique */
   .btn-primary {
-    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-xl
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-btn
            hover:bg-primary-hover
            transition-all duration-200
+           outline-none focus-visible:ring-2 focus-visible:ring-accent/60
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-primary-900 font-semibold px-5 py-2.5 rounded-btn
+           hover:bg-accent-hover
+           transition-all duration-200
+           outline-none focus-visible:ring-2 focus-visible:ring-white/70
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-outline {
-    @apply border border-primary text-primary font-semibold px-5 py-2.5 rounded-xl
-           hover:bg-primary/10 active:bg-primary/15
+    @apply border border-border text-text font-semibold px-5 py-2.5 rounded-btn
+           hover:bg-soft active:bg-surface
            transition-all duration-200
+           outline-none focus-visible:ring-2 focus-visible:ring-accent/60
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply text-muted font-medium px-4 py-2 rounded-xl
+    @apply text-muted font-medium px-4 py-2 rounded-btn
            hover:bg-soft hover:text-text
-           transition-all duration-200;
+           transition-all duration-200
+           outline-none focus-visible:ring-2 focus-visible:ring-accent/60;
   }
 
+  /* Champs de saisie — rayons 6px */
   .input-base {
-    @apply w-full bg-soft border border-border rounded-xl px-4 py-2.5
+    @apply w-full bg-card border border-border rounded-input px-4 py-2.5
            text-text placeholder-muted/60 font-sans text-sm
            outline-none ring-0
            focus:border-primary/50 focus:ring-2 focus:ring-primary/15
@@ -128,13 +176,13 @@
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/15 text-primary;
   }
   .badge-completed {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/15 text-primary;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success/15 text-success;
   }
   .badge-canceled {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/15 text-accent;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger/15 text-danger;
   }
   .badge-rejected {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/15 text-accent;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger/15 text-danger;
   }
   .badge-no-show {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface text-muted;
@@ -142,12 +190,14 @@
 
   .sidebar-link {
     @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted font-medium text-sm
-           hover:bg-primary/10 hover:text-primary transition-all duration-200 cursor-pointer;
+           hover:bg-soft hover:text-text transition-all duration-200 cursor-pointer
+           outline-none focus-visible:ring-2 focus-visible:ring-accent/60;
   }
 
   .sidebar-link-active {
     @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted font-medium text-sm
-           bg-primary/10 text-primary transition-all duration-200 cursor-pointer;
+           bg-soft text-text transition-all duration-200 cursor-pointer
+           outline-none focus-visible:ring-2 focus-visible:ring-accent/60;
   }
 
   .page-title {
@@ -162,6 +212,11 @@
 @layer utilities {
   .container-custom {
     @apply max-w-6xl mx-auto px-5 sm:px-8 lg:px-12;
+  }
+
+  .bg-white,
+  [class*="bg-white/"] {
+    background-color: var(--color-background) !important;
   }
 
   .text-balance { text-wrap: balance; }
