@@ -88,8 +88,80 @@
   }
 }
 
+@layer components {
+  .card {
+    @apply bg-surface rounded-2xl shadow-card border border-border/60;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-xl
+           hover:bg-primary-hover active:bg-primary-900
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border border-primary text-primary font-semibold px-5 py-2.5 rounded-xl
+           hover:bg-primary/10 active:bg-primary/15
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-muted font-medium px-4 py-2 rounded-xl
+           hover:bg-soft hover:text-text
+           transition-all duration-200;
+  }
+
+  .input-base {
+    @apply w-full bg-soft border border-border rounded-xl px-4 py-2.5
+           text-text placeholder-muted/60 font-sans text-sm
+           outline-none ring-0
+           focus:border-primary/50 focus:ring-2 focus:ring-primary/15
+           transition-all duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-pending   { @apply badge bg-amber-100 text-amber-900; }
+  .badge-confirmed { @apply badge bg-blue-100 text-blue-900; }
+  .badge-completed { @apply badge bg-primary-100 text-primary-800; }
+  .badge-canceled  { @apply badge bg-red-100 text-red-800; }
+  .badge-rejected  { @apply badge bg-red-100 text-red-800; }
+  .badge-no-show   { @apply badge bg-gray-200 text-gray-800; }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted font-medium text-sm
+           hover:bg-primary/10 hover:text-primary transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-link-active {
+    @apply sidebar-link bg-primary/10 text-primary;
+  }
+
+  .page-title {
+    @apply font-display text-2xl font-bold text-text;
+  }
+
+  .section-title {
+    @apply font-sans text-lg font-semibold text-text;
+  }
+}
+
 @layer utilities {
   .container-custom {
     @apply max-w-6xl mx-auto px-5 sm:px-8 lg:px-12;
   }
+
+  .text-balance { text-wrap: balance; }
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
 }
