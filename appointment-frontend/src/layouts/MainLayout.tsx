@@ -12,7 +12,6 @@ import {
   Star,
   Settings,
   LogOut,
-  ChevronRight,
   UserCog,
   Shield,
   Menu,
