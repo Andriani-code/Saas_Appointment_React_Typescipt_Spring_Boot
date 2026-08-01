@@ -1,0 +1,14 @@
+FROM maven:3.9-eclipse-temurin-21
+
+WORKDIR /app
+
+COPY pom.xml ./
+COPY .mvn/ .mvn/
+COPY mvnw ./
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw && mvn -B dependency:go-offline
+
+COPY . .
+
+EXPOSE 8080
+
+CMD ["sh", "./mvnw", "spring-boot:run"]
