@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy only the manifests first for better layer caching
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
