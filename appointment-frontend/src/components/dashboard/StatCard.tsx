@@ -11,7 +11,7 @@ interface StatCardProps {
   loading?: boolean;
 }
 
-export function StatCard({
+export const StatCard = React.memo(function StatCard({
   title,
   value,
   icon,

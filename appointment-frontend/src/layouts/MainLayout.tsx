@@ -80,8 +80,10 @@ export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    if (window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+      logout();
+      navigate("/login");
+    }
   };
 
   const visibleItems = navItems.filter(
