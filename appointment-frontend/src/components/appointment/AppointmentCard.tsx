@@ -110,7 +110,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
       </div>
 
       {reservation.clientMessage && (
-        <p className="text-xs text-muted bg-soft rounded-lg px-3 py-2 mb-4 italic line-clamp-2">
+        <p className="text-xs text-muted bg-soft rounded-lg px-3 py-2 mb-4 line-clamp-2">
           "{reservation.clientMessage}"
         </p>
       )}
