@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Calendar,
@@ -9,27 +9,57 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-import { reservationApi } from "@/services/api";
+import { reservationApi, providerApi, clientApi } from "@/services/api";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge, Avatar, Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { formatDate, formatTime, formatCurrency } from "@/utils";
-import type { ReservationResponse } from "@/types";
+import type { ReservationResponse, ProviderResponse, ClientResponse } from "@/types";
+
+const DAY_LABELS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
+function profileCompletion(provider?: ProviderResponse | null, client?: ClientResponse | null): number {
+  const p = provider ?? null;
+  const c = p ? null : client ?? null;
+  if (!p && !c) return 0;
+  const fields = [
+    p?.firstName || c?.firstName,
+    p?.lastName || c?.lastName,
+    p?.phone || c?.phone,
+    p?.bio,
+    p?.displayName,
+    p?.category,
+    p?.personalAddress ?? c?.address,
+    p?.profilePhoto || c?.profilePhoto,
+  ];
+  const filled = fields.filter(Boolean).length;
+  return Math.round((filled / fields.length) * 100);
+}
 
 export function DashboardPage() {
   const { user, hasRole } = useAuthStore();
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
+  const [provider, setProvider] = useState<ProviderResponse | null>(null);
+  const [client, setClient] = useState<ClientResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (hasRole("CLIENT")) {
-          const data = await reservationApi.getMyAsClient(0, 5);
+          const [data, profile] = await Promise.all([
+            reservationApi.getMyAsClient(0, 100),
+            clientApi.getMe().catch(() => null),
+          ]);
           setReservations(data.content);
+          setClient(profile);
         } else if (hasRole("PROVIDER")) {
-          const data = await reservationApi.getMyAsProvider(0, 5);
+          const [data, profile] = await Promise.all([
+            reservationApi.getMyAsProvider(0, 100),
+            providerApi.getMe().catch(() => null),
+          ]);
           setReservations(data.content);
+          setProvider(profile);
         }
       } catch {
         /* no-op */
@@ -50,21 +80,18 @@ export function DashboardPage() {
       title: "Rendez-vous",
       value: reservations.length,
       icon: <Calendar size={20} />,
-      trend: 5.9,
       color: "orange" as const,
     },
     {
       title: "Confirmés",
       value: reservations.filter((r) => r.status === "CONFIRMED").length,
       icon: <Clock size={20} />,
-      trend: 2.1,
       color: "blue" as const,
     },
     {
       title: "Terminés",
       value: reservations.filter((r) => r.status === "COMPLETED").length,
       icon: <Users size={20} />,
-      trend: -1.4,
       color: "green" as const,
     },
     {
@@ -73,28 +100,48 @@ export function DashboardPage() {
         ? formatCurrency(reservations.filter(r => r.status === 'COMPLETED').reduce((acc, r) => acc + (r.depositAmount || 0), 0))
         : reservations.filter((r) => r.status === "PENDING").length,
       icon: <DollarSign size={20} />,
-      trend: 8.2,
       color: "purple" as const,
     },
   ];
 
-  // Mock revenue data for chart
-  const revenueData = [
-    { day: 'Lun', val: 45 },
-    { day: 'Mar', val: 78 },
-    { day: 'Mer', val: 52 },
-    { day: 'Jeu', val: 95 },
-    { day: 'Ven', val: 64 },
-    { day: 'Sam', val: 32 },
-    { day: 'Dim', val: 15 },
-  ];
+  // Real weekly activity derived from reservations (last 7 days)
+  const weekDays = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
+    const startIso = start.toISOString().slice(0, 10);
+
+    const days = DAY_LABELS.map((label, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return { label, date };
+    });
+
+    const counts = reservations
+      .filter((r) => r.slot.date >= startIso)
+      .reduce<Record<string, number>>((acc, r) => {
+        acc[r.slot.date] = (acc[r.slot.date] ?? 0) + (hasRole("PROVIDER") ? r.depositAmount ?? 0 : 1);
+        return acc;
+      }, {});
+
+    const values = days.map(({ label, date }) => {
+      const iso = date.toISOString().slice(0, 10);
+      return { day: label, val: counts[iso] ?? 0 };
+    });
+
+    const max = Math.max(...values.map((d) => d.val), 1);
+    return { values, max };
+  }, [reservations, hasRole]);
+
+  const profilePct = profileCompletion(provider, client);
 
   return (
     <div className="space-y-6 lg:space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-text">
+          <h1 className="page-title">
             {greeting},{" "}
             <span className="text-primary capitalize">{displayName}</span>
           </h1>
@@ -123,7 +170,7 @@ export function DashboardPage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {stats.map((s, i) => (
-          <StatCard key={s.title} {...s} delay={i * 80} />
+          <StatCard key={s.title} {...s} delay={i * 80} loading={loading} />
         ))}
       </div>
 
@@ -132,7 +179,7 @@ export function DashboardPage() {
            <div className="lg:col-span-2 card p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="font-display font-bold text-text">Activité hebdomadaire</h3>
+                  <h3 className="section-title">Activité hebdomadaire</h3>
                   <p className="text-xs text-muted">Évolution de vos revenus</p>
                 </div>
                 <div className="flex gap-2">
@@ -143,15 +190,15 @@ export function DashboardPage() {
               </div>
               
               <div className="h-48 flex items-end justify-between gap-2 px-2">
-                {revenueData.map((d, i) => (
+                {weekDays.values.map((d, i) => (
                   <div key={d.day} className="flex-1 flex flex-col items-center gap-2 group">
                     <div 
                       className="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t-lg transition-all duration-500 relative flex items-end justify-center"
-                      style={{ height: `${d.val}%`, transitionDelay: `${i * 50}ms` }}
+                      style={{ height: `${Math.max((d.val / weekDays.max) * 100, 4)}%`, transitionDelay: `${i * 50}ms` }}
                     >
                        <div className="w-2/3 bg-primary rounded-t-md mb-0 shadow-lg shadow-primary/20" style={{ height: '70%' }} />
                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-text text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none font-bold">
-                         {d.val * 10}€
+                         {hasRole("PROVIDER") ? `${d.val}€` : d.val}
                        </div>
                     </div>
                     <span className="text-[10px] font-bold text-muted uppercase">{d.day}</span>
@@ -162,20 +209,25 @@ export function DashboardPage() {
 
            <div className="card p-6 flex flex-col justify-between">
               <div>
-                <h3 className="font-display font-bold text-text">Conseil du jour</h3>
+                <h3 className="section-title">Conseil du jour</h3>
                 <p className="text-sm text-muted mt-2 leading-relaxed">
                   Pensez à mettre à jour vos créneaux pour la semaine prochaine pour maximiser vos réservations et revenus.
                 </p>
               </div>
-              <div className="mt-6 pt-6 border-t border-border">
-                 <div className="flex items-center justify-between text-sm mb-2">
+               <div className="mt-6 pt-6 border-t border-border">
+                  <div className="flex items-center justify-between text-sm mb-2">
                     <span className="text-muted">Profil complété</span>
-                    <span className="font-bold text-primary">85%</span>
-                 </div>
-                 <div className="w-full h-2 bg-soft rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[85%]" />
-                 </div>
-              </div>
+                    <span className="font-bold text-primary">{profilePct}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-soft rounded-full overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-700" style={{ width: `${profilePct}%` }} />
+                  </div>
+                  {hasRole("PROVIDER") && (
+                    <Link to="/settings" className="block mt-4 text-xs font-medium text-primary hover:underline">
+                      Compléter mon profil
+                    </Link>
+                  )}
+               </div>
            </div>
         </div>
       )}

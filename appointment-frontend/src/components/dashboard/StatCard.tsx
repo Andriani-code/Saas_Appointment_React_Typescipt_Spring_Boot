@@ -8,6 +8,7 @@ interface StatCardProps {
   icon: ReactNode;
   trend?: number;
   delay?: number;
+  loading?: boolean;
 }
 
 export function StatCard({
@@ -16,6 +17,7 @@ export function StatCard({
   icon,
   trend,
   delay = 0,
+  loading = false,
 }: StatCardProps) {
   const trendUp = trend !== undefined && trend >= 0;
 
@@ -42,9 +44,13 @@ export function StatCard({
       </div>
 
       <p className="text-xs sm:text-sm text-muted mb-1 truncate">{title}</p>
-      <p className="text-2xl sm:text-3xl font-display font-bold text-text">
-        {value}
-      </p>
+      {loading ? (
+        <div className="h-8 w-16 rounded-lg bg-soft animate-pulse" />
+      ) : (
+        <p className="text-2xl sm:text-3xl font-display font-bold text-text">
+          {value}
+        </p>
+      )}
     </div>
   );
 }
