@@ -25,6 +25,9 @@ public class ProviderService extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "photo_url")
+    private String photoUrl;
+
     @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
 

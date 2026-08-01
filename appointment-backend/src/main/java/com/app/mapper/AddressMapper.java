@@ -13,7 +13,7 @@ public interface AddressMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "user", ignore = true)
     Address toEntity(AddressRequest request);
 
     AddressResponse toResponse(Address address);
@@ -22,7 +22,7 @@ public interface AddressMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "user", ignore = true)
     void updateEntityFromRequest(AddressRequest request, @MappingTarget Address address);
 
     default String uuidToString(UUID uuid) {

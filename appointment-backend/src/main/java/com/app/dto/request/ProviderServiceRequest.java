@@ -13,6 +13,8 @@ public class ProviderServiceRequest {
 
     private String description;
 
+    private String photoUrl;
+
     @NotNull(message = "Duration is required")
     @Min(value = 15, message = "Duration must be at least 15 minutes")
     private Integer durationMinutes;

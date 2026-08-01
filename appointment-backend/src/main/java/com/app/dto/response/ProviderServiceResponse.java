@@ -11,6 +11,7 @@ public class ProviderServiceResponse {
     private String providerDisplayName;
     private String name;
     private String description;
+    private String photoUrl;
     private Integer durationMinutes;
     private BigDecimal price;
     private Boolean depositEnabled;

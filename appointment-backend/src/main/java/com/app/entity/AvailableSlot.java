@@ -26,6 +26,10 @@ public class AvailableSlot extends BaseEntity {
     @JoinColumn(name = "service_id")
     private ProviderService service;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "availability_id")
+    private Availability availability;
+
     @Column(nullable = false)
     private LocalDate date;
 
