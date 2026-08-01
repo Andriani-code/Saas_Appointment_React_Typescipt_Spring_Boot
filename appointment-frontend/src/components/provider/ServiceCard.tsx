@@ -21,7 +21,7 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
       {/* Service Image/Cover Placeholder */}
-      <div className="h-32 bg-gradient-to-br from-primary/80 to-primary-600 relative overflow-hidden shrink-0">
+      <div className="h-32 bg-gradient-to-br from-primary/80 to-primary relative overflow-hidden shrink-0">
         <div className="absolute inset-0 opacity-10" 
           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} 
         />
@@ -41,7 +41,7 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
           <div className="relative shrink-0">
             <Avatar name={providerName} src={provider.profilePhoto} size="sm" className="rounded-xl ring-2 ring-soft" />
             {provider.isVerified && (
-              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 border-2 border-white">
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-0.5 border-2 border-white">
                 <ShieldCheck size={8} />
               </div>
             )}

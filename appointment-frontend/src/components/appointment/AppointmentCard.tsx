@@ -85,7 +85,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
                   <button
                     type="button"
                     onClick={() => doAction(() => reservationApi.cancel(reservation.id))}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-800 hover:bg-red-100 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-accent hover:bg-accent/15 transition-colors"
                     role="menuitem"
                     aria-label="Annuler le rendez-vous"
                   >
@@ -116,9 +116,9 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
       )}
 
       {reservation.depositRequired && reservation.depositAmount && (
-        <div className="flex items-center justify-between text-xs bg-amber-100 border border-amber-300 rounded-lg px-3 py-2 mb-4">
-          <span className="text-amber-900 font-medium">Depot requis</span>
-          <span className="font-bold text-amber-950">{formatCurrency(reservation.depositAmount)}</span>
+        <div className="flex items-center justify-between text-xs bg-accent/15 border border-accent/40 rounded-lg px-3 py-2 mb-4">
+          <span className="text-accent font-medium">Depot requis</span>
+          <span className="font-bold text-accent">{formatCurrency(reservation.depositAmount)}</span>
         </div>
       )}
 
@@ -139,7 +139,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
             fullWidth
             icon={<X size={14} />}
             onClick={() => doAction(() => reservationApi.reject(reservation.id))}
-            className="border-red-300 text-red-800 hover:bg-red-100"
+            className="border-accent/40 text-accent hover:bg-accent/15"
           >
             Rejeter
           </Button>
@@ -162,7 +162,7 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
             variant="outline"
             fullWidth
             onClick={() => doAction(() => reservationApi.noShow(reservation.id))}
-            className="border-gray-300 text-gray-800 hover:bg-gray-100"
+            className="border-muted/40 text-primary hover:bg-muted/15"
           >
             Absent
           </Button>

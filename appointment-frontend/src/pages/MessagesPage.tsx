@@ -192,7 +192,7 @@ export function MessagesPage() {
           description="Les administrateurs n'ont pas de messagerie personnelle."
         />
       ) : (
-        <div className="card p-0 overflow-hidden flex flex-1 bg-surface shadow-xl shadow-black/5 border-gray-100">
+        <div className="card p-0 overflow-hidden flex flex-1 bg-surface shadow-xl shadow-black/5 border-surface">
           <div className={cn(
             "w-full lg:w-80 shrink-0 border-r border-border flex flex-col transition-all",
             !showSidebar && "hidden lg:flex",
@@ -289,7 +289,7 @@ export function MessagesPage() {
             showSidebar && "hidden lg:flex",
           )}>
             {!activeConv ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F9FAFB]/50">
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface/50">
                 <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mb-4 animate-bounce-slow">
                   <MessageSquare size={40} />
                 </div>
@@ -313,7 +313,7 @@ export function MessagesPage() {
                     <div>
                       <p className="font-bold text-text text-sm leading-none mb-1">{getContactName(activeConv)}</p>
                       <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                         <p className="text-[10px] text-muted font-medium uppercase tracking-wider">En ligne</p>
                       </div>
                     </div>
@@ -328,7 +328,7 @@ export function MessagesPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[#F9FAFB]/30 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-surface/30 custom-scrollbar">
                   {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 opacity-40">
                       <Calendar size={32} className="mb-2" />
@@ -347,7 +347,7 @@ export function MessagesPage() {
                           'max-w-[75%] lg:max-w-md px-4 py-3 rounded-2xl text-sm shadow-sm transition-all hover:shadow-md',
                           isMine
                             ? 'bg-primary text-white rounded-tr-none'
-                            : 'bg-white border border-gray-100 text-text rounded-tl-none',
+                            : 'bg-white border border-surface text-text rounded-tl-none',
                         )}>
                           {message.content}
                         </div>
@@ -366,7 +366,7 @@ export function MessagesPage() {
                 </div>
 
                 <div className="px-6 py-5 border-t border-border bg-white">
-                  <div className="flex items-center gap-3 bg-[#F3F4F6] p-1.5 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                  <div className="flex items-center gap-3 bg-surface p-1.5 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                     <input
                       value={text}
                       onChange={e => setText(e.target.value)}

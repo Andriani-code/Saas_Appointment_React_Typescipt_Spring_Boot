@@ -100,11 +100,11 @@ export function PaymentsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "SUCCESS":
-        return <CheckCircle size={16} className="text-green-600" />;
+        return <CheckCircle size={16} className="text-accent" />;
       case "FAILED":
-        return <XCircle size={16} className="text-red-600" />;
+        return <XCircle size={16} className="text-accent" />;
       default:
-        return <Clock size={16} className="text-amber-600" />;
+        return <Clock size={16} className="text-accent" />;
     }
   };
 
@@ -148,8 +148,8 @@ export function PaymentsPage() {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-              <Clock size={20} className="text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+              <Clock size={20} className="text-accent" />
             </div>
             <div>
               <p className="text-xs text-muted">En attente</p>
@@ -161,8 +161,8 @@ export function PaymentsPage() {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-              <CheckCircle size={20} className="text-green-600" />
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+              <CheckCircle size={20} className="text-accent" />
             </div>
             <div>
               <p className="text-xs text-muted">Payés</p>
@@ -174,8 +174,8 @@ export function PaymentsPage() {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-              <XCircle size={20} className="text-red-600" />
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+              <XCircle size={20} className="text-accent" />
             </div>
             <div>
               <p className="text-xs text-muted">Échoués</p>
@@ -248,18 +248,18 @@ export function PaymentsPage() {
                   className={cn(
                     "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
                     payment.status === "SUCCESS"
-                      ? "bg-green-50"
+                      ? "bg-accent/10"
                       : payment.status === "FAILED"
-                        ? "bg-red-50"
-                        : "bg-amber-50",
+                        ? "bg-accent/10"
+                        : "bg-accent/10",
                   )}
                 >
                   {payment.status === "SUCCESS" ? (
-                    <ArrowUpRight size={20} className="text-green-600" />
+                    <ArrowUpRight size={20} className="text-accent" />
                   ) : payment.status === "FAILED" ? (
-                    <ArrowDownLeft size={20} className="text-red-600" />
+                    <ArrowDownLeft size={20} className="text-accent" />
                   ) : (
-                    <Clock size={20} className="text-amber-600" />
+                    <Clock size={20} className="text-accent" />
                   )}
                 </div>
 
@@ -284,10 +284,10 @@ export function PaymentsPage() {
                       className={cn(
                         "text-xs",
                         payment.status === "SUCCESS"
-                          ? "text-green-600"
+                          ? "text-accent"
                           : payment.status === "FAILED"
-                            ? "text-red-600"
-                            : "text-amber-600",
+                            ? "text-accent"
+                            : "text-accent",
                       )}
                     >
                       {getStatusLabel(payment.status)}

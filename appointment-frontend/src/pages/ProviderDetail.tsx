@@ -205,7 +205,7 @@ export function ProviderDetail() {
                     Message
                   </Button>
                   {localProvider.isVerified && (
-                    <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-full font-semibold">
+                    <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2.5 py-1.5 rounded-full font-semibold">
                       <Shield size={12} />Vérifié
                     </span>
                   )}
@@ -240,7 +240,7 @@ export function ProviderDetail() {
                   <h2 className="text-xl font-bold text-text mb-1">{focusedService?.name || 'Service sélectionné'}</h2>
                   <div className="flex items-center gap-3 text-sm text-muted">
                      <span className="flex items-center gap-1"><Clock size={14} /> {focusedService ? formatDuration(focusedService.durationMinutes) : '-'}</span>
-                     {focusedService?.depositEnabled && <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Dépôt requis</span>}
+                      {focusedService?.depositEnabled && <span className="text-accent bg-accent/10 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Dépôt requis</span>}
                   </div>
                </div>
                <div className="text-right">
@@ -317,8 +317,8 @@ export function ProviderDetail() {
           <div className="card p-5 space-y-5 sticky top-6 border-t-4 border-primary">
             {booked ? (
               <div className="text-center py-8 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                  <CheckCircle size={32} className="text-green-600" />
+                <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center mx-auto">
+                  <CheckCircle size={32} className="text-accent" />
                 </div>
                 <h3 className="font-semibold text-text">Réservation envoyée !</h3>
                 <p className="text-sm text-muted">Merci pour votre confiance. Vous recevrez une notification dès l'approbation de votre rendez-vous.</p>
@@ -408,7 +408,7 @@ export function ProviderDetail() {
                               className={cn(
                                 'py-2 rounded-lg text-xs font-semibold transition-all duration-200',
                                 isBooked
-                                  ? 'bg-gray-100 text-gray-400 line-through cursor-not-allowed'
+                                  ? 'bg-surface text-muted line-through cursor-not-allowed'
                                   : isSelected
                                     ? 'bg-primary text-white'
                                     : 'bg-soft text-muted hover:bg-primary/10 hover:text-primary'

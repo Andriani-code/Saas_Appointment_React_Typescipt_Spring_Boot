@@ -184,11 +184,11 @@ export function AvailabilityPage() {
           </div>
         </div>
 
-        <div className="card p-4 border-amber-300 bg-amber-100/60">
+        <div className="card p-4 border-accent/40 bg-accent/15">
           <div className="flex items-center justify-between gap-4 h-full">
             <div>
-              <p className="font-medium text-amber-900 text-sm">Prêt à recevoir des clients ?</p>
-              <p className="text-xs text-amber-700 mt-1">Mettez à jour votre calendrier pour les 30 prochains jours.</p>
+              <p className="font-medium text-accent text-sm">Prêt à recevoir des clients ?</p>
+              <p className="text-xs text-accent mt-1">Mettez à jour votre calendrier pour les 30 prochains jours.</p>
             </div>
             <Button
               size="sm"
@@ -196,7 +196,7 @@ export function AvailabilityPage() {
               loading={generating}
               onClick={handleGenerateSlots}
               disabled={!hasProfile}
-              className="border-amber-400 text-amber-900 hover:bg-amber-200 shrink-0"
+              className="border-accent/50 text-accent hover:bg-accent/20 shrink-0"
             >
               Générer les créneaux
             </Button>
@@ -232,7 +232,7 @@ export function AvailabilityPage() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className={cn("w-2 h-2 rounded-full", isActive ? "bg-green-500" : "bg-gray-300")} />
+                    <span className={cn("w-2 h-2 rounded-full", isActive ? "bg-accent" : "bg-muted/30")} />
                     <span className="font-semibold text-text">{day.label}</span>
                   </div>
                   <button

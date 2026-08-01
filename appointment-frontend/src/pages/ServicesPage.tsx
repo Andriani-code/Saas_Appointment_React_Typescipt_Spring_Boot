@@ -162,20 +162,20 @@ export function ServicesPage() {
       </div>
 
       {provider && !provider.isVerified && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4 animate-slide-down shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-            <AlertTriangle className="text-amber-600" size={20} />
+        <div className="bg-accent/10 border border-accent/30 rounded-2xl p-4 flex items-start gap-4 animate-slide-down shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
+            <AlertTriangle className="text-accent" size={20} />
           </div>
           <div>
-            <p className="text-amber-900 font-bold text-sm">Profil non vérifié</p>
-            <p className="text-amber-700 text-xs mt-1 leading-relaxed">
+            <p className="text-accent font-bold text-sm">Profil non vérifié</p>
+            <p className="text-accent text-xs mt-1 leading-relaxed">
               Vos services sont actuellement <strong>masqués</strong> pour les clients.
               Ils ne deviendront visibles que lorsque votre profil aura été vérifié et approuvé par un administrateur.
             </p>
             <Button
               variant="ghost"
               size="sm"
-              className="mt-2 text-amber-800 hover:bg-amber-100 p-0 h-auto font-bold text-xs"
+              className="mt-2 text-accent hover:bg-accent/20 p-0 h-auto font-bold text-xs"
               onClick={() => (window.location.href = "/settings")}
             >
               Aller demander la vérification &rarr;
@@ -185,13 +185,13 @@ export function ServicesPage() {
       )}
 
       {provider?.isVerified && (
-        <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-4 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-            <ShieldCheck className="text-green-600" size={20} />
+        <div className="bg-accent/10 border border-accent/20 rounded-2xl p-4 flex items-start gap-4 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
+            <ShieldCheck className="text-accent" size={20} />
           </div>
           <div>
-            <p className="text-green-900 font-bold text-sm">Profil vérifié</p>
-            <p className="text-green-700 text-xs mt-1">
+            <p className="text-accent font-bold text-sm">Profil vérifié</p>
+            <p className="text-accent text-xs mt-1">
               Félicitations ! Votre profil est vérifié. Vos services sont visibles et prêts à être réservés.
             </p>
           </div>
@@ -250,7 +250,7 @@ export function ServicesPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(service.id)}
-                    className="p-1.5 text-muted hover:text-danger hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-1.5 text-muted hover:text-danger hover:bg-accent/10 rounded-lg transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -269,7 +269,7 @@ export function ServicesPage() {
                   </span>
                 </div>
                 {service.depositEnabled && service.depositAmount && (
-                  <span className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-full font-medium">
+                  <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
                     Dépôt: {formatCurrency(service.depositAmount)}
                   </span>
                 )}
@@ -279,7 +279,7 @@ export function ServicesPage() {
                 <span
                   className={cn(
                     "inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium",
-                    service.isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
+                    service.isActive ? "bg-accent/10 text-accent" : "bg-surface text-muted"
                   )}
                 >
                   {service.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
@@ -334,7 +334,7 @@ export function ServicesPage() {
                 <button
                   type="button"
                   onClick={() => setDepositEnabled(!depositEnabled)}
-                  className={cn("w-12 h-6 rounded-full transition-colors relative", depositEnabled ? "bg-primary" : "bg-gray-300")}
+                  className={cn("w-12 h-6 rounded-full transition-colors relative", depositEnabled ? "bg-primary" : "bg-muted/30")}
                 >
                   <span className={cn("absolute top-1 w-4 h-4 rounded-full bg-white transition-transform", depositEnabled ? "left-7" : "left-1")} />
                 </button>

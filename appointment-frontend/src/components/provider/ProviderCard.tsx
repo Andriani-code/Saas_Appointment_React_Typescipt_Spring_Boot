@@ -30,7 +30,7 @@ export function ProviderCard({ provider, services = [], distance, delay = 0 }: P
         <div className="relative">
           <Avatar name={name} src={provider.profilePhoto} size="lg" />
           {/* Online indicator */}
-          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-surface" />
+          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-accent border-2 border-surface" />
         </div>
 
         <div className="flex-1 min-w-0">

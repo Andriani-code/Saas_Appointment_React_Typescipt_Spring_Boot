@@ -158,7 +158,7 @@ export function ReviewsPage() {
       )}
 
       {hasRole("PROVIDER") && (
-        <div className="flex gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
+        <div className="flex gap-2 p-1.5 bg-surface rounded-2xl w-fit">
           <button
             onClick={() => setTab("received")}
             className={cn(
@@ -172,11 +172,11 @@ export function ReviewsPage() {
       )}
 
       <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
         <input
           type="text"
           placeholder="Rechercher dans les commentaires..."
-          className="w-full bg-white border-gray-100 rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          className="w-full bg-white border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -232,7 +232,7 @@ export function ReviewsPage() {
               </div>
 
               {!review.isVisible && (
-                <div className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded-md">
+                <div className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase text-accent bg-accent/10 w-fit px-2 py-1 rounded-md">
                   <Filter size={10} /> En attente de modération
                 </div>
               )}
@@ -259,7 +259,7 @@ export function ReviewsPage() {
                 <select
                   value={selectedReservation}
                   onChange={(e) => setSelectedReservation(e.target.value)}
-                  className="w-full bg-[#F3F4F6] border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none font-bold text-text"
+                  className="w-full bg-surface border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none font-bold text-text"
                   required
                 >
                   <option value="">Sélectionnez un service...</option>
@@ -287,7 +287,7 @@ export function ReviewsPage() {
                         size={36}
                         className={cn(
                           "transition-colors",
-                          star <= rating ? "text-amber-400 fill-amber-400" : "text-gray-200"
+                          star <= rating ? "text-accent fill-accent" : "text-border"
                         )}
                       />
                     </button>
@@ -304,7 +304,7 @@ export function ReviewsPage() {
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Comment s'est passée votre prestation ?"
                   rows={4}
-                  className="w-full bg-[#F3F4F6] border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-muted/60"
+                  className="w-full bg-surface border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none placeholder:text-muted/60"
                 />
               </div>
 
@@ -314,7 +314,7 @@ export function ReviewsPage() {
                   variant="outline"
                   fullWidth
                   onClick={() => setShowModal(false)}
-                  className="rounded-2xl py-3 font-bold border-gray-100"
+                  className="rounded-2xl py-3 font-bold border-surface"
                 >
                   Annuler
                 </Button>
