@@ -36,7 +36,7 @@
   --color-text-dark: #F8FAFC;
   --color-text: #F8FAFC;
   --color-text-muted: #94A3B8;
-  --color-muted: #94A3B8;
+  --color-muted: #7A8BA0;
 
   /* Sémantique — vraies couleurs pour les statuts et alertes */
   --color-danger: #E5484D;
@@ -219,7 +219,31 @@
     background-color: var(--color-background) !important;
   }
 
-  .text-balance { text-wrap: balance; }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
   .animation-delay-100 { animation-delay: 100ms; }
   .animation-delay-200 { animation-delay: 200ms; }
   .animation-delay-300 { animation-delay: 300ms; }

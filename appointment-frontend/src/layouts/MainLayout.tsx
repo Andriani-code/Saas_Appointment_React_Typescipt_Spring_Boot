@@ -104,6 +104,7 @@ export function MainLayout() {
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -122,13 +123,14 @@ export function MainLayout() {
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="lg:hidden p-1 hover:bg-soft rounded-lg"
+            aria-label="Fermer le menu"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto" aria-label="Navigation principale">
           {visibleItems.map((item) => (
             <NavLink
               key={item.to}
@@ -149,8 +151,9 @@ export function MainLayout() {
           <button
             onClick={handleLogout}
             className="sidebar-link w-full text-danger hover:bg-accent/10 hover:text-danger"
+            aria-label="Se déconnecter"
           >
-            <LogOut size={18} />
+            <LogOut size={18} aria-hidden="true" />
             <span>Déconnexion</span>
           </button>
         </div>
@@ -161,7 +164,7 @@ export function MainLayout() {
       </aside>
 
         {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background" style={{ backgroundColor: "#0F172A" }}>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Unified Header — same surface color as sidebar */}
         <header
           className="h-20 bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
@@ -173,19 +176,21 @@ export function MainLayout() {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2.5 text-muted hover:bg-soft rounded-2xl transition-colors"
-            >
-              <Menu size={22} />
-            </button>
+<button
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden p-2.5 text-muted hover:bg-soft rounded-2xl transition-colors"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu size={22} />
+          </button>
             
             {/* Search Bar */}
             <div className="relative max-w-md w-full hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} aria-hidden="true" />
               <input 
                 type="text" 
                 placeholder="Rechercher..." 
+                aria-label="Rechercher"
                 className="w-full bg-surface border-none rounded-2xl pl-12 pr-6 py-2.5 text-sm text-text placeholder:text-muted focus:ring-2 focus:ring-primary/10 outline-none transition-all"
               />
             </div>
@@ -193,15 +198,15 @@ export function MainLayout() {
 
           <div className="flex items-center gap-3 lg:gap-5">
             {/* Notification */}
-            <button className="relative p-2.5 text-muted hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
-              <Bell size={22} />
+            <button className="relative p-2.5 text-muted hover:text-primary hover:bg-primary/5 rounded-2xl transition-all" aria-label="Notifications">
+              <Bell size={22} aria-hidden="true" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full border-2 border-white" />
             </button>
             
             <div className="h-8 w-px bg-surface mx-2 hidden sm:block" />
 
             {/* Profile */}
-            <div className="flex items-center gap-3 pl-1 group cursor-pointer">
+            <div className="flex items-center gap-3 pl-1 group cursor-pointer" role="button" tabIndex={0} aria-label="Profil utilisateur">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-text truncate max-w-[150px] capitalize leading-tight">{displayName}</p>
                 <p className="text-[10px] font-bold text-primary uppercase tracking-wider">{roleLabel}</p>
