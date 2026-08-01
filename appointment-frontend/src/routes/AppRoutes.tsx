@@ -4,6 +4,7 @@ import { MainLayout } from "@/layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
 import { RoleRoute } from "./RoleRoute";
 import { Spinner } from "@/components/ui";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 const LandingPage = lazy(() => import("@/pages/LandingPage").then((m) => ({ default: m.LandingPage })));
 const LoginPage = lazy(() => import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })));
@@ -34,7 +35,8 @@ function PageFallback() {
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageFallback />}>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -69,8 +71,9 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </ErrorBoundary>
     </Suspense>
   );
 }
