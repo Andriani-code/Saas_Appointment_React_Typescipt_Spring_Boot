@@ -11,8 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # Postgres 18+ stores data in a major-version subdirectory under /var/lib/postgresql
-      # (see docker-library/postgres#1259). Mounting the parent dir is required.
+
       - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d appointment"]
@@ -23,6 +22,7 @@ services:
   backend:
     build:
       context: ./appointment-backend
+      dockerfile: Dockerfile.dev
     container_name: appointment_backend
     restart: always
     depends_on:
@@ -34,13 +34,19 @@ services:
       DB_NAME: appointment
       DB_USERNAME: postgres
       DB_PASSWORD: password
-      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      APP_SEED_ENABLED: ${APP_SEED_ENABLED:-true}
     ports:
       - "8080:8080"
+    volumes:
+      - ./appointment-backend:/app
+      - ~/.m2:/root/.m2
+    working_dir: /app
+    command: sh ./mvnw spring-boot:run
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/v3/api-docs"]
       interval: 10s
@@ -50,13 +56,19 @@ services:
   frontend:
     build:
       context: ./appointment-frontend
+      dockerfile: Dockerfile.dev
     container_name: appointment_frontend
     restart: always
     depends_on:
       backend:
         condition: service_healthy
+    working_dir: /app
+    command: npm run dev -- --host
     ports:
-      - "5173:80"
+      - "5173:5173"
+    volumes:
+      - ./appointment-frontend:/app
+      - /app/node_modules
 
 volumes:
   postgres_data:
