@@ -411,7 +411,7 @@ export function ServicesPage() {
                   onClick={() => setDepositEnabled(!depositEnabled)}
                   className={cn("w-12 h-6 rounded-full transition-colors relative", depositEnabled ? "bg-primary" : "bg-muted/30")}
                 >
-                  <span className={cn("absolute top-1 w-4 h-4 rounded-full bg-white transition-transform", depositEnabled ? "left-7" : "left-1")} />
+                  <span className={cn("absolute top-1 w-4 h-4 rounded-full bg-background transition-transform", depositEnabled ? "left-7" : "left-1")} />
                 </button>
               </div>
 

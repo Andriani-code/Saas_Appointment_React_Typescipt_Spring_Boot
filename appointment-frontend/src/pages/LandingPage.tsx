@@ -157,7 +157,7 @@ export function LandingPage() {
               {stats.map((s) => (
                 <div
                   key={s.label}
-                  className="bg-white border border-border rounded-2xl p-4 text-center shadow-card"
+                  className="bg-background border border-border rounded-2xl p-4 text-center shadow-card"
                 >
                   <p className="font-display text-xl lg:text-2xl font-bold text-primary">
                     {s.n}
@@ -202,9 +202,9 @@ export function LandingPage() {
                 <p className="font-display text-2xl font-bold mt-3">
                   Consultation — Lun 10 août
                 </p>
-                <p className="text-white/70 text-sm mt-1">14h30 · 30 min</p>
+                <p className="text-text/70 text-sm mt-1">14h30 · 30 min</p>
                 <div className="mt-4 flex items-center justify-between text-xs">
-                  <span className="bg-white/15 px-3 py-1.5 rounded-full font-semibold">
+                  <span className="bg-background/15 px-3 py-1.5 rounded-full font-semibold">
                     Payé · 50 000 Ar
                   </span>
                 </div>

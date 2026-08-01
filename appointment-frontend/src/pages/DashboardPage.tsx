@@ -168,7 +168,7 @@ export function DashboardPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
         {stats.map((s, i) => (
           <StatCard key={s.title} {...s} delay={i * 80} loading={loading} />
         ))}

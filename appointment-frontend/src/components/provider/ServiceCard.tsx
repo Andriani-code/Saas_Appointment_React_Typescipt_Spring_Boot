@@ -17,7 +17,7 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
 
   return (
     <div
-      className="card-hover p-0 animate-slide-up flex flex-col overflow-hidden border-none shadow-sm bg-white"
+      className="card-hover p-0 animate-slide-up flex flex-col overflow-hidden border-none shadow-sm bg-background"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
       {/* Service Image/Cover */}
@@ -35,11 +35,11 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
           </div>
         )}
         <div className="absolute bottom-3 left-4 right-4">
-           <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 drop-shadow-sm">
+           <h3 className="text-text font-bold text-lg leading-tight line-clamp-2 drop-shadow-sm">
              {service.name}
            </h3>
         </div>
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+        <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
            <p className="text-xs font-black text-primary">{formatCurrency(service.price)}</p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
           <div className="relative shrink-0">
             <Avatar name={providerName} src={provider.profilePhoto} size="sm" className="rounded-xl ring-2 ring-soft" />
             {provider.isVerified && (
-              <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-0.5 border-2 border-white">
+              <div className="absolute -bottom-1 -right-1 bg-primary text-background rounded-full p-0.5 border-2 border-background">
                 <ShieldCheck size={8} />
               </div>
             )}

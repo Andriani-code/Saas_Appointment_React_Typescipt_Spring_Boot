@@ -132,7 +132,7 @@ export function ReviewsPage() {
 
       {hasRole("PROVIDER") && tab === "received" && reviews.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-down">
-          <div className="card p-6 flex flex-col items-center justify-center text-center border-none shadow-sm bg-white rounded-3xl">
+          <div className="card p-6 flex flex-col items-center justify-center text-center border-none shadow-sm bg-background rounded-3xl">
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-2">
               Note Moyenne
             </p>
@@ -143,7 +143,7 @@ export function ReviewsPage() {
               <StarRating rating={parseFloat(stats.average)} size={18} />
             </div>
           </div>
-          <div className="card p-6 flex flex-col items-center justify-center text-center border-none shadow-sm bg-white rounded-3xl">
+          <div className="card p-6 flex flex-col items-center justify-center text-center border-none shadow-sm bg-background rounded-3xl">
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-2">
               Total Avis
             </p>
@@ -163,7 +163,7 @@ export function ReviewsPage() {
             onClick={() => setTab("received")}
             className={cn(
               "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-              tab === "received" ? "bg-white text-text shadow-sm" : "text-muted hover:text-text"
+              tab === "received" ? "bg-background text-text shadow-sm" : "text-muted hover:text-text"
             )}
           >
             Avis reçus
@@ -176,7 +176,7 @@ export function ReviewsPage() {
         <input
           type="text"
           placeholder="Rechercher dans les commentaires..."
-          className="w-full bg-white border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          className="w-full bg-background border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -197,7 +197,7 @@ export function ReviewsPage() {
           {filtered.map((review) => (
             <div
               key={review.id}
-              className="card p-6 bg-white border-none shadow-sm hover:shadow-md transition-all rounded-3xl flex flex-col justify-between"
+              className="card p-6 bg-background border-none shadow-sm hover:shadow-md transition-all rounded-3xl flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between gap-4 mb-4">
@@ -243,7 +243,7 @@ export function ReviewsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl">
+          <div className="bg-background rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl">
             <h2 className="text-2xl font-display font-black text-text mb-2">
               Laisser un avis
             </h2>

@@ -232,7 +232,7 @@ export function MessagesPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 icon={<Search size={16} />}
-                className="bg-white"
+                className="bg-background"
               />
             </div>
 
@@ -314,7 +314,7 @@ export function MessagesPage() {
           </div>
 
           <div className={cn(
-            "flex-1 flex flex-col bg-white transition-all",
+            "flex-1 flex flex-col bg-background transition-all",
             showSidebar && "hidden lg:flex",
           )}>
             {!activeConv ? (
@@ -329,7 +329,7 @@ export function MessagesPage() {
               </div>
             ) : (
               <>
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-white sticky top-0 z-10">
+                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-background sticky top-0 z-10">
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setShowSidebar(true)}
@@ -382,7 +382,7 @@ export function MessagesPage() {
                           'max-w-[75%] lg:max-w-md px-4 py-3 rounded-2xl text-sm shadow-sm transition-all hover:shadow-md',
                           isMine
                             ? 'bg-primary text-white rounded-tr-none'
-                            : 'bg-white border border-surface text-text rounded-tl-none',
+                            : 'bg-background border border-surface text-text rounded-tl-none',
                         )}>
                           {message.content}
                         </div>
@@ -400,7 +400,7 @@ export function MessagesPage() {
                   <div ref={bottomRef} />
                 </div>
 
-                <div className="px-6 py-5 border-t border-border bg-white">
+                <div className="px-6 py-5 border-t border-border bg-background">
                   <div className="flex items-center gap-3 bg-surface p-1.5 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                     <input
                       value={text}

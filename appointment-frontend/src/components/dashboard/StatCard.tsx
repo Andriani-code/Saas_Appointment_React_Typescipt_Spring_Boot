@@ -23,31 +23,31 @@ export function StatCard({
 
   return (
     <div
-      className="card p-4 sm:p-5 animate-slide-up"
+      className="card p-3 sm:p-4 animate-slide-up"
       style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-lg bg-soft flex items-center justify-center text-text">
+      <div className="flex items-center justify-between mb-2">
+        <div className="w-8 h-8 rounded-md bg-soft flex items-center justify-center text-text">
           {icon}
         </div>
         {trend !== undefined && (
           <div
             className={cn(
-              "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md",
+              "flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded",
               trendUp ? "bg-soft text-text" : "bg-soft text-text",
             )}
           >
-            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {Math.abs(trend)}%
           </div>
         )}
       </div>
 
-      <p className="text-xs sm:text-sm text-muted mb-1 truncate">{title}</p>
+      <p className="text-[10px] sm:text-xs text-muted mb-1 truncate">{title}</p>
       {loading ? (
-        <div className="h-8 w-16 rounded-lg bg-soft animate-pulse" />
+        <div className="h-6 w-12 rounded bg-soft animate-pulse" />
       ) : (
-        <p className="text-2xl sm:text-3xl font-display font-bold text-text">
+        <p className="text-xl sm:text-2xl font-display font-bold text-text">
           {value}
         </p>
       )}

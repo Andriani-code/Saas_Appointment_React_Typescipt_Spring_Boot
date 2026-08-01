@@ -57,9 +57,9 @@ export function LoginPage() {
       }
       leftPanel={
         <div className="bg-primary h-full relative overflow-hidden flex flex-col justify-between p-8 xl:p-12">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
-          <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-white/5" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-background/5" />
+          <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-background/8" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-background/5" />
 
           <div className="relative z-10 space-y-6">
             <span className="inline-flex items-center gap-1.5 bg-white/10 text-white/90 px-3 py-1 rounded-full text-xs font-semibold w-fit">
@@ -81,18 +81,18 @@ export function LoginPage() {
               {stats.map((s) => (
                 <div
                   key={s.label}
-                  className="bg-white/10 rounded-xl xl:rounded-2xl p-3 xl:p-4 text-center"
+                  className="bg-background/10 rounded-xl xl:rounded-2xl p-3 xl:p-4 text-center"
                 >
-                  <p className="font-display text-xl xl:text-2xl font-bold text-white">
+                  <p className="font-display text-xl xl:text-2xl font-bold text-text">
                     {s.n}
                   </p>
-                  <p className="text-white/65 text-xs mt-0.5">{s.label}</p>
+                  <p className="text-text/65 text-xs mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <p className="relative z-10 text-white/40 text-sm">
+          <p className="relative z-10 text-text/40 text-sm">
             © 2026 HILA. Tous droits réservés.
           </p>
         </div>

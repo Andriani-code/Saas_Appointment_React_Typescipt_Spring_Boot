@@ -112,7 +112,7 @@ export function AdminPage() {
           <p className="text-muted text-sm font-medium mt-1">Supervision de la plateforme HILA</p>
         </div>
         <div className="flex gap-2">
-           <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-surface flex items-center gap-3">
+           <div className="bg-background px-4 py-2 rounded-2xl shadow-sm border border-surface flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               <span className="text-xs font-bold text-text uppercase tracking-widest">Système Live</span>
            </div>
@@ -152,7 +152,7 @@ export function AdminPage() {
             onClick={() => setTab(t.id as Tab)}
             className={cn(
               "px-5 py-2.5 rounded-[14px] text-sm font-bold transition-all flex items-center gap-2",
-              tab === t.id ? "bg-white text-text shadow-sm scale-[1.02]" : "text-muted hover:text-text"
+              tab === t.id ? "bg-background text-text shadow-sm scale-[1.02]" : "text-muted hover:text-text"
             )}
           >
             {t.label}
@@ -227,7 +227,7 @@ export function AdminPage() {
               <input 
                 type="text" 
                 placeholder="Filtrer par nom, email, spécialité..." 
-                className="w-full bg-white border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-background border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -263,7 +263,7 @@ export function AdminPage() {
         )}
 
         {!loading && tab === 'reservations' && (
-           <div className="card p-0 overflow-hidden border-none shadow-sm bg-white rounded-3xl">
+           <div className="card p-0 overflow-hidden border-none shadow-sm bg-background rounded-3xl">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-soft/50 text-[10px] font-black text-muted uppercase tracking-widest border-b border-surface/50">

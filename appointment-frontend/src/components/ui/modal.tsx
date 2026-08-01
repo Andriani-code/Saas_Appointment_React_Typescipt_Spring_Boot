@@ -9,7 +9,7 @@ export const Modal = ({ open, onClose, children }: ModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-2xl w-full max-w-md">
+      <div className="bg-background p-6 rounded-2xl w-full max-w-md">
         {children}
         <button onClick={onClose}>Close</button>
       </div>

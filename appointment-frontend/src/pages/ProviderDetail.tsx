@@ -362,7 +362,7 @@ export function ProviderDetail() {
                         'flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200',
                         isFavorite
                           ? 'bg-accent text-white border-accent shadow-accent/30 shadow-md'
-                          : 'bg-white text-muted border-border hover:text-accent hover:border-accent/50'
+                          : 'bg-background text-muted border-border hover:text-accent hover:border-accent/50'
                       )}
                     >
                       <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -645,7 +645,7 @@ export function ProviderDetail() {
 
       {showReviewModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-background rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-display font-black text-text mb-2">
               Laisser un avis
             </h2>
