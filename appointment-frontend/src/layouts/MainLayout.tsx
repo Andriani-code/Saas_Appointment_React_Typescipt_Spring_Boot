@@ -118,7 +118,7 @@ export function MainLayout() {
         {/* Logo */}
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center justify-center">
-            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
+            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-14 h-14 object-contain" />
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
@@ -177,17 +177,16 @@ export function MainLayout() {
         </p>
       </aside>
 
-      {/* Main Content */}
+        {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background" style={{ backgroundColor: "#0F172A" }}>
-        {/* Unified Header */}
+        {/* Unified Header — same surface color as sidebar */}
         <header
-          className="h-20 border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
-          style={{ backgroundColor: "#0F172A" }}
+          className="h-20 bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
         >
           <div className="flex items-center gap-4 flex-1">
             {/* Logo (top-left) */}
             <div className="flex items-center justify-center shrink-0">
-              <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
+              <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-14 h-14 object-contain" />
             </div>
 
             {/* Mobile Menu Toggle */}
