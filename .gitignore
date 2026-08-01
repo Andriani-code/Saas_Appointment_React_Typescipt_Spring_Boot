@@ -36,6 +36,9 @@ target
 .gradle
 build
 
+# Artifacts de build accidentellement commités (dossier littéral ${project.build.directory})
+appointment-backend/${project.build.directory}/
+
 ############################
 # IDE - VS CODE
 ############################
