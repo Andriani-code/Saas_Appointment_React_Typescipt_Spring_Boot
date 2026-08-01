@@ -113,7 +113,7 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 animate-slide-down whitespace-pre-line">
+            <div className="bg-accent/10 border border-accent/30 rounded-xl px-4 py-3 text-sm text-accent animate-slide-down whitespace-pre-line">
               {error}
             </div>
           )}

@@ -5,10 +5,10 @@ type BadgeProps = {
 
 export const Badge = ({ variant = "info", children }: BadgeProps) => {
   const variants = {
-    success: "bg-green-100 text-green-700",
-    error: "bg-red-100 text-red-700",
-    warning: "bg-yellow-100 text-yellow-700",
-    info: "bg-blue-100 text-blue-700",
+    success: "bg-accent/10 text-accent",
+    error: "bg-accent/10 text-accent",
+    warning: "bg-accent/10 text-accent",
+    info: "bg-primary/10 text-primary",
   };
 
   return (

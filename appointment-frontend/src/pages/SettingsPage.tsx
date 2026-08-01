@@ -212,16 +212,16 @@ export function SettingsPage() {
       {hasRole('PROVIDER') && profileExists && (
         <div className={cn(
           "rounded-2xl p-4 flex items-center justify-between gap-4 border shadow-sm animate-slide-down",
-          verificationStatus === 'APPROVED' ? "bg-green-50 border-green-100" :
-          verificationStatus === 'PENDING' ? "bg-blue-50 border-blue-100" :
-          verificationStatus === 'REJECTED' ? "bg-red-50 border-red-100" : "bg-amber-50 border-amber-100"
+          verificationStatus === 'APPROVED' ? "bg-accent/10 border-accent/20" :
+          verificationStatus === 'PENDING' ? "bg-primary/10 border-primary/20" :
+          verificationStatus === 'REJECTED' ? "bg-accent/10 border-accent/20" : "bg-accent/10 border-accent/20"
         )}>
            <div className="flex items-start gap-3">
               <div className={cn(
                 "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                verificationStatus === 'APPROVED' ? "bg-green-100 text-green-600" :
-                verificationStatus === 'PENDING' ? "bg-blue-100 text-blue-600" :
-                verificationStatus === 'REJECTED' ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
+                verificationStatus === 'APPROVED' ? "bg-accent/15 text-accent" :
+                verificationStatus === 'PENDING' ? "bg-primary/15 text-primary" :
+                verificationStatus === 'REJECTED' ? "bg-accent/15 text-accent" : "bg-accent/15 text-accent"
               )}>
                  {verificationStatus === 'APPROVED' ? <ShieldCheck size={20} /> :
                   verificationStatus === 'PENDING' ? <ClockIcon size={20} /> :
@@ -230,9 +230,9 @@ export function SettingsPage() {
               <div>
                  <p className={cn(
                    "font-bold text-sm",
-                   verificationStatus === 'APPROVED' ? "text-green-900" :
-                   verificationStatus === 'PENDING' ? "text-blue-900" :
-                   verificationStatus === 'REJECTED' ? "text-red-900" : "text-amber-900"
+                   verificationStatus === 'APPROVED' ? "text-accent" :
+                   verificationStatus === 'PENDING' ? "text-primary" :
+                   verificationStatus === 'REJECTED' ? "text-accent" : "text-accent"
                  )}>
                    {verificationStatus === 'APPROVED' ? "Profil vérifié" :
                     verificationStatus === 'PENDING' ? "Vérification en cours" :
@@ -240,9 +240,9 @@ export function SettingsPage() {
                  </p>
                  <p className={cn(
                    "text-xs mt-0.5",
-                   verificationStatus === 'APPROVED' ? "text-green-700" :
-                   verificationStatus === 'PENDING' ? "text-blue-700" :
-                   verificationStatus === 'REJECTED' ? "text-red-700" : "text-amber-700"
+                   verificationStatus === 'APPROVED' ? "text-accent" :
+                   verificationStatus === 'PENDING' ? "text-primary" :
+                   verificationStatus === 'REJECTED' ? "text-accent" : "text-accent"
                  )}>
                    {verificationStatus === 'APPROVED' ? "Votre profil est visible par tous les clients." :
                     verificationStatus === 'PENDING' ? "Votre demande est en cours d'examen par l'administrateur." :
@@ -270,7 +270,7 @@ export function SettingsPage() {
                {user?.role === 'CLIENT' ? 'Client' : user?.role === 'PROVIDER' ? 'Prestataire' : 'Admin'}
              </span>
              {!profileExists && (
-               <span className="text-[10px] bg-amber-100 px-2 py-0.5 rounded-full text-amber-700 uppercase font-bold tracking-wider">
+               <span className="text-[10px] bg-accent/15 px-2 py-0.5 rounded-full text-accent uppercase font-bold tracking-wider">
                  À créer
                </span>
              )}

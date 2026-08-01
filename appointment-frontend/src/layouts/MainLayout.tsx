@@ -170,7 +170,7 @@ export function MainLayout() {
         <div className="px-3 py-4 border-t border-border">
           <button
             onClick={handleLogout}
-            className="sidebar-link w-full text-danger hover:bg-red-50 hover:text-danger"
+            className="sidebar-link w-full text-danger hover:bg-accent/10 hover:text-danger"
           >
             <LogOut size={18} />
             <span>Déconnexion</span>
@@ -183,9 +183,9 @@ export function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F9FAFB]">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Unified Header */}
-        <header className="h-20 bg-white border-b border-gray-100 px-6 lg:px-10 flex items-center justify-between shrink-0">
+        <header className="h-20 bg-white border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 flex-1">
             {/* Mobile Menu Toggle */}
             <button
@@ -197,23 +197,23 @@ export function MainLayout() {
             
             {/* Search Bar */}
             <div className="relative max-w-md w-full hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
               <input 
                 type="text" 
                 placeholder="Rechercher..." 
-                className="w-full bg-[#F3F4F6] border-none rounded-2xl pl-12 pr-6 py-2.5 text-sm text-text placeholder:text-gray-400 focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+                className="w-full bg-surface border-none rounded-2xl pl-12 pr-6 py-2.5 text-sm text-text placeholder:text-muted focus:ring-2 focus:ring-primary/10 outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-3 lg:gap-5">
             {/* Notification */}
-            <button className="relative p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
+            <button className="relative p-2.5 text-muted hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
               <Bell size={22} />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full border-2 border-white" />
             </button>
             
-            <div className="h-8 w-px bg-gray-100 mx-2 hidden sm:block" />
+            <div className="h-8 w-px bg-surface mx-2 hidden sm:block" />
 
             {/* Profile */}
             <div className="flex items-center gap-3 pl-1 group cursor-pointer">

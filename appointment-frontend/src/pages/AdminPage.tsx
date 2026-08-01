@@ -112,8 +112,8 @@ export function AdminPage() {
           <p className="text-muted text-sm font-medium mt-1">Supervision de la plateforme MILA</p>
         </div>
         <div className="flex gap-2">
-           <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+           <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-surface flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               <span className="text-xs font-bold text-text uppercase tracking-widest">Système Live</span>
            </div>
         </div>
@@ -122,10 +122,10 @@ export function AdminPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'En attente', val: pending.length, icon: <Clock className="text-amber-600" />, bg: 'bg-amber-50' },
+          { label: 'En attente', val: pending.length, icon: <Clock className="text-accent" />, bg: 'bg-accent/10' },
           { label: 'Prestataires', val: providers.length, icon: <Users className="text-primary" />, bg: 'bg-primary/5' },
-          { label: 'Réservations', val: reservations.length, icon: <Calendar className="text-blue-600" />, bg: 'bg-blue-50' },
-          { label: 'Note moyenne', val: '4.8', icon: <Star className="text-orange-500" />, bg: 'bg-orange-50' },
+          { label: 'Réservations', val: reservations.length, icon: <Calendar className="text-primary" />, bg: 'bg-primary/10' },
+          { label: 'Note moyenne', val: '4.8', icon: <Star className="text-accent" />, bg: 'bg-accent/10' },
         ].map((s, i) => (
           <div key={i} className="card p-5 flex items-center gap-4 border-none shadow-sm hover:shadow-md transition-all cursor-default">
              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", s.bg)}>
@@ -140,9 +140,9 @@ export function AdminPage() {
       </div>
 
       {/* Tabs Design Premium */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
+      <div className="flex flex-wrap gap-2 p-1.5 bg-surface rounded-2xl w-fit">
         {[
-          { id: 'verification', label: 'Vérifications', count: pending.length, color: 'bg-amber-500' },
+          { id: 'verification', label: 'Vérifications', count: pending.length, color: 'bg-accent' },
           { id: 'providers', label: 'Annuaire', count: providers.length, color: 'bg-primary' },
           { id: 'reservations', label: 'Flux Activité', count: null },
           { id: 'reviews', label: 'Modération Avis', count: null },
@@ -180,13 +180,13 @@ export function AdminPage() {
               <EmptyState icon={<CheckCircle size={32} />} title="Tout est à jour" description="Aucune demande de vérification en attente." />
             ) : (
               pending.map(s => (
-                <div key={s.id} className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-amber-400">
+                <div key={s.id} className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-l-4 border-accent">
                   <div className="flex items-center gap-4">
                     <Avatar name={s.displayName || `${s.firstName} ${s.lastName}`} src={s.profilePhoto} size="xl" className="rounded-2xl shadow-lg shadow-black/5" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg text-text leading-tight">{s.displayName || `${s.firstName} ${s.lastName}`}</h3>
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full uppercase tracking-tighter">Attente</span>
+                        <span className="px-2 py-0.5 bg-accent/15 text-accent text-[10px] font-black rounded-full uppercase tracking-tighter">Attente</span>
                       </div>
                       <p className="text-xs text-muted font-medium mb-1">Nom légal: {s.firstName} {s.lastName}</p>
                       <p className="text-sm text-primary font-bold">{s.profileTitle || 'Titre non défini'}</p>
@@ -198,9 +198,9 @@ export function AdminPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                     <Button 
-                       variant="outline" 
-                       className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl"
+                       <Button
+                       variant="outline"
+                       className="border-accent/30 text-accent hover:bg-accent/10 rounded-xl"
                        onClick={() => handleReject(s.id)}
                        loading={actionLoading === s.id}
                      >
@@ -227,7 +227,7 @@ export function AdminPage() {
               <input 
                 type="text" 
                 placeholder="Filtrer par nom, email, spécialité..." 
-                className="w-full bg-white border-gray-100 rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-white border-surface rounded-2xl pl-12 pr-6 py-3 shadow-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -242,13 +242,13 @@ export function AdminPage() {
                          <p className="font-bold text-text truncate leading-none mb-1">{s.displayName || `${s.firstName} ${s.lastName}`}</p>
                          <p className="text-[10px] text-muted truncate font-mono uppercase">{s.email}</p>
                       </div>
-                      {s.isVerified && <CheckCircle size={16} className="text-green-500" />}
+                      {s.isVerified && <CheckCircle size={16} className="text-accent" />}
                    </div>
                    <div className="mt-4 flex justify-between items-center">
                       <span className={cn(
                         "text-[10px] font-black px-2 py-0.5 rounded-md uppercase",
-                        s.verificationStatus === 'APPROVED' ? "bg-green-50 text-green-700" :
-                        s.verificationStatus === 'REJECTED' ? "bg-red-50 text-red-700" : "bg-gray-100 text-gray-500"
+                        s.verificationStatus === 'APPROVED' ? "bg-accent/10 text-accent" :
+                        s.verificationStatus === 'REJECTED' ? "bg-accent/10 text-accent" : "bg-surface text-muted"
                       )}>
                         {s.verificationStatus}
                       </span>
@@ -266,21 +266,21 @@ export function AdminPage() {
            <div className="card p-0 overflow-hidden border-none shadow-sm bg-white rounded-3xl">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-soft/50 text-[10px] font-black text-muted uppercase tracking-widest border-b border-gray-50">
+                  <tr className="bg-soft/50 text-[10px] font-black text-muted uppercase tracking-widest border-b border-surface/50">
                     <th className="px-6 py-4">Client</th>
                     <th className="px-6 py-4">Service</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-surface/50">
                   {reservations.map(r => (
                     <tr key={r.id} className="hover:bg-soft/30 transition-colors">
                       <td className="px-6 py-4 font-bold text-sm text-text">{r.clientFullName}</td>
                       <td className="px-6 py-4 text-sm text-muted">{r.serviceName}</td>
                       <td className="px-6 py-4">
-                        <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase", 
-                          r.status === 'CONFIRMED' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500')}>
+                        <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                          r.status === 'CONFIRMED' ? 'bg-primary/10 text-primary' : 'bg-surface text-muted')}>
                           {r.status}
                         </span>
                       </td>
