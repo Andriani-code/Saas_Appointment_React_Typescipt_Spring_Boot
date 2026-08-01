@@ -109,7 +109,7 @@ export function AdminPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-black text-text uppercase tracking-tighter">Panel Admin</h1>
-          <p className="text-muted text-sm font-medium mt-1">Supervision de la plateforme MILA</p>
+          <p className="text-muted text-sm font-medium mt-1">Supervision de la plateforme HILA</p>
         </div>
         <div className="flex gap-2">
            <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-surface flex items-center gap-3">

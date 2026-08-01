@@ -1,10 +1,11 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
 import { RoleRoute } from "./RoleRoute";
 import { Spinner } from "@/components/ui";
 
+const LandingPage = lazy(() => import("@/pages/LandingPage").then((m) => ({ default: m.LandingPage })));
 const LoginPage = lazy(() => import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("@/pages/RegisterPage").then((m) => ({ default: m.RegisterPage })));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
@@ -34,12 +35,12 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />

@@ -49,9 +49,9 @@ export function LoginPage() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-10 h-10 rounded-2xl object-contain" />
+            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 rounded-2xl object-contain" />
             <span className="font-display text-2xl font-bold text-white">
-              MILA
+              HILA
             </span>
           </div>
         </div>
@@ -88,7 +88,7 @@ export function LoginPage() {
         </div>
 
         <p className="relative z-10 text-white/40 text-sm">
-          © 2026 MILA. Tous droits réservés.
+          © 2026 HILA. Tous droits réservés.
         </p>
       </div>
 
@@ -97,9 +97,9 @@ export function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-4">
-            <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-8 h-8 rounded-xl object-contain" />
+            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-8 h-8 rounded-xl object-contain" />
             <span className="font-display text-2xl font-bold text-text">
-              MILA
+              HILA
             </span>
           </div>
 

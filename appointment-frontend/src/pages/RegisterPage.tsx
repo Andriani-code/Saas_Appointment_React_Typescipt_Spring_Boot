@@ -202,8 +202,8 @@ async function handleSubmit(e: FormEvent) {
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-10 h-10 rounded-2xl object-contain" />
-          <span className="font-display text-2xl font-bold text-white">MILA</span>
+          <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 rounded-2xl object-contain" />
+          <span className="font-display text-2xl font-bold text-white">HILA</span>
         </div>
 
         <div className="relative z-10 space-y-5">
@@ -215,14 +215,14 @@ async function handleSubmit(e: FormEvent) {
           </p>
         </div>
 
-        <p className="relative z-10 text-white/40 text-sm">© 2026 MILA. Tous droits réservés.</p>
+        <p className="relative z-10 text-white/40 text-sm">© 2026 HILA. Tous droits réservés.</p>
       </div>
 
       <div className="flex-1 flex items-center justify-center bg-surface px-4 py-8 sm:px-6 lg:px-8">
         <div className="w-full max-w-2xl space-y-7">
           <div className="lg:hidden flex items-center gap-2 mb-2">
-            <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-8 h-8 rounded-xl object-contain" />
-            <span className="font-display text-xl font-bold text-text">MILA</span>
+            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-8 h-8 rounded-xl object-contain" />
+            <span className="font-display text-xl font-bold text-text">HILA</span>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
