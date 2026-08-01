@@ -109,8 +109,14 @@ export function EmptyState({ icon, title, description, action, className }: {
         {description && <p className="text-sm text-muted mt-1">{description}</p>}
       </div>
       {action}
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-2 text-xs text-primary font-semibold hover:underline"
+      >
+        Réessayer
+      </button>
     </div>
-  )
+  );
 }
 
 export function StarRating({ rating, max = 5, size = 14 }: { rating?: number | null; max?: number; size?: number }) {
@@ -130,6 +136,8 @@ export function StarRating({ rating, max = 5, size = 14 }: { rating?: number | n
     </div>
   )
 }
+
+export { Skeleton } from './Skeleton';
 
 export function SectionHeader({ title, subtitle, action }: {
   title: string
