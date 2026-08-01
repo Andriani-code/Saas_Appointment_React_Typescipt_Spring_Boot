@@ -119,15 +119,10 @@ export function MainLayout() {
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"
-                  fill="white"
-                />
-              </svg>
+              <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-8 h-8 rounded-xl object-contain" />
             </div>
             <span className="font-display font-bold text-lg text-text">
-              BookDoc
+              MILA
             </span>
           </div>
           <button
@@ -183,7 +178,7 @@ export function MainLayout() {
         </div>
 
         <p className="text-center text-[10px] text-muted/50 pb-3">
-          © 2024 BookDoc
+          © 2024 MILA
         </p>
       </aside>
 

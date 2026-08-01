@@ -202,15 +202,8 @@ async function handleSubmit(e: FormEvent) {
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"
-                fill="white"
-              />
-            </svg>
-          </div>
-          <span className="font-display text-2xl font-bold text-white">BookDoc</span>
+          <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-10 h-10 rounded-2xl object-contain" />
+          <span className="font-display text-2xl font-bold text-white">MILA</span>
         </div>
 
         <div className="relative z-10 space-y-5">
@@ -222,21 +215,14 @@ async function handleSubmit(e: FormEvent) {
           </p>
         </div>
 
-        <p className="relative z-10 text-white/40 text-sm">© 2026 BookDoc. Tous droits réservés.</p>
+        <p className="relative z-10 text-white/40 text-sm">© 2026 MILA. Tous droits réservés.</p>
       </div>
 
       <div className="flex-1 flex items-center justify-center bg-surface px-4 py-8 sm:px-6 lg:px-8">
         <div className="w-full max-w-2xl space-y-7">
           <div className="lg:hidden flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"
-                  fill="white"
-                />
-              </svg>
-            </div>
-            <span className="font-display text-xl font-bold text-text">BookDoc</span>
+            <img src="/logo/logo_for_bg_light.png" alt="MILA" className="w-8 h-8 rounded-xl object-contain" />
+            <span className="font-display text-xl font-bold text-text">MILA</span>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
