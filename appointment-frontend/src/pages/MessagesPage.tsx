@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Calendar, ChevronLeft, Info, MessageSquare, Search, Send } from 'lucide-react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
@@ -45,11 +45,10 @@ export function MessagesPage() {
   const [showSidebar, setShowSidebar] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const stompClientRef = useRef<Client | null>(null)
-
-  // Memoize refresh for websocket
-  const stableRefresh = useCallback(() => {
-    void refresh()
-  }, [refresh])
+  const refreshRef = useRef(refresh)
+  refreshRef.current = refresh
+  const activeConvIdRef = useRef(activeConv?.id)
+  activeConvIdRef.current = activeConv?.id
 
   useEffect(() => {
     if (!user || !isEnabled) return
@@ -71,10 +70,11 @@ export function MessagesPage() {
             return [...prev, newMessage]
           })
 
+          let shouldRefresh = false
           setConversations((prev) => {
             const exists = prev.some(c => c.id === newMessage.conversationId)
             if (!exists) {
-              stableRefresh()
+              shouldRefresh = true
             }
             return prev.map((conversation) =>
               conversation.id === newMessage.conversationId
@@ -82,11 +82,15 @@ export function MessagesPage() {
                     ...conversation,
                     lastMessageContent: newMessage.content,
                     createdAt: newMessage.createdAt,
-                    unreadCount: activeConv?.id === conversation.id ? 0 : conversation.unreadCount + 1,
+                    unreadCount: activeConvIdRef.current === conversation.id ? 0 : conversation.unreadCount + 1,
                   }
                 : conversation
             )
           })
+
+          if (shouldRefresh) {
+            void refreshRef.current()
+          }
         })
       },
       onStompError: (frame) => {
@@ -100,7 +104,7 @@ export function MessagesPage() {
     return () => {
       client.deactivate()
     }
-  }, [user, isEnabled, activeConv?.id, stableRefresh, setConversations])
+  }, [user, isEnabled])
 
   useEffect(() => {
     if (!activeConv) return
