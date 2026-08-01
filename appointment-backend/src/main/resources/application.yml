@@ -5,8 +5,13 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appointment}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:andrian}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
   jpa:
     hibernate:
@@ -39,7 +44,9 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  # Obligatoire en production : générer avec `openssl rand -base64 64`
+  # Défaut de dev pour que l'app tourne sans variable d'environnement.
+  secret: ${JWT_SECRET:c2VjcmV0LWRldi1rZXktZm9yLWhpbGEtYXBwb2ludG1lbnQtMTIzNDU2Nzg5MGFiY2RlZg==}
   access-token-expiration: 900000       # 15 minutes
   refresh-token-expiration: 604800000   # 7 days
 
@@ -58,7 +65,15 @@ abstractapi:
   email:
     key: ${ABSTRACT_API_EMAIL_KEY:}
 
+app:
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+  seed:
+    enabled: ${APP_SEED_ENABLED:true}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
 logging:
   level:
-    com.app: DEBUG
+    com.app: INFO
     org.springframework.security: INFO
