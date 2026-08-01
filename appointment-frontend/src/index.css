@@ -8,14 +8,32 @@
 
   --color-primary: #0F172A;
   --color-primary-hover: #1e293b;
+  --color-primary-50: #f0f4f8;
+  --color-primary-100: #d9e2ec;
+  --color-primary-200: #bcccdc;
+  --color-primary-300: #9fb3c8;
+  --color-primary-400: #829ab1;
+  --color-primary-500: #627d98;
+  --color-primary-600: #486581;
+  --color-primary-700: #334e68;
+  --color-primary-800: #243b53;
+  --color-primary-900: #102a43;
   --color-accent: #E27022;
   --color-accent-hover: #D35400;
   --color-cta-secondary: #0F172A;
 
   --color-bg-light: #FBFDFF;
+  --color-background: #FBFDFF;
+  --color-surface: #f1f5f9;
+  --color-soft: #f1f5f9;
   --color-border: #E5E7EB;
   --color-text-dark: #0f172a;
+  --color-text: #0f172a;
   --color-text-muted: #64748b;
+  --color-muted: #64748b;
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
 
   --animate-bounce-slow: bounce-slow 3s infinite;
   --animate-fade-in: fade-in 0.4s ease both;
