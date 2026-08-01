@@ -18,6 +18,7 @@ import type {
   ReviewRequest,
   ConversationResponse,
   MessageResponse,
+  FavoriteResponse,
   PageResponse,
 } from "@/types";
 
@@ -37,8 +38,8 @@ export const authApi = {
 export const clientApi = {
   createProfile: (data: ClientRequest) =>
     apiClient.post<ClientResponse>("/clients", data).then((r) => r.data),
-  existsProfile: () => apiClient.get<boolean>("/clients/me/exists").then((r) => r.data),
-  getMe: () => apiClient.get<ClientResponse>("/clients/me").then((r) => r.data),
+  existsProfile: () => apiClient.get<boolean>("/clients/me/exists", { silent: true }).then((r) => r.data),
+  getMe: () => apiClient.get<ClientResponse>("/clients/me", { silent: true }).then((r) => r.data),
   updateProfile: (data: ClientRequest) =>
     apiClient.put<ClientResponse>("/clients/me", data).then((r) => r.data),
   getAll: (page = 0, size = 20) =>
@@ -54,9 +55,9 @@ export const providerApi = {
       .post<ProviderResponse>("/providers", data)
       .then((r) => r.data),
   existsProfile: () =>
-    apiClient.get<boolean>("/providers/me/exists").then((r) => r.data),
+    apiClient.get<boolean>("/providers/me/exists", { silent: true }).then((r) => r.data),
   getMe: () =>
-    apiClient.get<ProviderResponse>("/providers/me").then((r) => r.data),
+    apiClient.get<ProviderResponse>("/providers/me", { silent: true }).then((r) => r.data),
   updateProfile: (data: ProviderRequest) =>
     apiClient
       .put<ProviderResponse>("/providers/me", data)
@@ -66,7 +67,7 @@ export const providerApi = {
       .post<ProviderResponse>("/providers/me/verify")
       .then((r) => r.data),
   getById: (id: string) =>
-    apiClient.get<ProviderResponse>(`/providers/${id}`).then((r) => r.data),
+    apiClient.get<ProviderResponse>(`/providers/${id}`, { silent: true }).then((r) => r.data),
   getAll: (page = 0, size = 20) =>
     apiClient
       .get<
@@ -113,13 +114,27 @@ export const serviceApi = {
       .then((r) => r.data),
   getActiveByProvider: (providerId: string) =>
     apiClient
-      .get<ProviderServiceResponse[]>(`/services/provider/${providerId}`)
+      .get<ProviderServiceResponse[]>(`/services/provider/${providerId}`, { silent: true })
       .then((r) => r.data),
   update: (id: string, data: ProviderServiceRequest) =>
     apiClient
       .put<ProviderServiceResponse>(`/services/${id}`, data)
       .then((r) => r.data),
   deactivate: (id: string) => apiClient.delete(`/services/${id}`),
+};
+
+// ─── Uploads ─────────────────────────────────────────────────────────────────
+export const uploadApi = {
+  uploadImage: (file: File, folder: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", folder);
+    return apiClient
+      .post<{ url: string }>("/uploads", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data.url);
+  },
 };
 
 // ─── Availability ────────────────────────────────────────────────────────────
@@ -132,24 +147,11 @@ export const availabilityApi = {
     apiClient
       .get<AvailabilityResponse[]>(`/availability/provider/${providerId}`)
       .then((r) => r.data),
-  create: (data: {
-    dayOfWeek: string;
-    startTime: string;
-    endTime: string;
-    intervalMinutes: number;
-  }) =>
+  create: (data: { date: string; isActive?: boolean }) =>
     apiClient
       .post<AvailabilityResponse>("/availability", data)
       .then((r) => r.data),
-  update: (
-    id: string,
-    data: {
-      dayOfWeek: string;
-      startTime: string;
-      endTime: string;
-      intervalMinutes: number;
-    },
-  ) =>
+  update: (id: string, data: { date: string; isActive?: boolean }) =>
     apiClient
       .put<AvailabilityResponse>(`/availability/${id}`, data)
       .then((r) => r.data),
@@ -158,10 +160,6 @@ export const availabilityApi = {
 
 // ─── Slots ───────────────────────────────────────────────────────────────────
 export const slotApi = {
-  generate: (startDate: string, endDate: string) =>
-    apiClient
-      .post<SlotResponse[]>("/slots/generate", { startDate, endDate })
-      .then((r) => r.data),
   getByProviderAndDate: (providerId: string, date: string) =>
     apiClient
       .get<SlotResponse[]>(`/slots/provider/${providerId}?date=${date}`)
@@ -248,6 +246,19 @@ export const reviewApi = {
       .then((r) => r.data),
 };
 
+// ─── Favorites ───────────────────────────────────────────────────────────────
+export const favoriteApi = {
+  add: (providerId: string) =>
+    apiClient.post<FavoriteResponse>(`/favorites/${providerId}`).then((r) => r.data),
+  remove: (providerId: string) => apiClient.delete(`/favorites/${providerId}`),
+  getMy: () =>
+    apiClient.get<FavoriteResponse[]>("/favorites/me").then((r) => r.data),
+  isFavorite: (providerId: string) =>
+    apiClient
+      .get<boolean>(`/favorites/${providerId}/status`, { silent: true })
+      .then((r) => r.data),
+};
+
 // ─── Messaging ───────────────────────────────────────────────────────────────
 export const messagingApi = {
   getMyConversations: (page = 0, size = 20) =>
@@ -255,6 +266,14 @@ export const messagingApi = {
       .get<
         PageResponse<ConversationResponse>
       >(`/messages/conversations?page=${page}&size=${size}`)
+      .then((r) => r.data),
+  getConversation: (conversationId: string) =>
+    apiClient
+      .get<ConversationResponse>(`/messages/conversations/${conversationId}`)
+      .then((r) => r.data),
+  getOrCreateConversation: (providerId: string) =>
+    apiClient
+      .post<ConversationResponse>(`/messages/conversations/provider/${providerId}`)
       .then((r) => r.data),
   getMessages: (conversationId: string, page = 0, size = 50) =>
     apiClient

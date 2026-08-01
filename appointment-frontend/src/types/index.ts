@@ -7,6 +7,7 @@ export interface AuthResponse {
   email: string
   role: Role
   profileCompleted?: boolean
+  userId?: string
   accessToken?: string
   refreshToken?: string
   tokenType?: string
@@ -116,6 +117,7 @@ export interface ProviderServiceResponse {
   providerDisplayName?: string
   name: string
   description?: string
+  photoUrl?: string
   durationMinutes: number
   price: number
   depositEnabled: boolean
@@ -126,6 +128,7 @@ export interface ProviderServiceResponse {
 export interface ProviderServiceRequest {
   name: string
   description?: string
+  photoUrl?: string
   durationMinutes: number
   price: number
   depositEnabled: boolean
@@ -139,10 +142,11 @@ export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDA
 export interface AvailabilityResponse {
   id: string
   providerId: string
-  dayOfWeek: DayOfWeek
-  startTime: string
-  endTime: string
-  intervalMinutes: number
+  date: string
+  dayOfWeek?: string | null
+  startTime?: string | null
+  endTime?: string | null
+  intervalMinutes?: number | null
   isActive: boolean
 }
 
@@ -222,6 +226,20 @@ export interface ReviewRequest {
   comment?: string
 }
 
+// ─── Favorites ──────────────────────────────────────────────────────────────
+
+export interface FavoriteResponse {
+  id: string
+  clientId: string
+  providerId: string
+  providerDisplayName: string
+  providerProfileTitle?: string
+  providerProfilePhoto?: string
+  providerCategory?: string
+  providerAverageRating?: number
+  createdAt: string
+}
+
 // ─── Messaging ───────────────────────────────────────────────────────────────
 
 export type SenderType = 'CLIENT' | 'PROVIDER'
@@ -276,4 +294,5 @@ export interface AuthUser {
   email: string
   role: Role
   profileCompleted?: boolean
+  userId?: string
 }

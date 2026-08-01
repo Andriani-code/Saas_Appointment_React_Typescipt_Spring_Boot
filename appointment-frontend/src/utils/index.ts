@@ -36,8 +36,8 @@ export function formatTime(timeStr: string): string {
   return timeStr.substring(0, 5)
 }
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount)
+export function formatCurrency(amount: number, currency = 'MGA'): string {
+  return `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)} Ar`
 }
 
 export function formatDuration(minutes: number): string {

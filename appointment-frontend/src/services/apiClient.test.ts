@@ -43,21 +43,51 @@ describe('apiClient interceptor', () => {
     vi.clearAllMocks()
   })
 
-  it('shows a toast for API errors', async () => {
+  it('shows a toast for server errors (5xx)', async () => {
     vi.mocked(getStoredAuthSession).mockReturnValue(null)
     const rejected = getRejectedInterceptor()
-    const error = new AxiosError('Network error')
+    const error = new AxiosError('Server error')
     error.config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig
     error.response = {
       data: { message: 'Something went wrong' },
-      status: 400,
-      statusText: 'Bad Request',
+      status: 500,
+      statusText: 'Internal Server Error',
       headers: {},
       config: error.config,
     }
 
     await expect(rejected(error)).rejects.toBe(error)
     expect(toast.error).toHaveBeenCalledWith('Something went wrong')
+  })
+
+  it('does not toast for client errors (4xx) that pages handle themselves', async () => {
+    vi.mocked(getStoredAuthSession).mockReturnValue(null)
+    const rejected = getRejectedInterceptor()
+    const error = new AxiosError('Not found')
+    error.config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig
+    error.response = {
+      data: { message: 'Client profile not found' },
+      status: 404,
+      statusText: 'Not Found',
+      headers: {},
+      config: error.config,
+    }
+
+    await expect(rejected(error)).rejects.toBe(error)
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('shows a generic toast when the backend is unreachable', async () => {
+    vi.mocked(getStoredAuthSession).mockReturnValue(null)
+    const rejected = getRejectedInterceptor()
+    const error = new AxiosError('Network Error')
+    error.config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig
+    // no error.response → network failure
+
+    await expect(rejected(error)).rejects.toBe(error)
+    expect(toast.error).toHaveBeenCalledWith(
+      'Le serveur est injoignable. Vérifiez votre connexion.',
+    )
   })
 
   it('refreshes and retries when a 401 response is received', async () => {

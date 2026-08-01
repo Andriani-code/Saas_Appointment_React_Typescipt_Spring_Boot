@@ -17,7 +17,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
   
   return {
     user: session 
-      ? { email: session.email, role: session.role, profileCompleted: session.profileCompleted } as AuthUser 
+      ? { email: session.email, role: session.role, profileCompleted: session.profileCompleted, userId: session.userId } as AuthUser 
       : null,
     isAuthenticated: !!session,
     isLoading: false, // We check localStorage immediately, so it's not loading
@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
     login: (authUser) => {
       storeAuthSession(authUser);
       set({ 
-        user: { email: authUser.email, role: authUser.role, profileCompleted: authUser.profileCompleted } as AuthUser, 
+        user: { email: authUser.email, role: authUser.role, profileCompleted: authUser.profileCompleted, userId: authUser.userId } as AuthUser, 
         isAuthenticated: true 
       });
     },
