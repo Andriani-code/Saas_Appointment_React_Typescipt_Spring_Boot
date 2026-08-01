@@ -53,6 +53,11 @@ export function usePaginatedFetch<T>(
   const [totalElements, setTotalElements] = useState(0)
   const [hasMore, setHasMore] = useState(false)
 
+  // Guards against concurrent fetches so loading never gets stuck
+  const fetchingRef = useRef(false)
+  const pageRef = useRef(0)
+  const hasMoreRef = useRef(false)
+
   // Keep the latest fetchPage in a ref so the effect below doesn't re-run
   // on every render (fetchPage is often defined inline by callers).
   const fetchPageRef = useRef(fetchPage)
@@ -73,6 +78,12 @@ export function usePaginatedFetch<T>(
       return
     }
 
+    // Prevent concurrent non-append (refresh) fetches
+    if (!append && fetchingRef.current) {
+      return
+    }
+    fetchingRef.current = true
+
     setError(null)
     if (append) {
       setLoadingMore(true)
@@ -86,18 +97,20 @@ export function usePaginatedFetch<T>(
         append ? mergePageItems(current, response.content, getItemKey) : response.content,
       )
       setPage(response.page)
+      pageRef.current = response.page
       setTotalPages(response.totalPages)
       setTotalElements(response.totalElements)
       setHasMore(!response.last)
+      hasMoreRef.current = !response.last
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load data')
       if (!append) {
         setItems([])
       }
-      // We don't re-throw here to prevent unhandled promise rejection in useEffect
     } finally {
       setLoading(false)
       setLoadingMore(false)
+      fetchingRef.current = false
     }
   }, [enabled, pageSize])
 
@@ -106,12 +119,12 @@ export function usePaginatedFetch<T>(
   }, [loadPage])
 
   const loadMore = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) {
+    if (fetchingRef.current || !hasMoreRef.current) {
       return
     }
 
-    await loadPage(page + 1, true)
-  }, [hasMore, loadPage, loading, loadingMore, page])
+    await loadPage(pageRef.current + 1, true)
+  }, [loadPage])
 
   const reset = useCallback(() => {
     setItems([])
@@ -119,9 +132,12 @@ export function usePaginatedFetch<T>(
     setLoadingMore(false)
     setError(null)
     setPage(0)
+    pageRef.current = 0
     setTotalPages(0)
     setTotalElements(0)
     setHasMore(false)
+    hasMoreRef.current = false
+    fetchingRef.current = false
   }, [enabled])
 
   useEffect(() => {
