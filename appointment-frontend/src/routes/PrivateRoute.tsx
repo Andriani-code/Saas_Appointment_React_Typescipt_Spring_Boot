@@ -20,9 +20,8 @@ export function PrivateRoute() {
 
   // Profile completion enforcement
   if (user && user.profileCompleted === false) {
-    // If user is already on profile creation page, don't redirect to avoid loop
-    if (location.pathname !== '/profile') {
-      return <Navigate to="/profile" replace />;
+    if (location.pathname !== '/settings') {
+      return <Navigate to="/settings" replace />;
     }
   }
 
