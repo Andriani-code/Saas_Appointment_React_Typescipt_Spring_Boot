@@ -4,7 +4,7 @@ import type { ProviderResponse } from '@/types';
 interface BookingState {
   selectedProvider: ProviderResponse | null;
   selectedDate: string | null; // format: YYYY-MM-DD
-  selectedSlot: string | null; // format: HH:mm
+  selectedSlot: string | null; // SlotResponse.id (UUID)
   setProvider: (provider: ProviderResponse | null) => void;
   setDate: (date: string | null) => void;
   setSlot: (slot: string | null) => void;
