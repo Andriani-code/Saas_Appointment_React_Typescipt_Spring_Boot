@@ -104,6 +104,19 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse getByReservationId(String reservationId) {
         Payment payment = paymentRepository.findByReservationId(UUID.fromString(reservationId))
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for reservation: " + reservationId));
+
+        String email = SecurityUtils.getCurrentUserEmail();
+        var reservation = payment.getReservation();
+        boolean isClient = reservation.getClient() != null
+                && reservation.getClient().getUser() != null
+                && reservation.getClient().getUser().getEmail().equals(email);
+        boolean isProvider = reservation.getProvider() != null
+                && reservation.getProvider().getUser() != null
+                && reservation.getProvider().getUser().getEmail().equals(email);
+        if (!isClient && !isProvider) {
+            throw new UnauthorizedException("This payment does not belong to you");
+        }
+
         return toResponse(payment);
     }
 

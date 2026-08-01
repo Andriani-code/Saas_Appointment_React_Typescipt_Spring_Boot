@@ -92,6 +92,37 @@ public class MessagingServiceImpl implements MessagingService {
     }
 
     @Override
+    @Transactional
+    public ConversationResponse getOrCreateConversation(String providerId) {
+        String email = SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        var clientOpt = clientRepository.findByUserEmail(email);
+        if (clientOpt.isEmpty()) {
+            throw new UnauthorizedException("Only clients can start a conversation with a provider");
+        }
+
+        Provider provider = providerRepository.findById(UUID.fromString(providerId))
+                .orElseThrow(() -> new ResourceNotFoundException("Provider", "id", providerId));
+
+        Conversation conversation = conversationRepository.findByClientIdAndProviderId(clientOpt.get().getId(), provider.getId())
+                .orElseGet(() -> conversationRepository.save(
+                        Conversation.builder()
+                                .client(clientOpt.get())
+                                .provider(provider)
+                                .isActive(true)
+                                .build()
+                ));
+
+        ConversationResponse resp = conversationMapper.toResponse(conversation);
+        long unread = messageRepository
+                .countByConversationIdAndIsReadFalseAndSenderUserIdNot(conversation.getId(), user.getId());
+        resp.setUnreadCount(unread);
+        return resp;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PageResponse<ConversationResponse> getMyConversations(Pageable pageable) {
         Pageable cappedPageable = capPageSize(pageable);

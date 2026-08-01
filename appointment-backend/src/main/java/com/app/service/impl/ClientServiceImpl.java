@@ -13,6 +13,7 @@ import com.app.mapper.ClientMapper;
 import com.app.repository.ClientRepository;
 import com.app.repository.UserRepository;
 import com.app.service.ClientService;
+import com.app.service.FileStorageService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class ClientServiceImpl implements ClientService {
     private final UserRepository userRepository;
     private final ClientMapper clientMapper;
     private final AddressMapper addressMapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -47,6 +49,7 @@ public class ClientServiceImpl implements ClientService {
 
         if (request.getAddress() != null) {
             Address address = addressMapper.toEntity(request.getAddress());
+            address.setUser(user);
             client.setAddress(address);
         }
 
@@ -84,13 +87,20 @@ public class ClientServiceImpl implements ClientService {
         Client client = clientRepository.findByUserEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Client profile not found"));
 
+        String oldProfilePhoto = client.getProfilePhoto();
         clientMapper.updateEntityFromRequest(request, client);
+
+        if (oldProfilePhoto != null && !oldProfilePhoto.equals(request.getProfilePhoto())) {
+            fileStorageService.delete(oldProfilePhoto);
+        }
 
         if (request.getAddress() != null) {
             if (client.getAddress() != null) {
                 addressMapper.updateEntityFromRequest(request.getAddress(), client.getAddress());
             } else {
-                client.setAddress(addressMapper.toEntity(request.getAddress()));
+                Address address = addressMapper.toEntity(request.getAddress());
+                address.setUser(client.getUser());
+                client.setAddress(address);
             }
         }
 

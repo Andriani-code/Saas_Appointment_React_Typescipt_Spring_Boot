@@ -52,7 +52,7 @@ public class SlotServiceImpl implements SlotService {
         Provider provider = getAuthenticatedProvider();
         
         // Ensure date is active for this provider
-        availabilityRepository.findByProviderIdAndDate(provider.getId(), request.getDate())
+        Availability availability = availabilityRepository.findByProviderIdAndDate(provider.getId(), request.getDate())
                 .orElseThrow(() -> new BadRequestException("Date " + request.getDate() + " must be activated first in availability"));
 
         // Check for overlap or identical start time
@@ -62,6 +62,7 @@ public class SlotServiceImpl implements SlotService {
 
         AvailableSlot slot = AvailableSlot.builder()
                 .provider(provider)
+                .availability(availability)
                 .date(request.getDate())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())

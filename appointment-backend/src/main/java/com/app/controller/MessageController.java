@@ -44,6 +44,13 @@ public class MessageController {
         return ResponseEntity.ok(messagingService.getConversation(conversationId));
     }
 
+    @PostMapping("/conversations/provider/{providerId}")
+    @Operation(summary = "Create or get the conversation for a provider")
+    public ResponseEntity<ConversationResponse> getOrCreateConversation(@PathVariable String providerId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(messagingService.getOrCreateConversation(providerId));
+    }
+
     @PostMapping("/conversations/{conversationId}")
     @Operation(summary = "Send a message to a conversation (REST fallback)")
     public ResponseEntity<MessageResponse> sendMessage(

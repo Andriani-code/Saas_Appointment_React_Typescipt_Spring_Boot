@@ -27,7 +27,7 @@ public class AddressController {
     private final AddressService addressService;
 
     @PostMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENT','PROVIDER','ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Créer une adresse")
     public ResponseEntity<AddressResponse> create(Principal principal, @Valid @RequestBody AddressRequest request) {
@@ -36,7 +36,7 @@ public class AddressController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENT','PROVIDER','ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Récupérer les adresses d'un utilisateur")
     public ResponseEntity<List<AddressResponse>> getByUser(@PathVariable String userId) {
@@ -44,7 +44,7 @@ public class AddressController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENT','PROVIDER','ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Mettre à jour une adresse")
     public ResponseEntity<AddressResponse> update(Principal principal, @PathVariable String id, @Valid @RequestBody AddressRequest request) {

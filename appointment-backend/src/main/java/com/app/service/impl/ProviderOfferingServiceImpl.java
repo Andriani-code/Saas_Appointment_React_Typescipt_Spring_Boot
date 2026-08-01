@@ -10,6 +10,7 @@ import com.app.exception.ResourceNotFoundException;
 import com.app.mapper.ProviderServiceMapper;
 import com.app.repository.ProviderRepository;
 import com.app.repository.ProviderServiceRepository;
+import com.app.service.FileStorageService;
 import com.app.service.ProviderOfferingService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
     private final ProviderServiceRepository serviceRepository;
     private final ProviderRepository providerRepository;
     private final ProviderServiceMapper serviceMapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -79,7 +81,11 @@ public class ProviderOfferingServiceImpl implements ProviderOfferingService {
                 .findByIdAndProviderId(UUID.fromString(id), provider.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
 
+        String oldPhoto = service.getPhotoUrl();
         serviceMapper.updateEntityFromRequest(request, service);
+        if (oldPhoto != null && !oldPhoto.equals(request.getPhotoUrl())) {
+            fileStorageService.delete(oldPhoto);
+        }
         return serviceMapper.toResponse(serviceRepository.save(service));
     }
 

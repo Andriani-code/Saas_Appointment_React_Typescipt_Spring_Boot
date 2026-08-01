@@ -9,11 +9,13 @@ import com.app.entity.User;
 import com.app.entity.enums.VerificationStatus;
 import com.app.exception.BadRequestException;
 import com.app.exception.ResourceNotFoundException;
+import com.app.exception.UnauthorizedException;
 import com.app.mapper.AddressMapper;
 import com.app.mapper.ProviderMapper;
 import com.app.repository.ReviewRepository;
 import com.app.repository.ProviderRepository;
 import com.app.repository.UserRepository;
+import com.app.service.FileStorageService;
 import com.app.service.ProviderService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class ProviderServiceImpl implements ProviderService {
     private final ReviewRepository reviewRepository;
     private final ProviderMapper providerMapper;
     private final AddressMapper addressMapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -50,10 +53,14 @@ public class ProviderServiceImpl implements ProviderService {
         provider.setUser(user);
 
         if (request.getPersonalAddress() != null) {
-            provider.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
+            Address address = addressMapper.toEntity(request.getPersonalAddress());
+            address.setUser(user);
+            provider.setPersonalAddress(address);
         }
         if (request.getServiceAddress() != null) {
-            provider.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
+            Address address = addressMapper.toEntity(request.getServiceAddress());
+            address.setUser(user);
+            provider.setServiceAddress(address);
         }
 
         return enrichWithRating(providerMapper.toResponse(providerRepository.save(provider)));
@@ -80,6 +87,24 @@ public class ProviderServiceImpl implements ProviderService {
     public ProviderResponse getById(String id) {
         Provider provider = providerRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Provider", "id", id));
+
+        // Public profile: only expose active + verified providers, unless the caller
+        // is the owner or an admin (consistent with getAll()).
+        boolean isOwnerOrAdmin = SecurityUtils.hasRole("ADMIN");
+        if (!isOwnerOrAdmin) {
+            try {
+                String email = SecurityUtils.getCurrentUserEmail();
+                isOwnerOrAdmin = provider.getUser().getEmail().equals(email);
+            } catch (UnauthorizedException ignored) {
+                // Anonymous caller: not the owner
+            }
+        }
+        if (!Boolean.TRUE.equals(provider.getIsActive()) || !Boolean.TRUE.equals(provider.getIsVerified())) {
+            if (!isOwnerOrAdmin) {
+                throw new ResourceNotFoundException("Provider", "id", id);
+            }
+        }
+
         return enrichWithRating(providerMapper.toResponse(provider));
     }
 
@@ -90,20 +115,34 @@ public class ProviderServiceImpl implements ProviderService {
         Provider provider = providerRepository.findByUserEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
+        String oldProfilePhoto = provider.getProfilePhoto();
+        String oldCoverPhoto = provider.getCoverPhoto();
+
         providerMapper.updateEntityFromRequest(request, provider);
+
+        if (oldProfilePhoto != null && !oldProfilePhoto.equals(request.getProfilePhoto())) {
+            fileStorageService.delete(oldProfilePhoto);
+        }
+        if (oldCoverPhoto != null && !oldCoverPhoto.equals(request.getCoverPhoto())) {
+            fileStorageService.delete(oldCoverPhoto);
+        }
 
         if (request.getPersonalAddress() != null) {
             if (provider.getPersonalAddress() != null) {
                 addressMapper.updateEntityFromRequest(request.getPersonalAddress(), provider.getPersonalAddress());
             } else {
-                provider.setPersonalAddress(addressMapper.toEntity(request.getPersonalAddress()));
+                Address address = addressMapper.toEntity(request.getPersonalAddress());
+                address.setUser(provider.getUser());
+                provider.setPersonalAddress(address);
             }
         }
         if (request.getServiceAddress() != null) {
             if (provider.getServiceAddress() != null) {
                 addressMapper.updateEntityFromRequest(request.getServiceAddress(), provider.getServiceAddress());
             } else {
-                provider.setServiceAddress(addressMapper.toEntity(request.getServiceAddress()));
+                Address address = addressMapper.toEntity(request.getServiceAddress());
+                address.setUser(provider.getUser());
+                provider.setServiceAddress(address);
             }
         }
 

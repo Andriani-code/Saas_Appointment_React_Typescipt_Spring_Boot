@@ -123,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private AuthResponse buildAuthResponse(String accessToken, String refreshToken, User user) {
-        AuthResponse response = AuthResponse.of(accessToken, refreshToken, user.getEmail(), user.getRole().name());
+        AuthResponse response = AuthResponse.of(accessToken, refreshToken, user.getEmail(), user.getRole().name(), user.getId().toString());
         response.setProfileCompleted(isProfileCompleted(user));
         return response;
     }
