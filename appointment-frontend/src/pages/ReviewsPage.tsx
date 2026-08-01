@@ -243,7 +243,7 @@ export function ReviewsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background rounded-[32px] w-full max-w-md p-8 animate-slide-up shadow-2xl">
+          <div className="bg-background rounded-[12px] w-full max-w-md p-8 animate-slide-up shadow-2xl">
             <h2 className="text-2xl font-display font-black text-text mb-2">
               Laisser un avis
             </h2>
