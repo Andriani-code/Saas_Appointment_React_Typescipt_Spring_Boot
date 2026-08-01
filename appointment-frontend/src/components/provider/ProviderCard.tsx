@@ -92,7 +92,7 @@ export function ProviderCard({ provider, services = [], distance, delay = 0 }: P
         </div>
       ) : (
         <div className="border-t border-border/50 pt-3">
-           <p className="text-[10px] text-muted italic">Aucun service configuré pour le moment</p>
+           <p className="text-[10px] text-muted">Aucun service configuré pour le moment</p>
         </div>
       )}
 
