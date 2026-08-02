@@ -275,6 +275,10 @@ export const messagingApi = {
     apiClient
       .post<ConversationResponse>(`/messages/conversations/provider/${providerId}`)
       .then((r) => r.data),
+  getOrCreateConversationForReservation: (reservationId: string) =>
+    apiClient
+      .post<ConversationResponse>(`/messages/conversations/reservation/${reservationId}`)
+      .then((r) => r.data),
   getMessages: (conversationId: string, page = 0, size = 50) =>
     apiClient
       .get<
