@@ -12,5 +12,6 @@ public interface MessagingService {
     PageResponse<ConversationResponse> getMyConversations(Pageable pageable);
     ConversationResponse getConversation(String conversationId);
     ConversationResponse getOrCreateConversation(String providerId);
+    ConversationResponse getOrCreateConversationForReservation(String reservationId);
     void markAsRead(String conversationId);
 }

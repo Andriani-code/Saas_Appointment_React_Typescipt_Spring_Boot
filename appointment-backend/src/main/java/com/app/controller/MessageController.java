@@ -51,6 +51,13 @@ public class MessageController {
                 .body(messagingService.getOrCreateConversation(providerId));
     }
 
+    @PostMapping("/conversations/reservation/{reservationId}")
+    @Operation(summary = "Create or get the conversation linked to a reservation")
+    public ResponseEntity<ConversationResponse> getOrCreateConversationForReservation(@PathVariable String reservationId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(messagingService.getOrCreateConversationForReservation(reservationId));
+    }
+
     @PostMapping("/conversations/{conversationId}")
     @Operation(summary = "Send a message to a conversation (REST fallback)")
     public ResponseEntity<MessageResponse> sendMessage(

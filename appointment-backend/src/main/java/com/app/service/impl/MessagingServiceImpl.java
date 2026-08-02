@@ -33,6 +33,7 @@ public class MessagingServiceImpl implements MessagingService {
     private final ConversationRepository conversationRepository;
     private final ClientRepository clientRepository;
     private final ProviderRepository providerRepository;
+    private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
     private final ConversationMapper conversationMapper;
@@ -128,6 +129,42 @@ public class MessagingServiceImpl implements MessagingService {
                         Conversation.builder()
                                 .client(clientOpt.get())
                                 .provider(provider)
+                                .isActive(true)
+                                .build()
+                ));
+
+        ConversationResponse resp = conversationMapper.toResponse(conversation);
+        long unread = messageRepository
+                .countByConversationIdAndIsReadFalseAndSenderUserIdNot(conversation.getId(), user.getId());
+        resp.setUnreadCount(unread);
+        return resp;
+    }
+
+    @Override
+    @Transactional
+    public ConversationResponse getOrCreateConversationForReservation(String reservationId) {
+        String email = SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        Reservation reservation = reservationRepository.findById(UUID.fromString(reservationId))
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", reservationId));
+
+        boolean isClient = reservation.getClient().getUser().getId().equals(user.getId());
+        boolean isProvider = reservation.getProvider().getUser().getId().equals(user.getId());
+        if (!isClient && !isProvider) {
+            throw new UnauthorizedException("You are not a participant of this reservation");
+        }
+
+        Client client = reservation.getClient();
+        Provider provider = reservation.getProvider();
+
+        Conversation conversation = conversationRepository.findByClientIdAndProviderId(client.getId(), provider.getId())
+                .orElseGet(() -> conversationRepository.save(
+                        Conversation.builder()
+                                .client(client)
+                                .provider(provider)
+                                .reservation(reservation)
                                 .isActive(true)
                                 .build()
                 ));
