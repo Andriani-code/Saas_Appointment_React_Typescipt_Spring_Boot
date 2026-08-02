@@ -77,7 +77,7 @@ export function LandingPage() {
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <img
-                src="/logo/logo_for_bg_light.png"
+                src="/logo/logo_for_bg_dark.png"
                 alt="HILA"
                 className="w-9 h-9 rounded-xl object-contain"
               />
@@ -299,7 +299,7 @@ export function LandingPage() {
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
               <img
-                src="/logo/logo_for_bg_light.png"
+                src="/logo/logo_for_bg_dark.png"
                 alt="HILA"
                 className="w-7 h-7 rounded-lg object-contain"
               />

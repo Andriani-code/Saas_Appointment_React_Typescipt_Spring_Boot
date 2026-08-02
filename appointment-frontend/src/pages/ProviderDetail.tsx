@@ -11,6 +11,7 @@ import { useBookingStore } from '@/store/bookingStore'
 import { Avatar, StarRating, StatusBadge, Spinner, EmptyState } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { ServiceCard } from '@/components/provider/ServiceCard'
+import { LocationMap } from '@/components/provider/LocationMap'
 import { formatCurrency, formatTime, formatDuration, getErrorMessage } from '@/utils'
 import type {
   ProviderResponse, ProviderServiceResponse,
@@ -440,6 +441,14 @@ export function ProviderDetail() {
             <div className="card p-6">
                <h3 className="text-sm font-bold text-text uppercase tracking-widest mb-3">À propos du prestataire</h3>
                <p className="text-sm text-muted leading-relaxed">{localProvider.bio}</p>
+            </div>
+          )}
+
+          {/* Service location */}
+          {localProvider.serviceAddress && (
+            <div className="card p-6">
+               <h3 className="text-sm font-bold text-text uppercase tracking-widest mb-3">Localisation du service</h3>
+               <LocationMap address={localProvider.serviceAddress} />
             </div>
           )}
 

@@ -1,0 +1,80 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.app:appointment-backend >---------------------
+[INFO] Building appointment-backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.5:run (default-cli) > test-compile @ appointment-backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ appointment-backend ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 12 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ appointment-backend ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ appointment-backend ---
+[INFO] skip non existing resourceDirectory /app/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ appointment-backend ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< spring-boot:3.2.5:run (default-cli) < test-compile @ appointment-backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.5:run (default-cli) @ appointment-backend ---
+[INFO] Attaching agents: []
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2026-08-01T20:36:14.590Z  INFO 155 --- [appointment-backend] [           main] com.app.AppointmentApplication           : Starting AppointmentApplication using Java 21.0.11 with PID 155 (/app/target/classes started by root in /app)
+2026-08-01T20:36:14.600Z  INFO 155 --- [appointment-backend] [           main] com.app.AppointmentApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-08-01T20:36:33.016Z  INFO 155 --- [appointment-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-01T20:36:36.366Z  INFO 155 --- [appointment-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3236 ms. Found 14 JPA repository interfaces.
+2026-08-01T20:36:49.456Z  INFO 155 --- [appointment-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-01T20:36:50.091Z  INFO 155 --- [appointment-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-01T20:36:50.091Z  INFO 155 --- [appointment-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-08-01T20:36:51.448Z  INFO 155 --- [appointment-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-01T20:36:51.450Z  INFO 155 --- [appointment-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 36025 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-08-01T20:36:57.557Z  INFO 155 --- [appointment-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-01T20:36:59.179Z  INFO 155 --- [appointment-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@43588265
+2026-08-01T20:36:59.202Z  INFO 155 --- [appointment-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-01T20:36:59.513Z  INFO 155 --- [appointment-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://postgres:5432/appointment (PostgreSQL 18.4)
+2026-08-01T20:36:59.623Z  WARN 155 --- [appointment-backend] [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: PostgreSQL 18.4 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 16.
+2026-08-01T20:37:02.878Z  INFO 155 --- [appointment-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 12 migrations (execution time 00:03.025s)
+2026-08-01T20:37:02.989Z  INFO 155 --- [appointment-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 12
+2026-08-01T20:37:03.020Z  INFO 155 --- [appointment-backend] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-08-01T20:37:04.218Z  INFO 155 --- [appointment-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-01T20:37:05.059Z  INFO 155 --- [appointment-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-01T20:37:05.454Z  INFO 155 --- [appointment-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-01T20:37:09.193Z  INFO 155 --- [appointment-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-01T20:37:09.874Z  WARN 155 --- [appointment-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-01T20:37:23.996Z  INFO 155 --- [appointment-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-01T20:37:25.108Z  INFO 155 --- [appointment-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-01T20:37:31.328Z  INFO 155 --- [appointment-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-01T20:37:43.707Z  WARN 155 --- [appointment-backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-01T20:37:47.046Z  INFO 155 --- [appointment-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5ddc735b, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2fdc88b4, org.springframework.security.web.context.SecurityContextHolderFilter@6f2d77e9, org.springframework.security.web.header.HeaderWriterFilter@1e33dda, org.springframework.web.filter.CorsFilter@4358797d, org.springframework.security.web.authentication.logout.LogoutFilter@4ea0ec5e, com.app.security.JwtAuthenticationFilter@7a3c541e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@23ea17e, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@67e9d8cb, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4cb7b531, org.springframework.security.web.session.SessionManagementFilter@6e74628f, org.springframework.security.web.access.ExceptionTranslationFilter@7803a877, org.springframework.security.web.access.intercept.AuthorizationFilter@53e432d6]
+2026-08-01T20:37:49.470Z  INFO 155 --- [appointment-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-08-01T20:37:49.483Z  INFO 155 --- [appointment-backend] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-08-01T20:37:49.487Z  INFO 155 --- [appointment-backend] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@24d815da]]
+2026-08-01T20:37:49.488Z  INFO 155 --- [appointment-backend] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-08-01T20:37:49.543Z  INFO 155 --- [appointment-backend] [           main] com.app.AppointmentApplication           : Started AppointmentApplication in 99.053 seconds (process running for 110.214)
+2026-08-01T20:37:50.207Z  INFO 155 --- [appointment-backend] [           main] com.app.config.DataSeeder                : Providers already exist, skipping data seeding
+2026-08-01T20:37:59.392Z  INFO 155 --- [appointment-backend] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-01T20:37:59.392Z  INFO 155 --- [appointment-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-01T20:37:59.398Z  INFO 155 --- [appointment-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 6 ms
+2026-08-01T20:38:12.531Z  INFO 155 --- [appointment-backend] [nio-8080-exec-1] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 12783 ms
+2026-08-01T20:38:52.173Z  INFO 155 --- [appointment-backend] [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 1, completed tasks = 0]
+2026-08-01T20:49:59.506Z  INFO 155 --- [appointment-backend] [nio-8080-exec-3] o.apache.tomcat.util.http.parser.Cookie  : A cookie header was received [g_state={"i_l":0,"i_ll":1783925066003,"i_e":{"enable_itp_optimization":24},"i_et":1783925066003,"i_b":"PYt0KLj45Zq9y6ghryak1jnBGVOx5TyvMblLkm63toA"}] that contained an invalid cookie. That cookie will be ignored.
+ Note: further occurrences of this error will be logged at DEBUG level.
+2026-08-01T20:50:43.365Z  INFO 155 --- [appointment-backend] [nio-8080-exec-1] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 35740 ms
+2026-08-01T21:00:09.576Z  INFO 155 --- [appointment-backend] [MessageBroker-2] c.a.s.AppointmentReminderScheduler       : Checking for appointments to send reminders (24h before)

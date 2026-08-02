@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -49,10 +50,6 @@ public class DataSeeder implements ApplicationRunner {
             log.info("Data seeding is disabled (app.seed.enabled=false)");
             return;
         }
-        if (providerRepository.count() > 0) {
-            log.info("Providers already exist, skipping data seeding");
-            return;
-        }
 
         log.info("Starting data seeding...");
         List<Client> clients = seedClients();
@@ -61,8 +58,15 @@ public class DataSeeder implements ApplicationRunner {
             seedServices(provider);
             seedAvailabilityAndSlots(provider);
         }
-        seedReservations(clients, providers);
-        seedFavorites(clients, providers);
+
+        // Demo reservations & favorites are only created on a fresh database
+        // (i.e. when the seed clients were also created), to avoid duplicating
+        // them on incremental re-runs of this seeder.
+        if (!clients.isEmpty() && !providers.isEmpty()) {
+            seedReservations(clients, providers);
+            seedFavorites(clients, providers);
+        }
+
         log.info("Data seeding completed. Demo password for all seeded users: {}", SEED_PASSWORD);
     }
 
@@ -70,6 +74,10 @@ public class DataSeeder implements ApplicationRunner {
 
     private List<Client> seedClients() {
         List<Client> clients = new ArrayList<>();
+        if (userRepository.existsByEmail("client1@appointment.app")) {
+            log.info("Seed clients already exist, skipping");
+            return clients;
+        }
         clients.add(seedClient("client1@appointment.app", "Alice", "Durand", "0601010101",
                 "https://i.pravatar.cc/150?img=1",
                 address("France", "Île-de-France", "Paris", "11e arrondissement", "12 Rue Oberkampf",
@@ -209,6 +217,81 @@ public class DataSeeder implements ApplicationRunner {
                 address("France", "Île-de-France", "Paris", "20e arrondissement", "18 Rue de Belleville",
                         new BigDecimal("48.872000"), new BigDecimal("2.386000"))));
 
+        // ─── Prestataires de Fianarantsoa, Madagascar (prix en Ariary) ─────────
+
+        providers.add(seedProvider(
+                "tanjona.ram@appointment.app", "Tanjona", "Ramanantsoa", "261320101011",
+                "Tanjona Ramanantsoa", "Coiffeuse professionnelle",
+                "Salon de coiffure & tresses Tanjona Beauty — coupes modernes et tresses traditionnelles malgaches.",
+                "https://i.pravatar.cc/150?img=47",
+                "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80&auto=format&fit=crop",
+                "Coiffure",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Tsaramandroso", "Lot II A 12, Avenue de l'Indépendance",
+                        new BigDecimal("-21.452500"), new BigDecimal("47.084000")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Tsaramandroso", "Lot II A 12, Avenue de l'Indépendance",
+                        new BigDecimal("-21.452500"), new BigDecimal("47.084000"))));
+
+        providers.add(seedProvider(
+                "hery.randri@appointment.app", "Hery", "Randrianarisoa", "261320101012",
+                "Hery Randrianarisoa", "Barbier expert",
+                "Hery's Barbershop — coupes classiques et modernes au cœur de Fianarantsoa.",
+                "https://i.pravatar.cc/150?img=12",
+                "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80&auto=format&fit=crop",
+                "Barbier",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Andrainjato", "Rue du Rova, Quartier Andrainjato",
+                        new BigDecimal("-21.453000"), new BigDecimal("47.086000")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Andrainjato", "Rue du Rova, Quartier Andrainjato",
+                        new BigDecimal("-21.453000"), new BigDecimal("47.086000"))));
+
+        providers.add(seedProvider(
+                "miora.raso@appointment.app", "Miora", "Rasoamalala", "261320101013",
+                "Miora Rasoamalala", "Esthéticienne",
+                "Miora Beauté — soins du visage, épilation et maquillage événementiel à Fianarantsoa.",
+                "https://i.pravatar.cc/150?img=25",
+                "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80&auto=format&fit=crop",
+                "Esthétique",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Mahatsinjony", "Lot 45, Mahatsinjony",
+                        new BigDecimal("-21.451000"), new BigDecimal("47.085500")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Mahatsinjony", "Lot 45, Mahatsinjony",
+                        new BigDecimal("-21.451000"), new BigDecimal("47.085500"))));
+
+        providers.add(seedProvider(
+                "volana.rako@appointment.app", "Volana", "Rakotozafy", "261320101014",
+                "Volana Rakotozafy", "Masseuse bien-être",
+                "Volana Spa — massages relaxants aux huiles naturelles locales pour un bien-être complet.",
+                "https://i.pravatar.cc/150?img=16",
+                "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=1200&q=80&auto=format&fit=crop",
+                "Bien-être",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Anjoma", "RN7, Quartier Anjoma",
+                        new BigDecimal("-21.454500"), new BigDecimal("47.088000")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Anjoma", "RN7, Quartier Anjoma",
+                        new BigDecimal("-21.454500"), new BigDecimal("47.088000"))));
+
+        providers.add(seedProvider(
+                "nambinina.andri@appointment.app", "Nambinina", "Andrianjafy", "261320101015",
+                "Nambinina Andrianjafy", "Photographe portrait",
+                "Nambinina Photographie — portraits, événements et mariages à Fianarantsoa et alentours.",
+                "https://i.pravatar.cc/150?img=32",
+                "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80&auto=format&fit=crop",
+                "Photographie",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Ambalakely", "Lot 3, Ambalakely",
+                        new BigDecimal("-21.449000"), new BigDecimal("47.087500")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Ambalakely", "Lot 3, Ambalakely",
+                        new BigDecimal("-21.449000"), new BigDecimal("47.087500"))));
+
+        providers.add(seedProvider(
+                "rija.randri@appointment.app", "Dr Rija", "Randriamanantena", "261320101016",
+                "Dr Rija Randriamanantena", "Chirurgien-dentiste",
+                "Cabinet dentaire Fianar — soins dentaires modernes dans un cadre chaleureux.",
+                "https://i.pravatar.cc/150?img=53",
+                "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=1200&q=80&auto=format&fit=crop",
+                "Santé",
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Antanambao", "Rue de la Gare, Antanambao",
+                        new BigDecimal("-21.455000"), new BigDecimal("47.083000")),
+                address("Madagascar", "Haute Matsiatra", "Fianarantsoa", "Antanambao", "Rue de la Gare, Antanambao",
+                        new BigDecimal("-21.455000"), new BigDecimal("47.083000"))));
+
+        providers.removeIf(Objects::isNull);
         return providers;
     }
 
@@ -216,6 +299,10 @@ public class DataSeeder implements ApplicationRunner {
                                   String displayName, String profileTitle, String bio,
                                   String profilePhoto, String coverPhoto, String category,
                                   Address personalAddress, Address serviceAddress) {
+        if (userRepository.existsByEmail(email)) {
+            log.info("Provider {} already exists, skipping", email);
+            return null;
+        }
         User user = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(SEED_PASSWORD))
@@ -249,6 +336,14 @@ public class DataSeeder implements ApplicationRunner {
     // ─── Services ──────────────────────────────────────────────────────────────
 
     private void seedServices(Provider provider) {
+        boolean isMadagascar = provider.getServiceAddress() != null
+                && "Madagascar".equalsIgnoreCase(provider.getServiceAddress().getCountry());
+
+        if (isMadagascar) {
+            seedServicesMadagascar(provider);
+            return;
+        }
+
         switch (provider.getCategory()) {
             case "Coiffure" -> {
                 seedService(provider, "Coupe femme", 45, "35.00", "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80&auto=format&fit=crop", "Coupe et coiffage personnalisés pour révéler votre style.");
@@ -289,6 +384,42 @@ public class DataSeeder implements ApplicationRunner {
                 seedService(provider, "Séance portrait", 60, "80.00", "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80&auto=format&fit=crop", "Séance portrait individuelle en studio ou extérieur.");
                 seedService(provider, "Séance couple / famille", 90, "120.00", "https://images.unsplash.com/photo-1493863641943-9b68992a8d07?w=600&q=80&auto=format&fit=crop", "Séance photo couple ou famille avec retouches.");
                 seedService(provider, "Shooting professionnel", 120, "180.00", "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&q=80&auto=format&fit=crop", "Shooting pour professionnels et marques.");
+            }
+            default -> { }
+        }
+    }
+
+    private void seedServicesMadagascar(Provider provider) {
+        switch (provider.getCategory()) {
+            case "Coiffure" -> {
+                seedService(provider, "Coupe femme", 45, "15000", "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80&auto=format&fit=crop", "Coupe et coiffage personnalisés pour révéler votre style.");
+                seedService(provider, "Tresses traditionnelles", 120, "25000", "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=600&q=80&auto=format&fit=crop", "Tresses malgaches réalisées avec soin et précision.");
+                seedService(provider, "Coloration", 90, "35000", "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&q=80&auto=format&fit=crop", "Coloration complète avec produits de qualité salon.");
+            }
+            case "Barbier" -> {
+                seedService(provider, "Coupe homme", 30, "10000", "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&q=80&auto=format&fit=crop", "Coupe moderne adaptée à votre morphologie.");
+                seedService(provider, "Coupe + barbe", 45, "15000", "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&q=80&auto=format&fit=crop", "Coupe et taille de barbe au rasoir.");
+                seedService(provider, "Rasage traditionnel", 30, "8000", "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&q=80&auto=format&fit=crop", "Rasage à l'ancienne avec serviette chaude.");
+            }
+            case "Esthétique" -> {
+                seedService(provider, "Soin du visage", 60, "30000", "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80&auto=format&fit=crop", "Soin complet du visage pour une peau éclatante.");
+                seedService(provider, "Épilation", 30, "15000", "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80&auto=format&fit=crop", "Épilation à la cire douce pour une peau lisse.");
+                seedService(provider, "Maquillage événementiel", 45, "25000", "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80&auto=format&fit=crop", "Maquillage professionnel pour vos événements.");
+            }
+            case "Bien-être" -> {
+                seedService(provider, "Massage relaxant", 60, "25000", "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=600&q=80&auto=format&fit=crop", "Massage relaxant aux huiles essentielles.");
+                seedService(provider, "Massage profond", 60, "35000", "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=80&auto=format&fit=crop", "Massage des tissus profonds pour les tensions musculaires.");
+                seedService(provider, "Réflexologie plantaire", 45, "20000", "https://images.unsplash.com/photo-1552693673-1bf958298935?w=600&q=80&auto=format&fit=crop", "Réflexologie plantaire pour un bien-être global.");
+            }
+            case "Santé" -> {
+                seedService(provider, "Consultation dentaire", 30, "20000", "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&q=80&auto=format&fit=crop", "Examen complet et conseils personnalisés.");
+                seedService(provider, "Détartrage", 45, "30000", "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=600&q=80&auto=format&fit=crop", "Détartrage et polissage des dents.");
+                seedService(provider, "Blanchiment dentaire", 60, "80000", "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=600&q=80&auto=format&fit=crop", "Blanchiment des dents en cabinet.");
+            }
+            case "Photographie" -> {
+                seedService(provider, "Séance portrait", 60, "40000", "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&q=80&auto=format&fit=crop", "Séance portrait individuelle en studio ou extérieur.");
+                seedService(provider, "Séance couple / famille", 90, "60000", "https://images.unsplash.com/photo-1493863641943-9b68992a8d07?w=600&q=80&auto=format&fit=crop", "Séance photo couple ou famille avec retouches.");
+                seedService(provider, "Shooting professionnel", 120, "100000", "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&q=80&auto=format&fit=crop", "Shooting pour professionnels et marques.");
             }
             default -> { }
         }

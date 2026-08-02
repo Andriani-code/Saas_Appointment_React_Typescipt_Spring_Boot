@@ -216,12 +216,12 @@ export function RegisterPage() {
         </Link>
       }
       leftPanel={
-        <div className="bg-gradient-to-br from-primary via-primary to-primary/90 h-full relative overflow-hidden flex flex-col justify-between p-8 xl:p-12">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-background/5" />
-          <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-background/8" />
+        <div className="bg-surface h-full relative overflow-hidden flex flex-col justify-between p-8 xl:p-12">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
+          <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/8" />
 
           <div className="relative z-10 space-y-6">
-            <span className="inline-flex items-center gap-1.5 bg-background/10 text-text/90 px-3 py-1 rounded-full text-xs font-semibold w-fit">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 text-text/90 px-3 py-1 rounded-full text-xs font-semibold w-fit">
               <Sparkles size={13} />
               Inscription en 3 étapes
             </span>
@@ -243,11 +243,11 @@ export function RegisterPage() {
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-4 py-3 transition-colors",
                     index <= stepIndex
-                      ? "bg-background/15 text-text"
-                      : "bg-background/5 text-text/60",
+                      ? "bg-white/15 text-text"
+                      : "bg-white/5 text-text/60",
                   )}
                 >
-                  <span className="w-6 h-6 rounded-full bg-background/20 flex items-center justify-center text-xs font-bold shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
                     {index + 1}
                   </span>
                   <span className="text-sm font-medium">{label}</span>

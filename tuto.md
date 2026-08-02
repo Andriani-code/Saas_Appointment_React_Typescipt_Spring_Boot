@@ -330,7 +330,128 @@ Points d'attention sur ce CRUD :
 
 ---
 
-## 9. À retenir
+## 9. Messagerie temps réel (WebSocket + STOMP)
+
+La messagerie client ↔ prestataire (`/messages`) fonctionne en **REST pour la persistance** et en **WebSocket + STOMP pour le temps réel** : un message envoyé apparaît immédiatement sur l'écran de l'autre participant sans recharger la page.
+
+### 9.1 Vue d'ensemble
+
+```
+Browser (MessagesPage — @stomp/stompjs + SockJS)
+   │  WebSocket STOMP sur /ws (SockJS)
+   ▼
+WebSocketConfig  (endpoint /ws, SockJS)
+   │  JwtChannelInterceptor  → authentifie le frame STOMP CONNECT (JWT)
+   │  WebSocketSecurityConfig → CONNECT/HEARTBEAT/... permitAll,
+   │                             SUBSCRIBE/SEND → authenticated
+   ▼
+MessageController @MessageMapping("/chat/{conversationId}")
+   ▼
+MessagingServiceImpl.sendMessage()
+   │  sauvegarde en base (MessageRepository)
+   ├──→ /topic/conversations/{id}        (broadcast à la conversation)
+   ├──→ /user/{email}/queue/messages     (destinataire, temps réel)
+   └──→ /user/{email}/queue/messages     (expéditeur, autres onglets)
+```
+
+### 9.2 Destinations STOMP
+
+| Destination | Sens | Rôle |
+| ----------- | ---- | ---- |
+| `/ws` (SockJS) | connexion | Endpoint WebSocket |
+| `/app/chat/{conversationId}` | envoi | Envoi d'un message (frame `SEND`) |
+| `/topic/conversations/{conversationId}` | réception | Broadcast : tout client abonné à la conversation |
+| `/user/{email}/queue/messages` | réception | File personnelle : message reçu par le destinataire (et l'expéditeur) |
+
+### 9.3 Configuration backend (`WebSocketConfig`)
+
+```java
+registry.enableSimpleBroker("/topic", "/queue");      // broker simple en mémoire
+registry.setApplicationDestinationPrefixes("/app");    // destinations d'entrée (@MessageMapping)
+registry.setUserDestinationPrefix("/user");            // résolution /user/{email} → session
+
+registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+```
+
+- `/topic/*` : destinations publiques (broadcast à tous les abonnés).
+- `/queue/*` : destinations privées, résolues par utilisateur via le préfixe `/user`.
+- `/app/*` : préfixe que le client utilise pour envoyer (`@MessageMapping`).
+
+### 9.4 Sécurité WebSocket
+
+Le handshake HTTP `/ws` est déclaré **public** dans `SecurityConfig` (aucun header JWT ne passe par le handshake HTTP d'un WebSocket). L'authentification STOMP se fait au niveau du frame `CONNECT` :
+
+- **`JwtChannelInterceptor`** (intercepteur du canal entrant, ordre `HIGHEST_PRECEDENCE`) : lit le JWT dans le header `Authorization: Bearer …` (ou `token`) du frame `CONNECT`, valide le token, charge l'utilisateur et le pose comme `Principal` sur la session. Sans lui, la session reste anonyme et `/user/*` ne peut pas être résolu → boucle de reconnexion côté frontend.
+- **`WebSocketSecurityConfig`** (`@EnableWebSocketSecurity`) : les frames de contrôle (`CONNECT`, `HEARTBEAT`, `UNSUBSCRIBE`, `DISCONNECT`, …) sont `permitAll` — car le `Principal` n'est posé que *pendant* le traitement de `CONNECT` — tandis que `SUBSCRIBE` et `MESSAGE` exigent une session authentifiée. Le `SecurityContextChannelInterceptor` (activé par l'annotation) propage ensuite ce `Principal` au `SecurityContextHolder`, donc `SecurityUtils.getCurrentUserEmail()` fonctionne dans les handlers `@MessageMapping`.
+
+### 9.5 Envoi d'un message (backend)
+
+Le contrôleur `MessageController` expose un handler STOMP :
+
+```java
+@MessageMapping("/chat/{conversationId}")
+public void handleWebSocketMessage(@DestinationVariable String conversationId, MessageRequest request) {
+    messagingService.sendMessage(conversationId, request);
+}
+```
+
+`MessagingServiceImpl.sendMessage()` persiste le message puis le **pousse** sur trois destinations via `SimpMessagingTemplate` :
+
+```java
+Message saved = messageRepository.save(message);
+MessageResponse response = messageMapper.toResponse(saved);
+
+// 1) Broadcast aux abonnés de la conversation
+messagingTemplate.convertAndSend("/topic/conversations/" + conversationId, response);
+
+// 2) File privée du destinataire (client ou prestataire)
+String recipientEmail = resolveRecipientEmail(conversation, sender);
+if (recipientEmail != null) {
+    messagingTemplate.convertAndSendToUser(recipientEmail, "/queue/messages", response);
+}
+
+// 3) File privée de l'expéditeur (synchronisation des autres onglets)
+messagingTemplate.convertAndSendToUser(email, "/queue/messages", response);
+```
+
+Points de contrôle avant l'envoi : l'utilisateur courant est chargé via `SecurityUtils.getCurrentUserEmail()`, la conversation doit exister, et `assertParticipant()` garantit que seul un participant (client **ou** prestataire) de la conversation peut écrire.
+
+### 9.6 Côté frontend (`MessagesPage.tsx`)
+
+Le client STOMP est créé avec `@stomp/stompjs` + `sockjs-client` :
+
+```tsx
+const client = new Client({
+  webSocketFactory: () => new SockJS('/ws'),                    // endpoint SockJS
+  connectHeaders: session?.accessToken
+    ? { Authorization: `Bearer ${session.accessToken}` }        // JWT au CONNECT
+    : {},
+  reconnectDelay: 5000,                                         // reconnexion avec backoff
+  heartbeatIncoming: 10000,
+  heartbeatOutgoing: 10000,
+  onConnect: () => {
+    setStompConnected(true);
+    client.subscribe('/user/queue/messages', (payload) => {
+      // message temps réel → maj de la liste des messages + conversations
+    });
+  },
+});
+```
+
+- Dès la connexion, la page s'abonne à sa **file personnelle** `/user/queue/messages` (messages reçus en temps réel, reçus **et** envoyés — ce qui couvre le cas multi-onglets).
+- Quand une conversation est active, elle s'abonne aussi au **topic** `/topic/conversations/{conversationId}` (ajout dynamique via `useEffect`, désabonnement au changement de conversation).
+- Les messages reçus sont **dédupliqués par `id`** (un message arrive à la fois par le topic et par la file personnelle) avant d'être ajoutés à l'état.
+- Le compteur de conversations (`unreadCount`, `lastMessageContent`, `createdAt`) est mis à jour en direct ; si la conversation n'existe pas encore, la liste est rechargée.
+- La connexion est **détruite au démontage** du composant (`client.deactivate()`).
+
+### 9.7 Repli REST et proxy
+
+- Le même envoi existe en **REST** (`messagingApi.sendMessage` → `POST /api/v1/messages/conversations/{id}`) comme solution de repli — le backend persiste et pousse de la même façon.
+- En développement, le proxy Vite relaie le WebSocket : `'/ws': { target: 'http://localhost:8080', changeOrigin: true, ws: true }`. En production, `nginx.conf` joue le même rôle.
+
+---
+
+## 10. À retenir
 
 1. **Frontend → Backend** : un objet JavaScript `ProviderServiceRequest` devient un JSON dans un `POST` Axios, protégé par le token JWT ajouté par l'intercepteur.
 2. **Couches backend** : `Controller` (HTTP + validation) → `Service` (logique + transactions) → `Mapper` (DTO ↔ entité) → `Repository` (SQL) → base de données.

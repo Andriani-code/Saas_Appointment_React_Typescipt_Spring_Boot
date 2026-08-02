@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/utils'
 
 interface AuthLayoutProps {
-  leftPanel: ReactNode
+  leftPanel?: ReactNode
   children: ReactNode
   rightAction?: ReactNode
   cardClassName?: string
@@ -49,10 +49,14 @@ export function AuthLayout({
           <div
             className={cn(
               'w-full rounded-3xl overflow-hidden shadow-card border border-border/60 bg-surface flex',
-              cardClassName ?? 'max-w-5xl',
+              leftPanel
+                ? cardClassName ?? 'max-w-5xl'
+                : cardClassName ?? 'max-w-md',
             )}
           >
-            <div className="hidden lg:block lg:w-[45%] shrink-0">{leftPanel}</div>
+            {leftPanel && (
+              <div className="hidden lg:block lg:w-[45%] shrink-0">{leftPanel}</div>
+            )}
             <div className="flex-1 min-w-0 bg-background">{children}</div>
           </div>
         </div>

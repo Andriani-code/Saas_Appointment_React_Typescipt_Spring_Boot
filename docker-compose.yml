@@ -25,6 +25,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: appointment_backend
     restart: always
+    init: true
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,8 +52,8 @@ services:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v3/api-docs >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 180s
+      retries: 24
+      start_period: 420s
 
   frontend:
     build:

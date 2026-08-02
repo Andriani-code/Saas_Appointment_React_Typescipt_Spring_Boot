@@ -202,11 +202,14 @@ export function MessagesPage() {
       })
 
     messagingApi.markAsRead(activeConv.id).catch(() => undefined)
-    setConversations((prev) =>
-      prev.map((conversation) =>
+    setConversations((prev) => {
+      const current = prev.find((conversation) => conversation.id === activeConv.id)
+      // Ne pas créer une nouvelle référence si rien ne change (évite une boucle de requêtes).
+      if (!current || current.unreadCount === 0) return prev
+      return prev.map((conversation) =>
         conversation.id === activeConv.id ? { ...conversation, unreadCount: 0 } : conversation,
-      ),
-    )
+      )
+    })
 
     if (window.innerWidth < 1024) {
       setShowSidebar(false)

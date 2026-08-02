@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
-import { MapPin, Search, X } from 'lucide-react'
+import { MapPin, Search, X, LayoutGrid, MapIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ServiceCard } from '@/components/provider/ServiceCard'
+import { ProvidersMap } from '@/components/provider/ProvidersMap'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, Spinner } from '@/components/ui'
 import { Input } from '@/components/ui/Input'
@@ -10,6 +11,7 @@ import { serviceApi, providerApi } from '@/services/api'
 import type { ProviderResponse, ProviderServiceResponse } from '@/types'
 
 type Filter = 'all' | 'nearby' | 'top-rated'
+type View = 'list' | 'map'
 
 const filterLabels: Record<Filter, string> = {
   all: 'Tous',
@@ -23,29 +25,21 @@ export function ProvidersPage() {
   const [filter, setFilter] = useState<Filter>('all')
   const [nearbyCoords, setNearbyCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [nearbyError, setNearbyError] = useState<string | null>(null)
+  const [view, setView] = useState<View>('list')
   const initialErrorShown = useRef(false)
 
   // While the browser is still asking for geolocation, we keep showing a
   // spinner instead of flashing an error.
   const geolocationPending = filter === 'nearby' && !nearbyCoords && !nearbyError
+  const locatingOnMap = view === 'map' && !nearbyCoords && !nearbyError
 
   const fetchProviders = useCallback((page: number, size: number) => {
-    if (filter === 'nearby') {
-      if (!nearbyCoords) {
-        // Geolocation not resolved yet — nothing to fetch.
-        return Promise.resolve({
-          content: [],
-          page,
-          size,
-          totalElements: 0,
-          totalPages: 0,
-          last: true,
-        })
-      }
+    const useNearby = (filter === 'nearby' || view === 'map') && nearbyCoords
+    if (useNearby) {
       return providerApi.getNearby(nearbyCoords.lat, nearbyCoords.lng, 25, page, size)
     }
     return providerApi.getAll(page, size)
-  }, [filter, nearbyCoords])
+  }, [filter, view, nearbyCoords])
 
   const {
     items: providers,
@@ -58,7 +52,7 @@ export function ProvidersPage() {
     fetchProviders,
     {
       pageSize: 12,
-      deps: [filter, nearbyCoords?.lat, nearbyCoords?.lng, nearbyError],
+      deps: [filter, view, nearbyCoords?.lat, nearbyCoords?.lng, nearbyError],
       getItemKey: (provider) => provider.id,
       enabled: !geolocationPending,
     },
@@ -73,13 +67,16 @@ export function ProvidersPage() {
 
   useEffect(() => {
     initialErrorShown.current = false
-  }, [filter, search])
+  }, [filter, search, view])
 
   useEffect(() => {
-    if (filter !== 'nearby') {
+    const shouldLocate = filter === 'nearby' || view === 'map'
+    if (!shouldLocate) {
       setNearbyError(null)
       return
     }
+    // Position déjà obtenue — rien à re-demandé.
+    if (nearbyCoords) return
     if (!navigator.geolocation) {
       setNearbyCoords(null)
       setNearbyError('La géolocalisation n’est pas disponible sur cet appareil.')
@@ -95,7 +92,7 @@ export function ProvidersPage() {
         setNearbyError('Impossible d’obtenir votre position.')
       },
     )
-  }, [filter])
+  }, [filter, view, nearbyCoords])
 
   useEffect(() => {
     const missingIds = providers
@@ -152,6 +149,21 @@ export function ProvidersPage() {
       })
   }, [allServices, search, filter])
 
+  // Prestataires uniques issus des services filtrés, pour le marquage sur la carte.
+  const mapProviders = useMemo(() => {
+    const byId = new Map<string, { provider: ProviderResponse; serviceCount: number; minPrice: number }>()
+    filteredServices.forEach(({ service, provider }) => {
+      const existing = byId.get(provider.id)
+      if (existing) {
+        existing.serviceCount += 1
+        if (service.price < existing.minPrice) existing.minPrice = service.price
+      } else {
+        byId.set(provider.id, { provider, serviceCount: 1, minPrice: service.price })
+      }
+    })
+    return Array.from(byId.values())
+  }, [filteredServices])
+
   async function handleLoadMore() {
     try {
       await loadMore()
@@ -168,6 +180,36 @@ export function ProvidersPage() {
           <p className="text-muted mt-1">
             Recherchez par prestation, spécialité ou nom
           </p>
+        </div>
+        <div className="flex items-center gap-1 rounded-full bg-surface border border-border p-1">
+          <button
+            type="button"
+            onClick={() => setView('list')}
+            className={`
+              inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors
+              ${view === 'list'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-muted hover:text-primary'
+              }
+            `}
+          >
+            <LayoutGrid size={15} />
+            <span className="hidden sm:inline">Liste</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('map')}
+            className={`
+              inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors
+              ${view === 'map'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-muted hover:text-primary'
+              }
+            `}
+          >
+            <MapIcon size={15} />
+            <span className="hidden sm:inline">Carte</span>
+          </button>
         </div>
       </div>
 
@@ -209,7 +251,15 @@ export function ProvidersPage() {
 
       {!loading && (
         <p className="text-sm text-muted">
-          <span className="font-semibold text-text">{filteredServices.length}</span> prestation{filteredServices.length !== 1 ? 's' : ''} trouvée{filteredServices.length !== 1 ? 's' : ''}
+          {view === 'map' ? (
+            <>
+              <span className="font-semibold text-text">{mapProviders.length}</span> prestataire{mapProviders.length !== 1 ? 's' : ''} localisé{mapProviders.length !== 1 ? 's' : ''} sur la carte
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-text">{filteredServices.length}</span> prestation{filteredServices.length !== 1 ? 's' : ''} trouvée{filteredServices.length !== 1 ? 's' : ''}
+            </>
+          )}
         </p>
       )}
 
@@ -217,6 +267,22 @@ export function ProvidersPage() {
         <div className="flex items-center justify-center gap-3 py-24">
           <Spinner size={28} />
           <span className="text-sm text-muted">Récupération de votre position…</span>
+        </div>
+      ) : view === 'map' ? (
+        <div className="relative">
+          {(locatingOnMap || (loading && !nearbyCoords && !nearbyError)) && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 rounded-full bg-white/95 border border-border shadow-md px-4 py-1.5 text-xs font-medium text-text">
+              <Spinner size={14} />
+              Récupération de votre position…
+            </div>
+          )}
+          {nearbyError && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 rounded-full bg-white/95 border border-border shadow-md px-4 py-1.5 text-xs font-medium text-muted">
+              <MapPin size={13} />
+              Géolocalisation indisponible — affichage de tous les prestataires
+            </div>
+          )}
+          <ProvidersMap providers={mapProviders} userLocation={nearbyCoords ?? undefined} />
         </div>
       ) : loading && !nearbyError ? (
         <div className="flex items-center justify-center py-24">
