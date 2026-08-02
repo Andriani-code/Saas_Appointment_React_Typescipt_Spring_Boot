@@ -1,14 +1,21 @@
 package com.app.service.impl;
 
+import com.app.config.R2StorageProperties;
 import com.app.exception.BadRequestException;
 import com.app.service.FileStorageService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,13 +37,24 @@ public class FileStorageServiceImpl implements FileStorageService {
     private static final String URL_PREFIX = "/uploads/";
 
     private final Path uploadDir;
+    private final R2StorageProperties r2Properties;
+    private final S3Client s3Client;
 
-    public FileStorageServiceImpl(@Value("${app.upload.dir:./uploads}") String uploadDir) {
+    public FileStorageServiceImpl(
+            @Value("${app.upload.dir:./uploads}") String uploadDir,
+            R2StorageProperties r2Properties,
+            ObjectProvider<S3Client> s3ClientProvider) {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.r2Properties = r2Properties;
+        this.s3Client = r2Properties.isEnabled() ? s3ClientProvider.getIfAvailable() : null;
     }
 
     @PostConstruct
     public void init() {
+        if (r2Properties.isEnabled()) {
+            log.info("Storage R2 activé (bucket: {}, endpoint: {})", r2Properties.getBucket(), r2Properties.getEndpoint());
+            return;
+        }
         try {
             Files.createDirectories(uploadDir);
         } catch (IOException e) {
@@ -49,6 +67,16 @@ public class FileStorageServiceImpl implements FileStorageService {
         validate(file);
 
         String safeFolder = sanitizeFolder(folder);
+        String extension = getExtension(file.getOriginalFilename());
+        String filename = UUID.randomUUID().toString().toLowerCase(Locale.ROOT) + extension;
+        String key = safeFolder + "/" + filename;
+
+        if (r2Properties.isEnabled() && s3Client != null) {
+            storeToR2(file, key);
+            log.debug("Stored file in R2: {}", key);
+            return URL_PREFIX + key;
+        }
+
         Path targetDir = uploadDir.resolve(safeFolder).normalize();
         if (!targetDir.startsWith(uploadDir)) {
             throw new BadRequestException("Invalid upload folder");
@@ -60,8 +88,6 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new IllegalStateException("Could not create upload directory: " + targetDir, e);
         }
 
-        String extension = getExtension(file.getOriginalFilename());
-        String filename = UUID.randomUUID().toString().toLowerCase(Locale.ROOT) + extension;
         Path target = targetDir.resolve(filename);
 
         try {
@@ -80,7 +106,22 @@ public class FileStorageServiceImpl implements FileStorageService {
             return;
         }
 
-        Path file = uploadDir.resolve(url.substring(URL_PREFIX.length())).normalize();
+        String key = url.substring(URL_PREFIX.length());
+
+        if (r2Properties.isEnabled() && s3Client != null) {
+            try {
+                s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(r2Properties.getBucket())
+                        .key(key)
+                        .build());
+                log.debug("Deleted file from R2: {}", key);
+            } catch (Exception e) {
+                log.warn("Could not delete file {}: {}", key, e.getMessage());
+            }
+            return;
+        }
+
+        Path file = uploadDir.resolve(key).normalize();
         if (!file.startsWith(uploadDir)) {
             return;
         }
@@ -90,6 +131,21 @@ public class FileStorageServiceImpl implements FileStorageService {
             log.debug("Deleted file: {}", file);
         } catch (IOException e) {
             log.warn("Could not delete file {}: {}", file, e.getMessage());
+        }
+    }
+
+    private void storeToR2(MultipartFile file, String key) {
+        try (InputStream inputStream = file.getInputStream()) {
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(r2Properties.getBucket())
+                            .key(key)
+                            .contentType(file.getContentType())
+                            .build(),
+                    RequestBody.fromInputStream(inputStream, file.getSize())
+            );
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to store file in R2: " + key, e);
         }
     }
 
