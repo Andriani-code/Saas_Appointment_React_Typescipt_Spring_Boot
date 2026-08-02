@@ -79,6 +79,8 @@ public class MessageController {
     // ─── WebSocket STOMP handler ────────────────────────────────────────────────
     // Clients send to /app/chat/{conversationId}
     // Messages are broadcast to /topic/conversations/{conversationId}
+    // and to /user/{email}/queue/messages for both participants.
+    // (The service already pushes to sender + recipient, so no @SendToUser here.)
 
     @MessageMapping("/chat/{conversationId}")
     public void handleWebSocketMessage(

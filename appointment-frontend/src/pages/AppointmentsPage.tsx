@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { AppointmentCard } from "@/components/appointment/AppointmentCard";
 import { Button } from "@/components/ui/Button";
-import { EmptyState, Spinner } from "@/components/ui";
+import { EmptyState, Skeleton } from "@/components/ui";
 import { Input } from "@/components/ui/Input";
 import { useAuthStore } from "@/store/authStore";
 import { usePaginatedFetch } from "@/hooks/usePaginatedFetch";
@@ -172,7 +172,7 @@ export function AppointmentsPage() {
         />
       ) : loading ? (
         <div className="flex items-center justify-center py-24">
-          <Spinner size={32} />
+          <Skeleton variant="rect" className="w-8 h-8" />
         </div>
       ) : error ? (
         <EmptyState

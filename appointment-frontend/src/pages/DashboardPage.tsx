@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { reservationApi, providerApi, clientApi } from "@/services/api";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { Skeleton } from "@/components/ui";
 import { StatusBadge, Avatar, Spinner, EmptyState } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { formatDate, formatTime, formatCurrency } from "@/utils";

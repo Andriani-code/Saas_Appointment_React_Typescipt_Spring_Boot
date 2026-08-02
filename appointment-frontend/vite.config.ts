@@ -1,7 +1,11 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+
+// In Docker, "localhost" points to the frontend container itself, not the backend.
+// Use VITE_PROXY_TARGET to override the proxy destination (e.g. http://backend:8080).
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:8080'
 
 export default defineConfig({
   plugins: [tailwindcss(), react()],
@@ -31,15 +35,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: proxyTarget,
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://localhost:8080',
+        target: proxyTarget,
         changeOrigin: true,
       },
       '/ws': {
-        target: 'http://localhost:8080',
+        target: proxyTarget,
         changeOrigin: true,
         ws: true,
       },

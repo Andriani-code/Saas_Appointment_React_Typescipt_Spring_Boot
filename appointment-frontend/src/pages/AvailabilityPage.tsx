@@ -169,7 +169,7 @@ export function AvailabilityPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 rounded-none bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-surface rounded-2xl w-full max-w-md p-6 animate-slide-up">
             <h2 className="font-display text-xl font-bold text-text mb-4">Activer une date</h2>
 

@@ -14,6 +14,7 @@ import com.app.repository.*;
 import com.app.service.MessagingService;
 import com.app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessagingServiceImpl implements MessagingService {
 
     private final MessageRepository messageRepository;
@@ -61,9 +63,26 @@ public class MessagingServiceImpl implements MessagingService {
         Message saved = messageRepository.save(message);
         MessageResponse response = messageMapper.toResponse(saved);
 
-        // Push via WebSocket to conversation topic
+        // 1) Broadcast to the conversation topic (any client subscribed to it)
         messagingTemplate.convertAndSend(
                 "/topic/conversations/" + conversationId,
+                response
+        );
+
+        // 2) Send directly to the recipient's personal queue (/user/{email}/queue/messages)
+        String recipientEmail = resolveRecipientEmail(conversation, sender);
+        if (recipientEmail != null) {
+            messagingTemplate.convertAndSendToUser(
+                    recipientEmail,
+                    "/queue/messages",
+                    response
+            );
+        }
+
+        // 3) Send back to the sender's personal queue so the sender's other tabs stay in sync
+        messagingTemplate.convertAndSendToUser(
+                email,
+                "/queue/messages",
                 response
         );
 
@@ -201,6 +220,18 @@ public class MessagingServiceImpl implements MessagingService {
             return SenderType.CLIENT;
         }
         return SenderType.PROVIDER;
+    }
+
+    private String resolveRecipientEmail(Conversation conversation, User sender) {
+        User clientUser = conversation.getClient().getUser();
+        User providerUser = conversation.getProvider().getUser();
+
+        if (clientUser.getId().equals(sender.getId())) {
+            return providerUser.getEmail();
+        } else if (providerUser.getId().equals(sender.getId())) {
+            return clientUser.getEmail();
+        }
+        return null;
     }
 
     private Pageable capPageSize(Pageable pageable) {

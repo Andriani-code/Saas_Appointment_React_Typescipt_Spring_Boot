@@ -63,6 +63,9 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    environment:
+      # In Docker, "localhost" = this container. Route the Vite proxy to the backend service.
+      VITE_PROXY_TARGET: http://backend:8080
     working_dir: /app
     command: npm run dev -- --host
     ports:

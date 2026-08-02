@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Calendar, Check, Clock, Eye, MessageSquare, MoreVertical, RotateCcw, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
@@ -14,7 +14,7 @@ interface AppointmentCardProps {
   delay?: number
 }
 
-export function AppointmentCard({ reservation, onUpdate, delay = 0 }: AppointmentCardProps) {
+export const AppointmentCard = memo(function AppointmentCard({ reservation, onUpdate, delay = 0 }: AppointmentCardProps) {
   const { hasRole } = useAuthStore()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -27,9 +27,9 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
     setLoading(true)
     try {
       onUpdate(await action())
-    } finally {
-      setLoading(false)
-      setMenuOpen(false)
+} finally {
+      setLoading(false);
+      setMenuOpen(false);
     }
   }
 
@@ -182,4 +182,4 @@ export function AppointmentCard({ reservation, onUpdate, delay = 0 }: Appointmen
       )}
     </div>
   )
-}
+});

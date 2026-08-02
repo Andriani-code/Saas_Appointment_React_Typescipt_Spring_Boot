@@ -18,7 +18,7 @@ export function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-50 rounded-none bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl w-full mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-card">

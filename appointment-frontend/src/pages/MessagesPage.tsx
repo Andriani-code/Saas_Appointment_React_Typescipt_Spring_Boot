@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Calendar, ChevronLeft, Info, MessageSquare, Search, Send } from 'lucide-react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import toast from 'react-hot-toast'
-import { Avatar, EmptyState, Spinner } from '@/components/ui'
+import { Avatar, EmptyState, Skeleton } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useAuthStore } from '@/store/authStore'
@@ -46,13 +46,49 @@ export function MessagesPage() {
   const [sending, setSending] = useState(false)
   const [search, setSearch] = useState('')
   const [showSidebar, setShowSidebar] = useState(true)
+  const [stompConnected, setStompConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const stompClientRef = useRef<Client | null>(null)
   const refreshRef = useRef(refresh)
-  refreshRef.current = refresh
   const activeConvIdRef = useRef(activeConv?.id)
-  activeConvIdRef.current = activeConv?.id
 
+  // Garde les refs synchronisées avec les dernières valeurs (hors rendu)
+  useEffect(() => {
+    refreshRef.current = refresh
+  }, [refresh])
+
+  useEffect(() => {
+    activeConvIdRef.current = activeConv?.id
+  }, [activeConv])
+
+  // ─── Abonnement dynamique au topic de la conversation active ────────────────
+  useEffect(() => {
+    const stompClient = stompClientRef.current
+    const convId = activeConv?.id
+
+    // Si le client WebSocket est connecté, on écoute le topic temps réel
+    if (!stompClient || !convId || !stompConnected) {
+      return
+    }
+
+    const subscription = stompClient.subscribe(`/topic/conversations/${convId}`, (payload) => {
+      const newMessage: MessageResponse = JSON.parse(payload.body)
+
+      setMessages((prev) => {
+        if (prev.some((message) => message.id === newMessage.id)) {
+          return prev
+        }
+        return [...prev, newMessage]
+      })
+    })
+
+    // Nettoyage : désabonnement quand on change de conversation
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [activeConv, stompConnected])
+
+  // ─── Connexion WebSocket STOMP ─────────────────────────────────────────────
   useEffect(() => {
     if (!user || !isEnabled) return
     const session = getStoredAuthSession()
@@ -62,7 +98,16 @@ export function MessagesPage() {
       connectHeaders: session?.accessToken
         ? { Authorization: `Bearer ${session.accessToken}` }
         : {},
+      // Backoff exponentiel via la reconnexion intégrée de STOMPJS
+      reconnectDelay: 5000,
+      connectionTimeout: 10000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+
       onConnect: () => {
+        setStompConnected(true)
+
+        // File personnelle : messages reçus en temps réel (destinataire + expéditeur)
         client.subscribe('/user/queue/messages', (payload) => {
           const newMessage: MessageResponse = JSON.parse(payload.body)
 
@@ -87,7 +132,7 @@ export function MessagesPage() {
                     createdAt: newMessage.createdAt,
                     unreadCount: activeConvIdRef.current === conversation.id ? 0 : conversation.unreadCount + 1,
                   }
-                : conversation
+                : conversation,
             )
           })
 
@@ -95,9 +140,22 @@ export function MessagesPage() {
             void refreshRef.current()
           }
         })
+
       },
       onStompError: (frame) => {
-        console.error('Stomp error', frame)
+        console.error('Stomp error — reconnexion en backoff', frame.headers?.message ?? frame.body)
+        // Si le serveur rejette explicitement l'auth, on arrête la boucle
+        if (frame.headers?.message?.toLowerCase().includes('auth')) {
+          client.deactivate()
+        }
+      },
+      onWebSocketError: (event) => {
+        // Log discret — STOMPJS gère la reconnexion avec reconnectDelay
+        console.warn('WebSocket error (reconnexion en cours)', event)
+      },
+      onWebSocketClose: () => {
+        setStompConnected(false)
+        console.info('WebSocket fermé — reconnexion automatique si nécessaire')
       },
     })
 
@@ -109,6 +167,7 @@ export function MessagesPage() {
     }
   }, [user, isEnabled])
 
+  // ─── Chargement conversation / messages ─────────────────────────────────────
   useEffect(() => {
     const requestedConversationId = (location.state as { conversationId?: string } | null)?.conversationId
 
@@ -158,7 +217,7 @@ export function MessagesPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function sendMessage() {
+  const sendMessage = useCallback(async () => {
     if (!text.trim() || !activeConv) return
 
     setSending(true)
@@ -183,7 +242,7 @@ export function MessagesPage() {
     } finally {
       setSending(false)
     }
-  }
+  }, [text, activeConv, setConversations])
 
   async function handleLoadMoreConversations() {
     try {
@@ -238,7 +297,7 @@ export function MessagesPage() {
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {loading ? (
-                <div className="flex items-center justify-center py-20"><Spinner /></div>
+                <div className="flex items-center justify-center py-20"><Skeleton variant="circle" /></div>
               ) : error ? (
                 <EmptyState
                   icon={<MessageSquare size={24} />}

@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, ReactNode } from 'react'
+import { InputHTMLAttributes, forwardRef, ReactNode, useState } from 'react'
 import { cn } from '@/utils'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -17,9 +17,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   iconRight,
   className,
   id,
+  required,
+  onBlur,
   ...props
 }, ref) => {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+  const [touched, setTouched] = useState(false)
+  const [internalError, setInternalError] = useState('')
+
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    setTouched(true)
+    if (required && !e.target.value.trim()) {
+      setInternalError('Ce champ est requis')
+    } else {
+      setInternalError('')
+    }
+    onBlur?.(e)
+  }
+
+  const displayError = error || (touched ? internalError : '')
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -41,9 +57,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             'input-base',
             icon      && 'pl-10',
             iconRight && 'pr-10',
-            error     && 'border-danger/60 focus:border-danger focus:ring-danger/15',
+            displayError && 'border-danger/60 focus:border-danger focus:ring-danger/15',
             className,
           )}
+          onBlur={handleBlur}
           {...props}
         />
         {iconRight && (
@@ -52,8 +69,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           </span>
         )}
       </div>
-      {error && <p className="text-xs text-danger font-medium">{error}</p>}
-      {hint && !error && <p className="text-xs text-muted">{hint}</p>}
+      {displayError && <p className="text-xs text-danger font-medium">{displayError}</p>}
+      {hint && !displayError && <p className="text-xs text-muted">{hint}</p>}
     </div>
   )
 })

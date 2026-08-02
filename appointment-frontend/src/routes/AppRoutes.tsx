@@ -1,9 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
 import { RoleRoute } from "./RoleRoute";
-import { Spinner } from "@/components/ui";
+import { PageSpinner } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 const LandingPage = lazy(() => import("@/pages/LandingPage").then((m) => ({ default: m.LandingPage })));
@@ -24,22 +24,23 @@ const AvailabilityPage = lazy(() => import("@/pages/AvailabilityPage").then((m) 
 const PaymentsPage = lazy(() => import("@/pages/PaymentsPage").then((m) => ({ default: m.PaymentsPage })));
 const AdminPage = lazy(() => import("@/pages/AdminPage").then((m) => ({ default: m.AdminPage })));
 
-function PageFallback() {
-  return (
-    <div className="flex items-center justify-center py-24">
-      <Spinner size={32} />
-    </div>
-  );
+/**
+ * Wrapper for public (non-layout) lazy routes so they get their own local
+ * Suspense fallback. Routes inside <MainLayout /> are wrapped by the
+ * <Suspense> around <Outlet />, so only the page content shows the spinner
+ * while the sidebar/header remain visible.
+ */
+function PublicPage({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<PageSpinner />}>{children}</Suspense>;
 }
 
 export function AppRoutes() {
   return (
-    <Suspense fallback={<PageFallback />}>
-      <ErrorBoundary>
-        <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<PublicPage><LandingPage /></PublicPage>} />
+        <Route path="/login" element={<PublicPage><LoginPage /></PublicPage>} />
+        <Route path="/register" element={<PublicPage><RegisterPage /></PublicPage>} />
 
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout />}>
@@ -71,9 +72,8 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<PublicPage><NotFoundPage /></PublicPage>} />
         </Routes>
-      </ErrorBoundary>
-    </Suspense>
+    </ErrorBoundary>
   );
 }

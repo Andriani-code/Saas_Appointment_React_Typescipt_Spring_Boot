@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { memo } from 'react'
 import { MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar, StarRating } from '@/components/ui'
@@ -11,7 +12,7 @@ interface ServiceCardProps {
   delay?: number
 }
 
-export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) {
+export const ServiceCard = memo(function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) {
   const providerName = provider.displayName
     ?? `${provider.firstName} ${provider.lastName}`
 
@@ -98,4 +99,4 @@ export function ServiceCard({ service, provider, delay = 0 }: ServiceCardProps) 
       </div>
     </div>
   )
-}
+});

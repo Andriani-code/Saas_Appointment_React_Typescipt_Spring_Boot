@@ -92,6 +92,14 @@ export function Spinner({ size = 20, className }: { size?: number; className?: s
   )
 }
 
+export function PageSpinner() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <Spinner size={32} />
+    </div>
+  );
+}
+
 export function EmptyState({ icon, title, description, action, className }: {
   icon: ReactNode
   title: string

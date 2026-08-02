@@ -46,15 +46,19 @@
   --color-warning: #F5A623;
   --color-warning-300: #F7C873;
 
-  /* Rayons — échelle Zarao, plafonnée à 12px */
-  --radius-btn: 4px;
-  --radius-input: 6px;
+  /* Rayons — tous les coins arrondis à 12px */
+  --radius-btn: 12px;
+  --radius-input: 12px;
   --radius-card: 12px;
   --radius-dialog: 12px;
-  --radius-dropdown: 8px;
-  --radius-xl: 0px;
-  --radius-2xl: 8px;
+  --radius-dropdown: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
   --radius-3xl: 12px;
+  --radius: 12px;
+  --radius-sm: 12px;
+  --radius-md: 12px;
+  --radius-lg: 12px;
 
   /* Ombres — subtiles sur fond sombre */
   --shadow-card: 0 1px 2px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(0,0,0,0.2);
@@ -94,6 +98,12 @@
 }
 
 @layer base {
+  /* Coin par défaut : 12px partout. Les utilitaires rounded-* (full, none,
+     t-*, etc.) passent après dans la cascade et écrasent cette valeur. */
+  * {
+    border-radius: 12px;
+  }
+
   html {
     scroll-behavior: smooth;
   }

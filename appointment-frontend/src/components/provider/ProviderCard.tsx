@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { memo } from 'react'
 import { MapPin, Clock, Star, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar, StarRating } from '@/components/ui'
@@ -12,7 +13,7 @@ interface ProviderCardProps {
   delay?:     number
 }
 
-export function ProviderCard({ provider, services = [], distance, delay = 0 }: ProviderCardProps) {
+export const ProviderCard = memo(function ProviderCard({ provider, services = [], distance, delay = 0 }: ProviderCardProps) {
   const navigate = useNavigate()
 
   const name = provider.displayName
@@ -117,4 +118,4 @@ export function ProviderCard({ provider, services = [], distance, delay = 0 }: P
       )}
     </div>
   )
-}
+});

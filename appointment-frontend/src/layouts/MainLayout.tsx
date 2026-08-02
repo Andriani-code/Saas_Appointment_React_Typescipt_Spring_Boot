@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { NavLink, useNavigate, Outlet } from "react-router-dom";
+import { PageSpinner } from "@/components/ui";
 import { cn } from "@/utils";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -104,7 +105,7 @@ export function MainLayout() {
       {/* Mobile overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 rounded-none bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -113,7 +114,7 @@ export function MainLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 shrink-0 bg-surface border-r border-border flex flex-col shadow-sm transition-transform duration-300 lg:translate-x-0",
+          "fixed lg:static inset-y-0 left-0 z-50 w-64 shrink-0 rounded-none bg-surface border-r border-border flex flex-col shadow-sm transition-transform duration-300 lg:translate-x-0",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -169,7 +170,7 @@ export function MainLayout() {
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Unified Header — same surface color as sidebar */}
         <header
-          className="h-20 bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
+          className="h-20 rounded-none bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
         >
           <div className="flex items-center gap-4 flex-1">
             {/* Logo (top-left) */}
@@ -223,7 +224,9 @@ export function MainLayout() {
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-6 py-8 lg:py-10">
-            <Outlet />
+            <Suspense fallback={<PageSpinner />}>
+              <Outlet />
+            </Suspense>
           </div>
         </div>
       </main>
