@@ -71,11 +71,6 @@ export function DashboardPage() {
     fetchData();
   }, [hasRole]);
 
-  const displayName = user?.email?.split("@")[0] ?? "Utilisateur";
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
-
   const stats = [
     {
       title: "Rendez-vous",
@@ -142,10 +137,7 @@ export function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">
-            {greeting},{" "}
-            <span className="text-primary capitalize">{displayName}</span>
-          </h1>
+          <h1 className="page-title">Tableau de bord</h1>
           <p className="text-muted mt-1 text-sm">
             {new Date().toLocaleDateString("fr-FR", {
               weekday: "long",
