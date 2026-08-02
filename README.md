@@ -58,6 +58,11 @@ copy .env.example .env        # Windows (cmd)
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret           | empty |
 | `MAIL_USERNAME`       | SMTP account (emails)             | empty -> emails disabled |
 | `MAIL_PASSWORD`       | SMTP password                     | empty |
+| `R2_ACCESS_KEY_ID`    | Cloudflare R2 access key          | empty -> local uploads |
+| `R2_SECRET_ACCESS_KEY` | Cloudflare R2 secret key         | empty |
+| `R2_ENDPOINT`         | Cloudflare R2 S3 endpoint         | empty |
+| `R2_BUCKET_NAME`      | Cloudflare R2 bucket              | empty |
+| `R2_REGION`           | R2 region (always `auto`)         | auto |
 
 > Without a real Stripe / SMTP key, the application still starts normally — only payments and email notifications are inactive.
 
