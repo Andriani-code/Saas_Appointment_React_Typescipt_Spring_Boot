@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppointmentCard } from './AppointmentCard'
-import { reservationApi } from '@/services/api'
+import { messagingApi, reservationApi } from '@/services/api'
 import { renderWithProviders } from '@/test/renderWithProviders'
 import type { ReservationResponse } from '@/types'
 
@@ -23,6 +23,9 @@ vi.mock('@/services/api', () => ({
     reject: vi.fn(),
     complete: vi.fn(),
     noShow: vi.fn(),
+  },
+  messagingApi: {
+    getOrCreateConversationForReservation: vi.fn(),
   },
 }))
 
@@ -85,5 +88,51 @@ describe('AppointmentCard', () => {
       expect(reservationApi.confirm).toHaveBeenCalledWith('reservation-1')
       expect(onUpdate).toHaveBeenCalledWith(updatedReservation)
     })
+  })
+
+  it('opens the conversation from the message menu item', async () => {
+    const user = userEvent.setup()
+    vi.mocked(messagingApi.getOrCreateConversationForReservation).mockResolvedValue({
+      id: 'conversation-1',
+      clientId: 'client-1',
+      clientFullName: 'Jane Client',
+      providerId: 'provider-1',
+      providerDisplayName: 'Dr Martin',
+      isActive: true,
+      unreadCount: 0,
+      createdAt: '2026-04-23T09:00:00Z',
+    })
+
+    renderWithProviders(
+      <AppointmentCard reservation={baseReservation} onUpdate={vi.fn()} />,
+      { role: 'CLIENT' },
+    )
+
+    await user.click(screen.getByRole('button', { name: /ouvrir le menu/i }))
+    await user.click(screen.getByRole('menuitem', { name: /envoyer un message/i }))
+
+    await waitFor(() => {
+      expect(messagingApi.getOrCreateConversationForReservation).toHaveBeenCalledWith('reservation-1')
+      expect(navigateMock).toHaveBeenCalledWith('/messages', { state: { conversationId: 'conversation-1' } })
+    })
+  })
+
+  it('shows the reservation details modal from the menu', async () => {
+    const user = userEvent.setup()
+
+    renderWithProviders(
+      <AppointmentCard reservation={baseReservation} onUpdate={vi.fn()} />,
+      { role: 'CLIENT' },
+    )
+
+    await user.click(screen.getByRole('button', { name: /ouvrir le menu/i }))
+    await user.click(screen.getByRole('menuitem', { name: /voir le detail/i }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Détail du rendez-vous')).toBeInTheDocument()
+    expect(screen.getByText('Jane Client')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Fermer' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })
