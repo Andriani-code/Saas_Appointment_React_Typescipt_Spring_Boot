@@ -65,6 +65,14 @@ abstractapi:
   email:
     key: ${ABSTRACT_API_EMAIL_KEY:}
 
+cloudflare:
+  r2:
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    endpoint: ${R2_ENDPOINT:}
+    bucket: ${R2_BUCKET_NAME:}
+    region: ${R2_REGION:auto}
+
 app:
   upload:
     dir: ${UPLOAD_DIR:./uploads}
