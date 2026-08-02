@@ -84,6 +84,17 @@ export function AppointmentsPage() {
             reservation.clientFullName.toLowerCase().includes(query) ||
             (reservation.providerDisplayName ?? "").toLowerCase().includes(query)
           );
+        })
+        .sort((a, b) => {
+          const aTime = new Date(`${a.slot.date}T${a.slot.startTime}`).getTime();
+          const bTime = new Date(`${b.slot.date}T${b.slot.startTime}`).getTime();
+          // Les rendez-vous à venir (PENDING/CONFIRMED) passent en premier,
+          // triés du plus proche au plus lointain ; les rendez-vous passés
+          // sont ensuite affichés du plus récent au plus ancien.
+          const aUpcoming = a.status === "PENDING" || a.status === "CONFIRMED";
+          const bUpcoming = b.status === "PENDING" || b.status === "CONFIRMED";
+          if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+          return aUpcoming ? aTime - bTime : bTime - aTime;
         }),
     [reservations, search, tab],
   );
