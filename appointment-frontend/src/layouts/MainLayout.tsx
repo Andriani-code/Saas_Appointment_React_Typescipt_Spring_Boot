@@ -1,8 +1,8 @@
-import { Suspense, useState } from "react";
-import { NavLink, useNavigate, Outlet } from "react-router-dom";
-import { PageSpinner } from "@/components/ui";
-import { cn } from "@/utils";
-import { useAuthStore } from "@/store/authStore";
+import { Suspense, useState } from 'react'
+import { NavLink, useNavigate, Outlet } from 'react-router-dom'
+import { PageSpinner } from '@/components/ui'
+import { cn } from '@/utils'
+import { useAuthStore } from '@/store/authStore'
 import {
   LayoutDashboard,
   Briefcase,
@@ -15,90 +15,97 @@ import {
   LogOut,
   UserCog,
   Shield,
+  Heart,
   Menu,
   X,
   Search,
   Bell,
-} from "lucide-react";
+} from 'lucide-react'
 
 interface NavItem {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  roles?: string[];
+  to: string
+  icon: React.ReactNode
+  label: string
+  roles?: string[]
 }
 
 const navItems: NavItem[] = [
   {
-    to: "/dashboard",
+    to: '/dashboard',
     icon: <LayoutDashboard size={18} />,
-    label: "Tableau de bord",
+    label: 'Tableau de bord',
   },
   {
-    to: "/appointments",
+    to: '/appointments',
     icon: <Calendar size={18} />,
-    label: "Mes rendez-vous",
+    label: 'Mes rendez-vous',
   },
   {
-    to: "/providers",
+    to: '/providers',
     icon: <Briefcase size={18} />,
-    label: "Prestataires",
-    roles: ["CLIENT"],
+    label: 'Prestataires',
+    roles: ['CLIENT'],
   },
   {
-    to: "/clients",
+    to: '/favorites',
+    icon: <Heart size={18} />,
+    label: 'Favoris',
+    roles: ['CLIENT'],
+  },
+  {
+    to: '/clients',
     icon: <Users size={18} />,
-    label: "Clients",
-    roles: ["PROVIDER"],
+    label: 'Clients',
+    roles: ['PROVIDER'],
   },
   {
-    to: "/services",
+    to: '/services',
     icon: <UserCog size={18} />,
-    label: "Mes services",
-    roles: ["PROVIDER"],
+    label: 'Mes services',
+    roles: ['PROVIDER'],
   },
   {
-    to: "/availability",
+    to: '/availability',
     icon: <Calendar size={18} />,
-    label: "Disponibilités",
-    roles: ["PROVIDER"],
+    label: 'Disponibilités',
+    roles: ['PROVIDER'],
   },
-  { to: "/messages", icon: <MessageSquare size={18} />, label: "Messages" },
-  { to: "/payments", icon: <DollarSign size={18} />, label: "Paiements" },
-  { to: "/reviews", icon: <Star size={18} />, label: "Avis" },
+  { to: '/messages', icon: <MessageSquare size={18} />, label: 'Messages' },
+  { to: '/payments', icon: <DollarSign size={18} />, label: 'Paiements' },
+  { to: '/reviews', icon: <Star size={18} />, label: 'Avis' },
   {
-    to: "/admin",
+    to: '/admin',
     icon: <Shield size={18} />,
-    label: "Administration",
-    roles: ["ADMIN"],
+    label: 'Administration',
+    roles: ['ADMIN'],
   },
-  { to: "/settings", icon: <Settings size={18} />, label: "Paramètres" },
-];
+  { to: '/settings', icon: <Settings size={18} />, label: 'Paramètres' },
+]
 
 export function MainLayout() {
-  const { user, logout, hasRole } = useAuthStore();
-  const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout, hasRole } = useAuthStore()
+  const navigate = useNavigate()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
-    if (window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
-      logout();
-      navigate("/login");
+    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      logout()
+      navigate('/login')
     }
-  };
+  }
 
   const visibleItems = navItems.filter(
     (item) =>
       !item.roles ||
-      item.roles.some((r) => hasRole(r as "ADMIN" | "CLIENT" | "PROVIDER")),
-  );
+      item.roles.some((r) => hasRole(r as 'ADMIN' | 'CLIENT' | 'PROVIDER')),
+  )
 
-  const displayName = user?.email?.split("@")[0] ?? "Utilisateur";
+  const displayName = user?.email?.split('@')[0] ?? 'Utilisateur'
   const roleLabel = {
-    ADMIN: "Administrateur",
-    CLIENT: "Client",
-    PROVIDER: "Prestataire",
-  }[user?.role ?? "CLIENT"];
+    ADMIN: 'Administrateur',
+    CLIENT: 'Client',
+    PROVIDER: 'Prestataire',
+  }[user?.role ?? 'CLIENT']
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -114,14 +121,18 @@ export function MainLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 shrink-0 rounded-none bg-surface border-r border-border flex flex-col shadow-sm transition-transform duration-300 lg:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          'fixed lg:static inset-y-0 left-0 z-50 w-64 shrink-0 rounded-none bg-surface border-r border-border flex flex-col shadow-sm transition-transform duration-300 lg:translate-x-0',
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {/* Logo */}
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center justify-center">
-            <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
+            <img
+              src="/logo/logo_for_bg_light.png"
+              alt="HILA"
+              className="w-10 h-10 object-contain"
+            />
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
@@ -133,14 +144,17 @@ export function MainLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto" aria-label="Navigation principale">
+        <nav
+          className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto"
+          aria-label="Navigation principale"
+        >
           {visibleItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
-                cn("sidebar-link", isActive && "sidebar-link-active")
+                cn('sidebar-link', isActive && 'sidebar-link-active')
               }
             >
               {item.icon}
@@ -166,33 +180,39 @@ export function MainLayout() {
         </p>
       </aside>
 
-        {/* Main Content */}
+      {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Unified Header — same surface color as sidebar */}
-        <header
-          className="h-20 rounded-none bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0"
-        >
+        <header className="h-20 rounded-none bg-surface border-b border-border px-6 lg:px-10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 flex-1">
             {/* Logo (top-left) */}
             <div className="flex items-center justify-center shrink-0">
-              <img src="/logo/logo_for_bg_light.png" alt="HILA" className="w-10 h-10 object-contain" />
+              <img
+                src="/logo/logo_for_bg_light.png"
+                alt="HILA"
+                className="w-10 h-10 object-contain"
+              />
             </div>
 
             {/* Mobile Menu Toggle */}
-<button
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2.5 text-muted hover:bg-soft rounded-2xl transition-colors"
-            aria-label="Ouvrir le menu"
-          >
-            <Menu size={22} />
-          </button>
-            
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2.5 text-muted hover:bg-soft rounded-2xl transition-colors"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu size={22} />
+            </button>
+
             {/* Search Bar */}
             <div className="relative max-w-md w-full hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} aria-hidden="true" />
-              <input 
-                type="text" 
-                placeholder="Rechercher..." 
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                size={18}
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                placeholder="Rechercher..."
                 aria-label="Rechercher"
                 className="w-full bg-surface border-none rounded-2xl pl-12 pr-6 py-2.5 text-sm text-text placeholder:text-muted focus:ring-2 focus:ring-primary/10 outline-none transition-all"
               />
@@ -201,21 +221,35 @@ export function MainLayout() {
 
           <div className="flex items-center gap-3 lg:gap-5">
             {/* Notification */}
-            <button className="relative p-2.5 text-muted hover:text-primary hover:bg-primary/5 rounded-2xl transition-all" aria-label="Notifications">
+            <button
+              className="relative p-2.5 text-muted hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
+              aria-label="Notifications"
+            >
               <Bell size={22} aria-hidden="true" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full border-2 border-white" />
             </button>
-            
+
             <div className="h-8 w-px bg-surface mx-2 hidden sm:block" />
 
             {/* Profile */}
-            <div className="flex items-center gap-3 pl-1 group cursor-pointer" role="button" tabIndex={0} aria-label="Profil utilisateur">
+            <div
+              className="flex items-center gap-3 pl-1 group cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label="Profil utilisateur"
+            >
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-text truncate max-w-[150px] capitalize leading-tight">{displayName}</p>
-                <p className="text-[10px] font-bold text-primary uppercase tracking-wider">{roleLabel}</p>
+                <p className="text-sm font-bold text-text truncate max-w-[150px] capitalize leading-tight">
+                  {displayName}
+                </p>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                  {roleLabel}
+                </p>
               </div>
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm group-hover:shadow-md transition-all overflow-hidden">
-                <span className="font-bold text-base">{displayName[0]?.toUpperCase()}</span>
+                <span className="font-bold text-base">
+                  {displayName[0]?.toUpperCase()}
+                </span>
               </div>
             </div>
           </div>
@@ -231,5 +265,5 @@ export function MainLayout() {
         </div>
       </main>
     </div>
-  );
+  )
 }
