@@ -63,13 +63,11 @@ public class MessagingServiceImpl implements MessagingService {
         Message saved = messageRepository.save(message);
         MessageResponse response = messageMapper.toResponse(saved);
 
-        // 1) Broadcast to the conversation topic (any client subscribed to it)
-        messagingTemplate.convertAndSend(
-                "/topic/conversations/" + conversationId,
-                response
-        );
+        // Message privé : on ne le pousse que vers les deux participants via leurs
+        // files personnelles (/user/{email}/queue/messages). Pas de broadcast sur un
+        // topic public — n'importe quel client STOMP abonné pourrait le lire.
 
-        // 2) Send directly to the recipient's personal queue (/user/{email}/queue/messages)
+        // 1) File privée du destinataire (client ou prestataire)
         String recipientEmail = resolveRecipientEmail(conversation, sender);
         if (recipientEmail != null) {
             messagingTemplate.convertAndSendToUser(
@@ -79,7 +77,7 @@ public class MessagingServiceImpl implements MessagingService {
             );
         }
 
-        // 3) Send back to the sender's personal queue so the sender's other tabs stay in sync
+        // 2) File privée de l'expéditeur (synchronisation des autres onglets)
         messagingTemplate.convertAndSendToUser(
                 email,
                 "/queue/messages",

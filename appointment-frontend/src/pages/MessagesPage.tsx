@@ -46,9 +46,7 @@ export function MessagesPage() {
   const [sending, setSending] = useState(false)
   const [search, setSearch] = useState('')
   const [showSidebar, setShowSidebar] = useState(true)
-  const [stompConnected, setStompConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const stompClientRef = useRef<Client | null>(null)
   const refreshRef = useRef(refresh)
   const activeConvIdRef = useRef(activeConv?.id)
 
@@ -60,33 +58,6 @@ export function MessagesPage() {
   useEffect(() => {
     activeConvIdRef.current = activeConv?.id
   }, [activeConv])
-
-  // ─── Abonnement dynamique au topic de la conversation active ────────────────
-  useEffect(() => {
-    const stompClient = stompClientRef.current
-    const convId = activeConv?.id
-
-    // Si le client WebSocket est connecté, on écoute le topic temps réel
-    if (!stompClient || !convId || !stompConnected) {
-      return
-    }
-
-    const subscription = stompClient.subscribe(`/topic/conversations/${convId}`, (payload) => {
-      const newMessage: MessageResponse = JSON.parse(payload.body)
-
-      setMessages((prev) => {
-        if (prev.some((message) => message.id === newMessage.id)) {
-          return prev
-        }
-        return [...prev, newMessage]
-      })
-    })
-
-    // Nettoyage : désabonnement quand on change de conversation
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [activeConv, stompConnected])
 
   // ─── Connexion WebSocket STOMP ─────────────────────────────────────────────
   useEffect(() => {
@@ -105,8 +76,6 @@ export function MessagesPage() {
       heartbeatOutgoing: 10000,
 
       onConnect: () => {
-        setStompConnected(true)
-
         // File personnelle : messages reçus en temps réel (destinataire + expéditeur)
         client.subscribe('/user/queue/messages', (payload) => {
           const newMessage: MessageResponse = JSON.parse(payload.body)
@@ -154,13 +123,11 @@ export function MessagesPage() {
         console.warn('WebSocket error (reconnexion en cours)', event)
       },
       onWebSocketClose: () => {
-        setStompConnected(false)
         console.info('WebSocket fermé — reconnexion automatique si nécessaire')
       },
     })
 
     client.activate()
-    stompClientRef.current = client
 
     return () => {
       client.deactivate()
