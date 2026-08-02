@@ -36,6 +36,9 @@ target
 .gradle
 build
 
+# Fichiers uploadés au runtime
+appointment-backend/uploads/
+
 # Artifacts de build accidentellement commités (dossier littéral ${project.build.directory})
 appointment-backend/${project.build.directory}/
 
