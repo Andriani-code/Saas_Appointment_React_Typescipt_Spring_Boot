@@ -1,5 +1,5 @@
 import { useState, memo } from 'react'
-import { Calendar, Check, Clock, Eye, MessageSquare, MoreVertical, RotateCcw, X } from 'lucide-react'
+import { Calendar, Check, Clock, Eye, MessageSquare, MoreVertical, RotateCcw, Send, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '@/store/authStore'
@@ -7,13 +7,22 @@ import { reservationApi, messagingApi } from '@/services/api'
 import { Avatar, StatusBadge } from '@/components/ui'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/Button'
-import type { ReservationResponse } from '@/types'
-import { formatCurrency, formatDate, formatTime } from '@/utils'
+import type { ReservationResponse, ReservationStatus } from '@/types'
+import { cn, formatCurrency, formatDate, formatTime } from '@/utils'
 
 interface AppointmentCardProps {
   reservation: ReservationResponse
   onUpdate: (updated: ReservationResponse) => void
   delay?: number
+}
+
+const statusAccent: Record<ReservationStatus, { bar: string; tile: string }> = {
+  PENDING: { bar: 'bg-warning', tile: 'bg-warning/15 text-warning-300' },
+  CONFIRMED: { bar: 'bg-primary', tile: 'bg-primary/15 text-primary-300' },
+  COMPLETED: { bar: 'bg-success', tile: 'bg-success/15 text-success-300' },
+  CANCELED: { bar: 'bg-muted/60', tile: 'bg-muted/10 text-muted' },
+  REJECTED: { bar: 'bg-danger', tile: 'bg-danger/15 text-danger-300' },
+  NO_SHOW: { bar: 'bg-muted/60', tile: 'bg-muted/10 text-muted' },
 }
 
 export const AppointmentCard = memo(function AppointmentCard({ reservation, onUpdate, delay = 0 }: AppointmentCardProps) {
@@ -26,6 +35,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
 
   const isProvider = hasRole('PROVIDER')
   const name = isProvider ? reservation.clientFullName : (reservation.providerDisplayName ?? 'Providere')
+  const accent = statusAccent[reservation.status]
 
   async function doAction(action: () => Promise<ReservationResponse>) {
     setLoading(true)
@@ -52,18 +62,24 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
 
   return (
     <div
-      className="card-hover p-5 animate-slide-up"
+      className="card-hover p-5 animate-slide-up relative overflow-hidden"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
+      {/* Liseré de statut à gauche */}
+      <span className={cn('absolute left-0 top-0 bottom-0 w-1', accent.bar)} aria-hidden />
+
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex items-center gap-3">
-          <Avatar name={name} size="md" />
-          <div>
-            <p className="font-semibold text-text text-sm">{name}</p>
-            <p className="text-xs text-primary font-medium mt-0.5">{reservation.serviceName}</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative shrink-0">
+            <Avatar name={name} size="md" className="ring-2 ring-primary/20" />
+            <span className={cn('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card', accent.bar)} />
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold text-text text-sm truncate">{name}</p>
+            <p className="text-xs text-primary font-medium mt-0.5 truncate">{reservation.serviceName}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <StatusBadge status={reservation.status} />
           <div className="relative">
             <button
@@ -78,7 +94,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
             </button>
             {menuOpen && (
               <div
-                className="absolute right-0 top-8 bg-surface border border-border rounded-xl shadow-card z-20 py-1 min-w-[160px]"
+                className="absolute right-0 top-8 bg-surface border border-border rounded-xl shadow-card z-20 py-1 min-w-[160px] animate-slide-down origin-top-right"
                 role="menu"
                 aria-label="Actions du rendez-vous"
               >
@@ -105,7 +121,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
                   <button
                     type="button"
                     onClick={() => doAction(() => reservationApi.cancel(reservation.id))}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-accent hover:bg-accent/15 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-danger hover:bg-danger/15 transition-colors"
                     role="menuitem"
                     aria-label="Annuler le rendez-vous"
                   >
@@ -118,32 +134,37 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-sm text-muted mb-4">
-        <span className="flex items-center gap-1.5">
-          <Calendar size={13} className="text-primary" />
-          {formatDate(reservation.slot.date)}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Clock size={13} className="text-primary" />
-          {formatTime(reservation.slot.startTime)} - {formatTime(reservation.slot.endTime)}
-        </span>
+      <div className="flex items-center gap-3 mb-4">
+        <div className={cn('flex items-center gap-2 rounded-xl px-3 py-2 flex-1', accent.tile)}>
+          <Calendar size={15} />
+          <span className="text-sm font-semibold truncate">{formatDate(reservation.slot.date)}</span>
+        </div>
+        <div className={cn('flex items-center gap-2 rounded-xl px-3 py-2 flex-1', accent.tile)}>
+          <Clock size={15} />
+          <span className="text-sm font-semibold truncate">
+            {formatTime(reservation.slot.startTime)} – {formatTime(reservation.slot.endTime)}
+          </span>
+        </div>
       </div>
 
       {reservation.clientMessage && (
-        <p className="text-xs text-muted bg-soft rounded-lg px-3 py-2 mb-4 line-clamp-2">
-          "{reservation.clientMessage}"
-        </p>
+        <div className="relative rounded-xl bg-soft/60 border border-border/60 px-4 py-3 mb-4">
+          <span className="absolute -top-2 left-3 px-1.5 bg-card text-[10px] font-bold text-muted uppercase tracking-wider rounded">
+            Message
+          </span>
+          <p className="text-xs text-muted leading-relaxed line-clamp-2">"{reservation.clientMessage}"</p>
+        </div>
       )}
 
       {reservation.depositRequired && reservation.depositAmount && (
-        <div className="flex items-center justify-between text-xs bg-accent/15 border border-accent/40 rounded-lg px-3 py-2 mb-4">
-          <span className="text-accent font-medium">Depot requis</span>
-          <span className="font-bold text-accent">{formatCurrency(reservation.depositAmount)}</span>
+        <div className="flex items-center justify-between text-xs bg-accent/10 border border-accent/30 rounded-xl px-4 py-2.5 mb-4">
+          <span className="text-accent font-semibold">Dépôt requis</span>
+          <span className="font-bold text-accent text-sm">{formatCurrency(reservation.depositAmount)}</span>
         </div>
       )}
 
       {isProvider && reservation.status === 'PENDING' && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-1">
           <Button
             size="sm"
             fullWidth
@@ -159,7 +180,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
             fullWidth
             icon={<X size={14} />}
             onClick={() => doAction(() => reservationApi.reject(reservation.id))}
-            className="border-accent/40 text-accent hover:bg-accent/15"
+            className="border-danger/40 text-danger hover:bg-danger/15"
           >
             Rejeter
           </Button>
@@ -167,7 +188,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
       )}
 
       {isProvider && reservation.status === 'CONFIRMED' && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-1">
           <Button
             size="sm"
             fullWidth
@@ -201,6 +222,18 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
         </Button>
       )}
 
+      {!isProvider && reservation.status === 'COMPLETED' && (
+        <Button
+          size="sm"
+          fullWidth
+          variant="outline"
+          icon={<MessageSquare size={13} />}
+          onClick={handleMessage}
+        >
+          Discuter
+        </Button>
+      )}
+
       <Modal open={showDetails} onClose={() => setShowDetails(false)} title="Détail du rendez-vous">
         <div className="space-y-4 text-sm">
           <div className="flex items-center justify-between gap-3">
@@ -211,15 +244,20 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
             <StatusBadge status={reservation.status} />
           </div>
 
-          <div className="flex flex-wrap gap-3 text-muted">
-            <span className="flex items-center gap-1.5">
-              <Calendar size={13} className="text-primary" />
-              {formatDate(reservation.slot.date)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock size={13} className="text-primary" />
-              {formatTime(reservation.slot.startTime)} - {formatTime(reservation.slot.endTime)}
-            </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-xl bg-soft/70 px-3 py-2.5">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-0.5">Date</p>
+              <p className="flex items-center gap-1.5 font-semibold text-text">
+                <Calendar size={13} className="text-primary" />{formatDate(reservation.slot.date)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-soft/70 px-3 py-2.5">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-0.5">Heure</p>
+              <p className="flex items-center gap-1.5 font-semibold text-text">
+                <Clock size={13} className="text-primary" />
+                {formatTime(reservation.slot.startTime)} – {formatTime(reservation.slot.endTime)}
+              </p>
+            </div>
           </div>
 
           <dl className="grid grid-cols-1 gap-3 bg-soft rounded-xl p-4">
@@ -246,7 +284,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
 
           {reservation.depositRequired && reservation.depositAmount && (
             <div className="flex items-center justify-between text-xs bg-accent/15 border border-accent/40 rounded-lg px-3 py-2">
-              <span className="text-accent font-medium">Depot requis</span>
+              <span className="text-accent font-medium">Dépôt requis</span>
               <span className="font-bold text-accent">{formatCurrency(reservation.depositAmount)}</span>
             </div>
           )}
@@ -256,7 +294,7 @@ export const AppointmentCard = memo(function AppointmentCard({ reservation, onUp
               size="sm"
               fullWidth
               variant="outline"
-              icon={<MessageSquare size={14} />}
+              icon={<Send size={14} />}
               loading={messagingLoading}
               onClick={() => {
                 setShowDetails(false)

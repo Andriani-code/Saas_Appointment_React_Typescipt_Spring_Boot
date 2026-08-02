@@ -66,6 +66,18 @@ copy .env.example .env        # Windows (cmd)
 
 > Without a real Stripe / SMTP key, the application still starts normally — only payments and email notifications are inactive.
 
+### Migrer les uploads existants vers Cloudflare R2
+
+Si vous activez R2 alors que des images étaient déjà stockées localement dans `appointment-backend/uploads/`, migrez-les en une commande :
+
+```bash
+# Prérequis : aws cli installé + variables R2_* renseignées dans le .env
+
+./scripts/migrate-uploads-to-r2.sh                  # dry-run : liste ce qui sera migré (rien ne change)
+./scripts/migrate-uploads-to-r2.sh --execute        # migre réellement les fichiers vers le bucket
+./scripts/migrate-uploads-to-r2.sh --delete-local   # supprime les fichiers locaux après migration (⚠️ définitif)
+```
+
 ### Useful commands
 
 ```bash

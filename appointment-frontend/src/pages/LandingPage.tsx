@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Search,
   ShieldCheck,
-  Sparkles,
   Star,
   UserPlus,
 } from 'lucide-react'
@@ -75,13 +74,11 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 rounded-none bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-              <img
-                src="/logo/logo_for_bg_dark.png"
-                alt="HILA"
-                className="w-9 h-9 rounded-xl object-contain"
-              />
-            </div>
+            <img
+              src="/logo/logo_for_bg_dark.png"
+              alt="HILA"
+              className="w-9 h-9 object-contain"
+            />
             <span className="font-display text-xl font-bold text-text">HILA</span>
           </div>
 
@@ -120,13 +117,8 @@ export function LandingPage() {
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-accent/10" />
         <div className="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-primary/5" />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-10 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-10 py-14 lg:py-20 grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            <span className="inline-flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-1 rounded-full text-xs font-semibold w-fit">
-              <Sparkles size={13} />
-              Plateforme de rendez-vous
-            </span>
-
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-text leading-tight">
                 Réservez vos rendez-vous{' '}
@@ -297,13 +289,11 @@ export function LandingPage() {
       <footer className="border-t border-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-              <img
-                src="/logo/logo_for_bg_dark.png"
-                alt="HILA"
-                className="w-7 h-7 rounded-lg object-contain"
-              />
-            </div>
+            <img
+              src="/logo/logo_for_bg_dark.png"
+              alt="HILA"
+              className="w-7 h-7 object-contain"
+            />
             <span className="font-display font-bold text-text">HILA</span>
           </div>
 

@@ -44,6 +44,9 @@ const ProfilePage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
+const DesignDemoPage = lazy(() =>
+  import('@/pages/DesignDemoPage').then((m) => ({ default: m.DesignDemoPage })),
+)
 const ReviewsPage = lazy(() =>
   import('@/pages/ReviewsPage').then((m) => ({ default: m.ReviewsPage })),
 )
@@ -100,6 +103,14 @@ export function AppRoutes() {
           element={
             <PublicPage>
               <RegisterPage />
+            </PublicPage>
+          }
+        />
+        <Route
+          path="/design"
+          element={
+            <PublicPage>
+              <DesignDemoPage />
             </PublicPage>
           }
         />
