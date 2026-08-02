@@ -21,9 +21,17 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: [
         'src/components/appointment/AppointmentCard.tsx',
+        'src/components/ui/modal.tsx',
         'src/hooks/usePaginatedFetch.ts',
         'src/services/apiClient.ts',
+        'src/utils/index.ts',
       ],
+      thresholds: {
+        statements: 65,
+        branches: 55,
+        functions: 65,
+        lines: 65,
+      },
     },
   },
   resolve: {
