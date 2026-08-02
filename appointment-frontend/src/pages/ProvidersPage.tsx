@@ -31,15 +31,15 @@ export function ProvidersPage() {
   // While the browser is still asking for geolocation, we keep showing a
   // spinner instead of flashing an error.
   const geolocationPending = filter === 'nearby' && !nearbyCoords && !nearbyError
-  const locatingOnMap = view === 'map' && !nearbyCoords && !nearbyError
+  const locatingOnMap = view === 'map' && filter === 'nearby' && !nearbyCoords && !nearbyError
 
   const fetchProviders = useCallback((page: number, size: number) => {
-    const useNearby = (filter === 'nearby' || view === 'map') && nearbyCoords
+    const useNearby = filter === 'nearby' && nearbyCoords
     if (useNearby) {
       return providerApi.getNearby(nearbyCoords.lat, nearbyCoords.lng, 25, page, size)
     }
     return providerApi.getAll(page, size)
-  }, [filter, view, nearbyCoords])
+  }, [filter, nearbyCoords])
 
   const {
     items: providers,
@@ -69,8 +69,17 @@ export function ProvidersPage() {
     initialErrorShown.current = false
   }, [filter, search, view])
 
+  // La vue carte est en "À proximité" par défaut : on bascule le filtre
+  // sélectionné dès qu'on passe en vue carte. Le filtre "Tous" permet
+  // ensuite d'afficher l'ensemble des prestataires (monde entier).
   useEffect(() => {
-    const shouldLocate = filter === 'nearby' || view === 'map'
+    if (view === 'map') {
+      setFilter('nearby')
+    }
+  }, [view])
+
+  useEffect(() => {
+    const shouldLocate = filter === 'nearby'
     if (!shouldLocate) {
       setNearbyError(null)
       return
@@ -270,7 +279,7 @@ export function ProvidersPage() {
         </div>
       ) : view === 'map' ? (
         <div className="relative">
-          {(locatingOnMap || (loading && !nearbyCoords && !nearbyError)) && (
+          {(locatingOnMap || (filter === 'nearby' && loading && !nearbyCoords && !nearbyError)) && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 rounded-full bg-white/95 border border-border shadow-md px-4 py-1.5 text-xs font-medium text-text">
               <Spinner size={14} />
               Récupération de votre position…
